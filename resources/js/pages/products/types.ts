@@ -25,10 +25,13 @@ type ProductUnitConversion = {
     is_default_purchase_unit: boolean;
     is_default_sale_unit: boolean;
     status: string;
+    status_label: string;
     unit_of_measurement: UnitOfMeasurement;
 };
 
-type ProductUnitConversionData = {
+type ProductUnitConversionFormData = {
+    id?: number;
+    product_unit_conversion?: string;
     unit_of_measurement_id: string;
     conversion_factor_to_base: string;
     is_default_purchase_unit: boolean;
@@ -55,6 +58,6 @@ export type {
     Product,
     ProductCategory,
     ProductUnitConversion,
-    ProductUnitConversionData,
+    ProductUnitConversionFormData,
     UnitOfMeasurement,
 };

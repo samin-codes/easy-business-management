@@ -1,5 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Plus, SquarePen, Trash2 } from 'lucide-react';
 import OutletController from '@/actions/App/Http/Controllers/OutletController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,7 @@ export default function BusinessesShow({ business }: { business: Business }) {
                         <div className="flex gap-2">
                             <Button asChild variant="outline">
                                 <Link href={businessEdit().url}>
-                                    <Pencil className="size-4" />
+                                    <SquarePen className="size-4" />
                                     Edit
                                 </Link>
                             </Button>
@@ -234,7 +234,7 @@ function OutletListItem({
             <div className="flex gap-2">
                 <Button size="sm" variant="outline" asChild>
                     <Link href={outletEdit({ business, outlet }).url}>
-                        <Pencil className="size-4" />
+                        <SquarePen className="size-4" />
                         Edit
                     </Link>
                 </Button>

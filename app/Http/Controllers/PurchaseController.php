@@ -90,9 +90,9 @@ class PurchaseController extends Controller
 
         $products = Product::query()
             ->with([
-                'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base',
+                'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
                 'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
-                'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base',
+                'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
                 'activeUnitConversions.unitOfMeasurement:id,name,code',
             ])
             ->whereBelongsTo($business)
@@ -147,9 +147,9 @@ class PurchaseController extends Controller
                 ->get(['id', 'name']),
             'products' => Product::query()
                 ->with([
-                    'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base',
+                    'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
                     'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
-                    'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base',
+                    'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
                     'activeUnitConversions.unitOfMeasurement:id,name,code',
                 ])
                 ->whereBelongsTo($business)

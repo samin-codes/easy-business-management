@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowUpDown, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Search, SquarePen } from 'lucide-react';
 import { useRef } from 'react';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
-import PaginationLinks from '@/components/pagination-links';
+import PaginatorLinks from '@/components/paginator-links';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,10 +38,7 @@ export default function ProductsIndex({
         errors: Record<string, string>;
     }>().props;
 
-    const nextNameDirection =
-        queryString.sort === 'name' && queryString.direction === 'asc'
-            ? 'desc'
-            : 'asc';
+    const nextNameDirection = queryString.sort === 'name' && queryString.direction === 'asc' ? 'desc' : 'asc';
     const hasPages = products.last_page > 1;
 
     return (
@@ -66,12 +63,7 @@ export default function ProductsIndex({
                         </div>
                     )}
 
-                    {errors.product && (
-                        <AlertError
-                            errors={[errors.product]}
-                            title="Product deletion blocked."
-                        />
-                    )}
+                    {errors.product && <AlertError errors={[errors.product]} title="Product deletion blocked." />}
 
                     <section className="space-y-4">
                         <div className="flex flex-col gap-4">
@@ -84,45 +76,34 @@ export default function ProductsIndex({
                                         className="pl-9"
                                         defaultValue={queryString.search ?? ''}
                                         onChange={(event) => {
-                                            const search =
-                                                event.currentTarget.value.trim();
+                                            const search = event.currentTarget.value.trim();
 
-                                            window.clearTimeout(
-                                                searchTimeout.current,
-                                            );
+                                            window.clearTimeout(searchTimeout.current);
 
-                                            searchTimeout.current =
-                                                window.setTimeout(() => {
-                                                    router.get(
-                                                        index().url,
-                                                        {
-                                                            search:
-                                                                search ||
-                                                                undefined,
-                                                            sort: queryString.sort,
-                                                            direction:
-                                                                queryString.direction,
-                                                            page: 1,
-                                                        },
-                                                        {
-                                                            preserveScroll: true,
-                                                            preserveState: true,
-                                                            replace: true,
-                                                            only: reloadProps,
-                                                        },
-                                                    );
-                                                }, 300);
+                                            searchTimeout.current = window.setTimeout(() => {
+                                                router.get(
+                                                    index().url,
+                                                    {
+                                                        search: search || undefined,
+                                                        sort: queryString.sort,
+                                                        direction: queryString.direction,
+                                                        page: 1,
+                                                    },
+                                                    {
+                                                        preserveScroll: true,
+                                                        preserveState: true,
+                                                        replace: true,
+                                                        only: reloadProps,
+                                                    },
+                                                );
+                                            }, 300);
                                         }}
                                     />
                                 </div>
 
                                 {queryString.search && (
                                     <Button variant="outline" asChild>
-                                        <Link
-                                            href={index()}
-                                            preserveScroll
-                                            only={reloadProps}
-                                        >
+                                        <Link href={index()} preserveScroll only={reloadProps}>
                                             Clear
                                         </Link>
                                     </Button>
@@ -144,12 +125,9 @@ export default function ProductsIndex({
                                                         <Link
                                                             href={index({
                                                                 query: {
-                                                                    search:
-                                                                        queryString.search ??
-                                                                        undefined,
+                                                                    search: queryString.search ?? undefined,
                                                                     sort: 'name',
-                                                                    direction:
-                                                                        nextNameDirection,
+                                                                    direction: nextNameDirection,
                                                                     page: 1,
                                                                 },
                                                             })}
@@ -157,7 +135,24 @@ export default function ProductsIndex({
                                                             only={reloadProps}
                                                         >
                                                             Name
-                                                            <ArrowUpDown className="size-4" />
+                                                            <span className="flex flex-col" aria-hidden="true">
+                                                                <ChevronUp
+                                                                    className={
+                                                                        queryString.sort === 'name' &&
+                                                                        queryString.direction === 'asc'
+                                                                            ? 'size-3 text-primary'
+                                                                            : 'size-3 text-muted-foreground'
+                                                                    }
+                                                                />
+                                                                <ChevronDown
+                                                                    className={
+                                                                        queryString.sort === 'name' &&
+                                                                        queryString.direction === 'desc'
+                                                                            ? 'size-3 text-primary'
+                                                                            : 'size-3 text-muted-foreground'
+                                                                    }
+                                                                />
+                                                            </span>
                                                         </Link>
                                                     </Button>
                                                 </th>
@@ -167,16 +162,12 @@ export default function ProductsIndex({
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
                                                     Business
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Status
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
                                                     Base Unit
                                                 </th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <span className="sr-only">
-                                                        Actions
-                                                    </span>
+                                                    <span className="sr-only">Actions</span>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -188,51 +179,37 @@ export default function ProductsIndex({
                                                         className="border-b transition-colors hover:bg-muted/50"
                                                     >
                                                         <td className="px-4 py-3 align-middle">
-                                                            <div className="font-medium">
-                                                                {product.name}
-                                                            </div>
+                                                            <div className="font-medium">{product.name}</div>
                                                         </td>
                                                         <td className="px-4 py-3 align-middle">
-                                                            {
-                                                                product.category
-                                                                    .name
-                                                            }
+                                                            {product.category.name}
                                                         </td>
                                                         <td className="px-4 py-3 align-middle">
-                                                            {
-                                                                product.business
-                                                                    .name
-                                                            }
+                                                            {product.business.name}
                                                         </td>
                                                         <td className="px-4 py-3 align-middle">
                                                             <Badge
                                                                 variant="outline"
                                                                 className={
-                                                                    product.status ===
-                                                                    'active'
+                                                                    product.status === 'active'
                                                                         ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
                                                                         : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
                                                                 }
                                                             >
-                                                                {product.status_label ??
-                                                                    '-'}
+                                                                {product.status_label ?? '-'}
                                                             </Badge>
                                                         </td>
                                                         <td className="px-4 py-3 align-middle">
-                                                            {product
-                                                                .base_unit_of_measurement
-                                                                ?.name ?? '-'}
+                                                            {product.base_unit_of_measurement?.name ?? '-'}
                                                         </td>
                                                         <td className="px-4 py-3 text-right align-middle">
                                                             <div className="flex justify-end gap-3">
-                                                                <Link
-                                                                    className="text-primary underline-offset-4 hover:underline"
-                                                                    href={edit(
-                                                                        product.id,
-                                                                    )}
-                                                                >
-                                                                    Edit
-                                                                </Link>
+                                                                <Button variant="ghost" size="icon-sm" asChild>
+                                                                    <Link href={edit(product.id)}>
+                                                                        <SquarePen className="size-4" />
+                                                                        <span className="sr-only">Edit product</span>
+                                                                    </Link>
+                                                                </Button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -243,9 +220,7 @@ export default function ProductsIndex({
                                                         colSpan={6}
                                                         className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
                                                     >
-                                                        {queryString.search
-                                                            ? 'No products found.'
-                                                            : 'No products yet.'}
+                                                        {queryString.search ? 'No products found.' : 'No products yet.'}
                                                     </td>
                                                 </tr>
                                             )}
@@ -260,7 +235,7 @@ export default function ProductsIndex({
                                         {`Showing ${products.from}-${products.to} of ${products.total} products`}
                                     </div>
 
-                                    <PaginationLinks
+                                    <PaginatorLinks
                                         links={products.links}
                                         only={reloadProps}
                                         className="mx-0 w-auto justify-start sm:justify-end"

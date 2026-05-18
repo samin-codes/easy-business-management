@@ -11,11 +11,7 @@ import {
 } from '@/components/ui/pagination';
 import type { LengthAwarePaginationLink } from '@/types';
 
-function stripHtml(label: string): string {
-    return label.replace(/<[^>]+>/g, '').trim();
-}
-
-export default function PaginationLinks({
+export default function PaginatorLinks({
     links,
     only,
     className,
@@ -37,60 +33,36 @@ export default function PaginationLinks({
             <PaginationContent>
                 <PaginationItem>
                     {previousLink?.url ? (
-                        <PaginationLink
-                            asChild
-                            size="default"
-                            className="gap-1 px-2.5 sm:pl-2.5"
-                        >
-                            <Link
-                                href={previousLink.url}
-                                preserveScroll
-                                only={only}
-                            >
+                        <PaginationLink asChild size="default" className="gap-1 px-2.5 sm:pl-2.5">
+                            <Link href={previousLink.url} preserveScroll only={only}>
                                 <ChevronLeftIcon />
                                 <span className="hidden sm:block">Previous</span>
                             </Link>
                         </PaginationLink>
                     ) : (
-                        <PaginationPrevious
-                            aria-disabled
-                            tabIndex={-1}
-                            className="pointer-events-none opacity-50"
-                        />
+                        <PaginationPrevious aria-disabled tabIndex={-1} className="pointer-events-none opacity-50" />
                     )}
                 </PaginationItem>
 
                 {pageLinks.map((link, index) => {
-                    const label = stripHtml(link.label);
+                    const label = link.label;
 
                     return (
-                        <PaginationItem
-                            key={`${link.label}-${link.url ?? link.page ?? index}`}
-                        >
+                        <PaginationItem key={`${link.label}-${link.url ?? link.page ?? index}`}>
                             {link.url === null && link.page == null ? (
                                 <PaginationEllipsis />
                             ) : link.active ? (
-                                <PaginationLink
-                                    className="pointer-events-none"
-                                    isActive
-                                >
+                                <PaginationLink className="pointer-events-none" isActive>
                                     {label}
                                 </PaginationLink>
                             ) : link.url ? (
                                 <PaginationLink asChild>
-                                    <Link
-                                        href={link.url}
-                                        preserveScroll
-                                        only={only}
-                                    >
+                                    <Link href={link.url} preserveScroll only={only}>
                                         {label}
                                     </Link>
                                 </PaginationLink>
                             ) : (
-                                <PaginationLink
-                                    className="pointer-events-none"
-                                    isActive
-                                >
+                                <PaginationLink className="pointer-events-none" isActive>
                                     {label}
                                 </PaginationLink>
                             )}
@@ -100,26 +72,14 @@ export default function PaginationLinks({
 
                 <PaginationItem>
                     {nextLink?.url ? (
-                        <PaginationLink
-                            asChild
-                            size="default"
-                            className="gap-1 px-2.5 sm:pr-2.5"
-                        >
-                            <Link
-                                href={nextLink.url}
-                                preserveScroll
-                                only={only}
-                            >
+                        <PaginationLink asChild size="default" className="gap-1 px-2.5 sm:pr-2.5">
+                            <Link href={nextLink.url} preserveScroll only={only}>
                                 <span className="hidden sm:block">Next</span>
                                 <ChevronRightIcon />
                             </Link>
                         </PaginationLink>
                     ) : (
-                        <PaginationNext
-                            aria-disabled
-                            tabIndex={-1}
-                            className="pointer-events-none opacity-50"
-                        />
+                        <PaginationNext aria-disabled tabIndex={-1} className="pointer-events-none opacity-50" />
                     )}
                 </PaginationItem>
             </PaginationContent>

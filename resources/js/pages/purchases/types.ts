@@ -31,6 +31,7 @@ export type ProductUnitConversion = {
     is_default_purchase_unit?: boolean;
     is_default_sale_unit?: boolean;
     status?: string;
+    status_label: string;
     unit_of_measurement?: UnitOfMeasurement;
 };
 

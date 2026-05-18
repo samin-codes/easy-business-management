@@ -1,8 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronUp, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Search, SquarePen } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginationLinks from '@/components/pagination-links';
+import PaginatorLinks from '@/components/paginator-links';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -156,9 +156,6 @@ export default function ProductCategoriesIndex({
                                                     Business
                                                 </th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Products
-                                                </th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
                                                     <span className="sr-only">Actions</span>
                                                 </th>
@@ -189,17 +186,16 @@ export default function ProductCategoriesIndex({
                                                                 {productCategory.status_label ?? '-'}
                                                             </Badge>
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {productCategory.products_count ?? 0}
-                                                        </td>
                                                         <td className="px-4 py-3 text-right align-middle">
                                                             <div className="flex justify-end gap-3">
-                                                                <Link
-                                                                    className="text-primary underline-offset-4 hover:underline"
-                                                                    href={edit(productCategory.id)}
-                                                                >
-                                                                    Edit
-                                                                </Link>
+                                                                <Button variant="ghost" size="icon-sm" asChild>
+                                                                    <Link href={edit(productCategory.id)}>
+                                                                        <SquarePen className="size-4" />
+                                                                        <span className="sr-only">
+                                                                            Edit product category
+                                                                        </span>
+                                                                    </Link>
+                                                                </Button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -227,7 +223,7 @@ export default function ProductCategoriesIndex({
                                         {`Showing ${productCategories.from}-${productCategories.to} of ${productCategories.total} categories`}
                                     </div>
 
-                                    <PaginationLinks
+                                    <PaginatorLinks
                                         links={productCategories.links}
                                         only={reloadProps}
                                         className="mx-0 w-auto justify-start sm:justify-end"
