@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\RecordStatus;
 use App\Http\Requests\SaveProductRequest;
+use App\Models\Brand;
 use App\Models\Business;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductGradeUnit;
+use App\Models\ProductSizeUnit;
 use App\Models\UnitOfMeasurement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,15 +62,19 @@ class ProductController extends Controller
     {
         $business = Business::current();
 
+        $productCategories = ProductCategory::query()
+            ->with('business:id,name')
+            ->whereBelongsTo($business)
+            ->orderBy('name')
+            ->get(['id', 'business_id', 'name']);
+
+        $unitOfMeasurements = UnitOfMeasurement::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return Inertia::render('products/create', [
-            'productCategories' => ProductCategory::query()
-                ->with('business:id,name')
-                ->whereBelongsTo($business)
-                ->orderBy('name')
-                ->get(['id', 'business_id', 'name']),
-            'unitOfMeasurements' => UnitOfMeasurement::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'code']),
+            'productCategories' => $productCategories,
+            'unitOfMeasurements' => $unitOfMeasurements,
             'statusOptions' => RecordStatus::options(),
         ]);
     }
@@ -98,19 +105,41 @@ class ProductController extends Controller
         $business = Business::current();
         $product->load([
             'baseUnitOfMeasurement:id,name,code',
+            'productVariants.brand:id,name',
+            'productVariants.gradeUnit:id,name,code,symbol',
+            'productVariants.sizeUnit:id,name,code,symbol',
             'unitConversions.unitOfMeasurement:id,name,code',
         ]);
 
+        $productCategories = ProductCategory::query()
+            ->with('business:id,name')
+            ->whereBelongsTo($business)
+            ->orderBy('name')
+            ->get(['id', 'business_id', 'name']);
+
+        $brands = Brand::query()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $productGradeUnits = ProductGradeUnit::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'symbol']);
+
+        $productSizeUnits = ProductSizeUnit::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'symbol']);
+
+        $unitOfMeasurements = UnitOfMeasurement::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return Inertia::render('products/edit', [
             'product' => $product,
-            'productCategories' => ProductCategory::query()
-                ->with('business:id,name')
-                ->whereBelongsTo($business)
-                ->orderBy('name')
-                ->get(['id', 'business_id', 'name']),
-            'unitOfMeasurements' => UnitOfMeasurement::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'code']),
+            'brands' => $brands,
+            'productCategories' => $productCategories,
+            'unitOfMeasurements' => $unitOfMeasurements,
+            'productGradeUnits' => $productGradeUnits,
+            'productSizeUnits' => $productSizeUnits,
             'statusOptions' => RecordStatus::options(),
         ]);
     }

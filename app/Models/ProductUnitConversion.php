@@ -34,6 +34,8 @@ class ProductUnitConversion extends Model
      * @var list<string>
      */
     protected $appends = [
+        'conversion_unit_quantity',
+        'base_unit_quantity',
         'status_label',
     ];
 
@@ -56,6 +58,45 @@ class ProductUnitConversion extends Model
     protected function statusLabel(): Attribute
     {
         return Attribute::get(fn (): string => $this->status->label());
+    }
+
+    protected function conversionUnitQuantity(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->is_base_unit) {
+                return '1';
+            }
+
+            $conversionFactor = (float) $this->conversion_factor_to_base;
+
+            if ($conversionFactor < 1) {
+                return $this->formatQuantity(1 / $conversionFactor);
+            }
+
+            return '1';
+        });
+    }
+
+    protected function baseUnitQuantity(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->is_base_unit) {
+                return '1';
+            }
+
+            $conversionFactor = (float) $this->conversion_factor_to_base;
+
+            if ($conversionFactor < 1) {
+                return '1';
+            }
+
+            return $this->formatQuantity($conversionFactor);
+        });
+    }
+
+    private function formatQuantity(float $quantity): string
+    {
+        return rtrim(rtrim(number_format($quantity, 3, '.', ''), '0'), '.');
     }
 
     public function product(): BelongsTo

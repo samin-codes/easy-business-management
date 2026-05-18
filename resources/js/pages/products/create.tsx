@@ -3,7 +3,7 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { create, index } from '@/routes/products';
 import type { BreadcrumbItem, Option } from '@/types';
-import ProductForm from './form';
+import ProductForm from './components/form';
 import type { ProductCategory, UnitOfMeasurement } from './types';
 
 export default function ProductsCreate({

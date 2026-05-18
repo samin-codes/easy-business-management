@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
-import type { Product, ProductCategory, UnitOfMeasurement } from './types';
+import type { Product, ProductCategory, UnitOfMeasurement } from '../types';
 
 export default function ProductForm({
     product,
@@ -43,24 +43,14 @@ export default function ProductForm({
     }));
 
     const selectedCategory =
-        categoryOptions.find(
-            (category) =>
-                category.value === product?.product_category_id?.toString(),
-        ) ?? null;
+        categoryOptions.find((category) => category.value === product?.product_category_id?.toString()) ?? null;
 
     const selectedUnit =
-        unitOptions.find(
-            (unit) =>
-                unit.value === product?.base_unit_of_measurement_id?.toString(),
-        ) ?? null;
+        unitOptions.find((unit) => unit.value === product?.base_unit_of_measurement_id?.toString()) ?? null;
 
     return (
         <Form
-            action={
-                product
-                    ? ProductController.update(product.id)
-                    : ProductController.store()
-            }
+            action={product ? ProductController.update(product.id) : ProductController.store()}
             options={{ preserveScroll: true }}
             disableWhileProcessing
             className="space-y-6"
@@ -69,12 +59,8 @@ export default function ProductForm({
                 <div className="space-y-6">
                     <div className="grid gap-6 xl:grid-cols-2">
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="product_category_id"
-                                className="text-sm font-medium"
-                            >
-                                Product Category{' '}
-                                <span className="text-red-500">*</span>
+                            <label htmlFor="product_category_id" className="text-sm font-medium">
+                                Product Category <span className="text-red-500">*</span>
                             </label>
                             <Combobox
                                 name="product_category_id"
@@ -85,21 +71,14 @@ export default function ProductForm({
                                 <ComboboxInput
                                     id="product_category_id"
                                     placeholder="Select category"
-                                    aria-invalid={Boolean(
-                                        errors.product_category_id,
-                                    )}
+                                    aria-invalid={Boolean(errors.product_category_id)}
                                     className="w-full"
                                 />
                                 <ComboboxContent>
-                                    <ComboboxEmpty>
-                                        No category found.
-                                    </ComboboxEmpty>
+                                    <ComboboxEmpty>No category found.</ComboboxEmpty>
                                     <ComboboxList>
                                         {(category) => (
-                                            <ComboboxItem
-                                                key={category.value}
-                                                value={category}
-                                            >
+                                            <ComboboxItem key={category.value} value={category}>
                                                 {category.label}
                                             </ComboboxItem>
                                         )}
@@ -110,12 +89,8 @@ export default function ProductForm({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="base_unit_of_measurement_id"
-                                className="text-sm font-medium"
-                            >
-                                Base Unit of Measurement{' '}
-                                <span className="text-red-500">*</span>
+                            <label htmlFor="base_unit_of_measurement_id" className="text-sm font-medium">
+                                Base Unit of Measurement <span className="text-red-500">*</span>
                             </label>
                             <Combobox
                                 name="base_unit_of_measurement_id"
@@ -126,39 +101,26 @@ export default function ProductForm({
                                 <ComboboxInput
                                     id="base_unit_of_measurement_id"
                                     placeholder="Select unit"
-                                    aria-invalid={Boolean(
-                                        errors.base_unit_of_measurement_id,
-                                    )}
+                                    aria-invalid={Boolean(errors.base_unit_of_measurement_id)}
                                     className="w-full"
                                 />
                                 <ComboboxContent>
-                                    <ComboboxEmpty>
-                                        No unit found.
-                                    </ComboboxEmpty>
+                                    <ComboboxEmpty>No unit found.</ComboboxEmpty>
                                     <ComboboxList>
                                         {(unit) => (
-                                            <ComboboxItem
-                                                key={unit.value}
-                                                value={unit}
-                                            >
+                                            <ComboboxItem key={unit.value} value={unit}>
                                                 {unit.label}
                                             </ComboboxItem>
                                         )}
                                     </ComboboxList>
                                 </ComboboxContent>
                             </Combobox>
-                            <InputError
-                                message={errors.base_unit_of_measurement_id}
-                            />
+                            <InputError message={errors.base_unit_of_measurement_id} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="name"
-                                className="text-sm font-medium"
-                            >
-                                Product name{' '}
-                                <span className="text-red-500">*</span>
+                            <label htmlFor="name" className="text-sm font-medium">
+                                Product name <span className="text-red-500">*</span>
                             </label>
                             <Input
                                 id="name"
@@ -171,39 +133,19 @@ export default function ProductForm({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="status"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="status" className="text-sm font-medium">
                                 Status <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="hidden"
-                                name="status"
-                                value={status}
-                                readOnly
-                            />
-                            <RadioGroup
-                                value={status}
-                                onValueChange={setStatus}
-                                className="flex flex-row gap-6"
-                            >
+                            <input type="hidden" name="status" value={status} readOnly />
+                            <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                 {statusOptions.map((option) => (
-                                    <div
-                                        key={option.value}
-                                        className="flex items-center space-x-2"
-                                    >
+                                    <div key={option.value} className="flex items-center space-x-2">
                                         <RadioGroupItem
                                             value={option.value}
                                             id={`status_${option.value}`}
-                                            aria-invalid={Boolean(
-                                                errors.status,
-                                            )}
+                                            aria-invalid={Boolean(errors.status)}
                                         />
-                                        <label
-                                            htmlFor={`status_${option.value}`}
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor={`status_${option.value}`} className="text-sm font-medium">
                                             {option.label}
                                         </label>
                                     </div>
@@ -222,11 +164,7 @@ export default function ProductForm({
                         </Button>
                         <Button type="submit" disabled={processing}>
                             <Save />
-                            {processing
-                                ? 'Saving...'
-                                : product
-                                  ? 'Update Product'
-                                  : 'Create Product'}
+                            {processing ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
                         </Button>
                     </div>
                 </div>

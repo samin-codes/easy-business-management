@@ -8,6 +8,7 @@ use App\Http\Controllers\PartyController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductUnitConversionController;
+use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\PurchaseController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -32,6 +33,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('products.unit-conversions.update');
     Route::delete('products/{product}/unit-conversions/{product_unit_conversion}', [ProductUnitConversionController::class, 'destroy'])
         ->name('products.unit-conversions.destroy');
+    Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])
+        ->name('products.variants.store');
+    Route::patch('products/{product}/variants/{product_variant}', [ProductVariantController::class, 'update'])
+        ->name('products.variants.update');
+    Route::delete('products/{product}/variants/{product_variant}', [ProductVariantController::class, 'destroy'])
+        ->name('products.variants.destroy');
     Route::resource('parties', PartyController::class);
     Route::resource('parties.party-contact-persons', PartyContactPersonController::class)
         ->except(['index', 'show'])
