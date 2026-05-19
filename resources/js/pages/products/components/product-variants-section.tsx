@@ -1,44 +1,20 @@
 import { router } from '@inertiajs/react';
 import { Plus, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import ProductVariantController from '@/actions/App/Http/Controllers/ProductVariantController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { Option } from '@/types';
-import type { Brand, Product, ProductGradeUnit, ProductSizeUnit, ProductVariant } from '../types';
-import ProductVariantDialog from './product-variant-dialog';
+import type { Product, ProductVariant } from '../types';
 
 export default function ProductVariantsSection({
     product,
-    brands,
-    productGradeUnits,
-    productSizeUnits,
-    statusOptions,
+    onCreate,
+    onEdit,
 }: {
     product: Product;
-    brands: Brand[];
-    productGradeUnits: ProductGradeUnit[];
-    productSizeUnits: ProductSizeUnit[];
-    statusOptions: Option[];
+    onCreate: () => void;
+    onEdit: (productVariant: ProductVariant) => void;
 }) {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedProductVariant, setSelectedProductVariant] = useState<ProductVariant | null>(null);
     const productVariants = product.product_variants ?? [];
-
-    const handleCreate = () => {
-        setSelectedProductVariant(null);
-        setIsDialogOpen(true);
-    };
-
-    const handleEdit = (productVariant: ProductVariant) => {
-        setSelectedProductVariant(productVariant);
-        setIsDialogOpen(true);
-    };
-
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false);
-        setSelectedProductVariant(null);
-    };
 
     const handleDelete = (productVariant: ProductVariant) => {
         if (!confirm(`Delete the variant "${productVariant.variant_name}"?`)) {
@@ -64,7 +40,7 @@ export default function ProductVariantsSection({
         <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
                 <div className="text-base font-medium">Product Variants</div>
-                <Button type="button" size="sm" onClick={handleCreate}>
+                <Button type="button" size="sm" onClick={onCreate}>
                     <Plus className="size-4" />
                     Add Variant
                 </Button>
@@ -130,7 +106,7 @@ export default function ProductVariantsSection({
                                     </td>
                                     <td className="px-3 py-3 text-right align-top">
                                         <div className="flex min-h-9 items-center justify-end gap-1">
-                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => handleEdit(productVariant)}>
+                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(productVariant)}>
                                                 <SquarePen className="size-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>
@@ -151,18 +127,6 @@ export default function ProductVariantsSection({
                     </tbody>
                 </table>
             </div>
-
-            <ProductVariantDialog
-                key={selectedProductVariant ? `edit-${selectedProductVariant.id}` : 'create'}
-                product={product}
-                productVariant={selectedProductVariant}
-                brands={brands}
-                productGradeUnits={productGradeUnits}
-                productSizeUnits={productSizeUnits}
-                statusOptions={statusOptions}
-                open={isDialogOpen}
-                onClose={handleCloseDialog}
-            />
         </div>
     );
 }

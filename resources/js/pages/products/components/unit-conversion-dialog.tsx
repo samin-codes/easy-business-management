@@ -130,7 +130,7 @@ export default function UnitConversionDialog({
                                     <input type="hidden" name="conversion_factor_to_base" value={conversionFactor} readOnly />
 
                                     <div className="flex flex-col gap-3">
-                                        <div className="flex items-end justify-center gap-3">
+                                        <div className="flex items-end gap-3">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-xs text-muted-foreground">Selected unit quantity</span>
                                                 <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export default function UnitConversionDialog({
                                             </div>
                                         </div>
 
-                                        <div className="text-center text-xs text-muted-foreground">
+                                        <div className="text-left text-xs text-muted-foreground">
                                             {isBaseConversion
                                                 ? `Base unit conversion is always 1 ${baseUnitName} = 1 ${baseUnitName}`
                                                 : hasConversionQuantities

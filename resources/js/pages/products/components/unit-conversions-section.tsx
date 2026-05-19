@@ -1,50 +1,22 @@
 import { router } from '@inertiajs/react';
 import { Plus, SquarePen, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import ProductUnitConversionController from '@/actions/App/Http/Controllers/ProductUnitConversionController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { Option } from '@/types';
-import type { Product, ProductUnitConversion, UnitOfMeasurement } from '../types';
-import UnitConversionDialog from './unit-conversion-dialog';
+import type { Product, ProductUnitConversion } from '../types';
 
 export default function UnitConversionsSection({
     product,
-    unitOfMeasurements,
-    statusOptions,
+    onCreate,
+    onEdit,
 }: {
     product: Product;
-    unitOfMeasurements: UnitOfMeasurement[];
-    statusOptions: Option[];
+    onCreate: () => void;
+    onEdit: (unitConversion: ProductUnitConversion) => void;
 }) {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedUnitConversion, setSelectedUnitConversion] = useState<ProductUnitConversion | null>(null);
     const unitConversions = product.unit_conversions ?? [];
     const baseUnitName = product.base_unit_of_measurement.name;
     const hasAlternateUnitConversions = unitConversions.some((unitConversion) => !unitConversion.is_base_unit);
-
-    const getAvailableUnits = (currentUnitOfMeasurementId?: number): UnitOfMeasurement[] => {
-        const usedUnitIds = new Set(unitConversions.map((unitConversion) => unitConversion.unit_of_measurement_id));
-
-        return unitOfMeasurements.filter(
-            (unitOfMeasurement) => unitOfMeasurement.id === currentUnitOfMeasurementId || !usedUnitIds.has(unitOfMeasurement.id),
-        );
-    };
-
-    const handleCreate = () => {
-        setSelectedUnitConversion(null);
-        setIsDialogOpen(true);
-    };
-
-    const handleEdit = (unitConversion: ProductUnitConversion) => {
-        setSelectedUnitConversion(unitConversion);
-        setIsDialogOpen(true);
-    };
-
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false);
-        setSelectedUnitConversion(null);
-    };
 
     const handleDelete = (unitConversion: ProductUnitConversion) => {
         if (!confirm('Are you sure you want to delete this unit conversion?')) {
@@ -70,7 +42,7 @@ export default function UnitConversionsSection({
         <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
                 <div className="text-base font-medium">Unit Conversions</div>
-                <Button type="button" size="sm" onClick={handleCreate}>
+                <Button type="button" size="sm" onClick={onCreate}>
                     <Plus className="size-4" />
                     Add Unit Conversion
                 </Button>
@@ -147,7 +119,7 @@ export default function UnitConversionsSection({
                                     </td>
                                     <td className="px-3 py-3 text-right align-top">
                                         <div className="flex min-h-9 items-center justify-end gap-1">
-                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => handleEdit(unitConversion)}>
+                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(unitConversion)}>
                                                 <SquarePen className="size-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>
@@ -176,16 +148,6 @@ export default function UnitConversionsSection({
                     No alternate units defined. Add one to use this product in other quantities.
                 </div>
             )}
-
-            <UnitConversionDialog
-                key={selectedUnitConversion ? `edit-${selectedUnitConversion.id}` : 'create'}
-                product={product}
-                unitConversion={selectedUnitConversion}
-                units={getAvailableUnits(selectedUnitConversion?.unit_of_measurement_id)}
-                statusOptions={statusOptions}
-                open={isDialogOpen}
-                onClose={handleCloseDialog}
-            />
         </div>
     );
 }
