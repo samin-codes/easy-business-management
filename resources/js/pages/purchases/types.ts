@@ -131,5 +131,5 @@ export type Purchase = {
     outlet?: Outlet;
     user?: Pick<User, 'id' | 'name'>;
     business?: Business;
-    items?: PurchaseItem[];
+    items: PurchaseItem[];
 };

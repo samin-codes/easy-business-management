@@ -54,7 +54,6 @@ export default function PurchaseSummary({
                             <span className="text-sm text-muted-foreground">Transport Cost</span>
                             <Input
                                 id="transport_cost"
-                                name="transport_cost"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -74,7 +73,6 @@ export default function PurchaseSummary({
                             <span className="text-sm text-muted-foreground">Labour Cost</span>
                             <Input
                                 id="labour_cost"
-                                name="labour_cost"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -94,7 +92,6 @@ export default function PurchaseSummary({
                             <span className="text-sm text-muted-foreground">Other Cost</span>
                             <Input
                                 id="other_cost"
-                                name="other_cost"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -114,7 +111,6 @@ export default function PurchaseSummary({
                             <span className="text-sm text-muted-foreground">Discount Amount</span>
                             <Input
                                 id="discount_amount"
-                                name="discount_amount"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -141,7 +137,6 @@ export default function PurchaseSummary({
                             <span className="text-sm text-muted-foreground">Paid Amount</span>
                             <Input
                                 id="paid_amount"
-                                name="paid_amount"
                                 type="number"
                                 step="0.01"
                                 min="0"

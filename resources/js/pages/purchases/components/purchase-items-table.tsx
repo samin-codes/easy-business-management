@@ -71,7 +71,6 @@ export default function PurchaseItemsTable({ items, products, errors, onItemAdd,
                                 <tr key={purchaseItem.uid} className="border-b transition-colors hover:bg-muted/50">
                                     <td className="min-w-[360px] px-3 py-2">
                                         <Combobox
-                                            name={`items[${purchaseItemIndex}][product_variant_id]`}
                                             items={productVariants}
                                             value={selectedProductVariant}
                                             onValueChange={(productVariant) => {
@@ -120,7 +119,6 @@ export default function PurchaseItemsTable({ items, products, errors, onItemAdd,
                                     </td>
                                     <td className="w-36 px-3 py-2">
                                         <Combobox
-                                            name={`items[${purchaseItemIndex}][unit_of_measurement_id]`}
                                             items={availableConversions}
                                             value={selectedUnitConversion}
                                             onValueChange={(conversion) =>
@@ -155,7 +153,6 @@ export default function PurchaseItemsTable({ items, products, errors, onItemAdd,
                                     <td className="w-32 px-3 py-2">
                                         <Input
                                             type="number"
-                                            name={`items[${purchaseItemIndex}][quantity]`}
                                             value={purchaseItem.quantity}
                                             onChange={(event) =>
                                                 onItemChange(purchaseItem.uid, {
@@ -170,7 +167,6 @@ export default function PurchaseItemsTable({ items, products, errors, onItemAdd,
                                     <td className="w-32 px-3 py-2">
                                         <Input
                                             type="number"
-                                            name={`items[${purchaseItemIndex}][unit_cost]`}
                                             value={purchaseItem.unit_cost}
                                             onChange={(event) =>
                                                 onItemChange(purchaseItem.uid, {

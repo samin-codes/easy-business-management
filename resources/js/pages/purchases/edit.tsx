@@ -4,11 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/purchases';
 import type { BreadcrumbItem, Option } from '@/types';
 import PurchaseForm from './components/form';
-import type { Outlet, Product, Purchase, PurchaseItem, Supplier } from './types';
-
-type PurchaseEditData = Purchase & {
-    items: PurchaseItem[];
-};
+import type { Outlet, Product, Purchase, Supplier } from './types';
 
 export default function PurchasesEdit({
     purchase,
@@ -18,7 +14,7 @@ export default function PurchasesEdit({
     purchaseStatusOptions,
     purchasePaymentStatusOptions,
 }: {
-    purchase: PurchaseEditData;
+    purchase: Purchase;
     outlets: Outlet[];
     suppliers: Supplier[];
     products: Product[];
