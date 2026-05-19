@@ -1,6 +1,5 @@
 import { Form } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
-import { useState } from 'react';
 import ProductVariantController from '@/actions/App/Http/Controllers/ProductVariantController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -32,13 +31,6 @@ export default function ProductVariantDialog({
     onClose: () => void;
 }) {
     const isEditMode = Boolean(productVariant);
-
-    const [selectedBrand, setSelectedBrand] = useState<Brand | null>(productVariant?.brand ?? null);
-    const [selectedGradeUnit, setSelectedGradeUnit] = useState<ProductGradeUnit | null>(productVariant?.grade_unit ?? null);
-    const [selectedSizeUnit, setSelectedSizeUnit] = useState<ProductSizeUnit | null>(productVariant?.size_unit ?? null);
-
-    const [isPlaceholderVariant, setIsPlaceholderVariant] = useState(productVariant?.is_placeholder_variant ?? false);
-    const [status, setStatus] = useState(productVariant?.status ?? 'active');
 
     return (
         <Dialog
@@ -109,15 +101,16 @@ export default function ProductVariantDialog({
                                 </div>
 
                                 <div className="flex flex-col gap-1 md:col-span-2">
-                                    <input type="hidden" name="is_placeholder_variant" value={isPlaceholderVariant ? '1' : '0'} readOnly />
+                                    <input type="hidden" name="is_placeholder_variant" value="0" />
                                     <label
                                         htmlFor="is_placeholder_variant"
                                         className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                                     >
                                         <Checkbox
                                             id="is_placeholder_variant"
-                                            checked={isPlaceholderVariant}
-                                            onCheckedChange={(checked) => setIsPlaceholderVariant(checked === true)}
+                                            name="is_placeholder_variant"
+                                            value="1"
+                                            defaultChecked={productVariant?.is_placeholder_variant ?? false}
                                             aria-invalid={Boolean(errors.is_placeholder_variant)}
                                         />
                                         Use as default variant
@@ -132,11 +125,10 @@ export default function ProductVariantDialog({
                                     <label htmlFor="brand_id" className="text-sm font-medium">
                                         Brand
                                     </label>
-                                    <input type="hidden" name="brand_id" value={selectedBrand?.id ?? ''} readOnly />
                                     <Combobox
+                                        name="brand_id"
                                         items={brands}
-                                        value={selectedBrand}
-                                        onValueChange={setSelectedBrand}
+                                        defaultValue={productVariant?.brand ?? null}
                                         itemToStringLabel={(brand) => brand.name}
                                         itemToStringValue={(brand) => brand.id.toString()}
                                     >
@@ -182,11 +174,10 @@ export default function ProductVariantDialog({
                                     <label htmlFor="grade_unit_id" className="text-sm font-medium">
                                         Grade unit
                                     </label>
-                                    <input type="hidden" name="grade_unit_id" value={selectedGradeUnit?.id ?? ''} readOnly />
                                     <Combobox
+                                        name="grade_unit_id"
                                         items={productGradeUnits}
-                                        value={selectedGradeUnit}
-                                        onValueChange={setSelectedGradeUnit}
+                                        defaultValue={productVariant?.grade_unit ?? null}
                                         itemToStringLabel={(gradeUnit) => gradeUnit.code}
                                         itemToStringValue={(gradeUnit) => gradeUnit.id.toString()}
                                     >
@@ -248,11 +239,10 @@ export default function ProductVariantDialog({
                                         <label htmlFor="size_unit_id" className="text-sm font-medium">
                                             Size unit
                                         </label>
-                                        <input type="hidden" name="size_unit_id" value={selectedSizeUnit?.id ?? ''} readOnly />
                                         <Combobox
+                                            name="size_unit_id"
                                             items={productSizeUnits}
-                                            value={selectedSizeUnit}
-                                            onValueChange={setSelectedSizeUnit}
+                                            defaultValue={productVariant?.size_unit ?? null}
                                             itemToStringLabel={(sizeUnit) => sizeUnit.code}
                                             itemToStringValue={(sizeUnit) => sizeUnit.id.toString()}
                                         >
@@ -296,10 +286,9 @@ export default function ProductVariantDialog({
                                     <label htmlFor="status" className="text-sm font-medium">
                                         Status <span className="text-red-500">*</span>
                                     </label>
-                                    <input type="hidden" name="status" value={status} readOnly />
                                     <RadioGroup
-                                        value={status}
-                                        onValueChange={setStatus}
+                                        name="status"
+                                        defaultValue={productVariant?.status ?? 'active'}
                                         className="flex min-h-9 flex-row items-center gap-6"
                                     >
                                         {statusOptions.map((option) => (

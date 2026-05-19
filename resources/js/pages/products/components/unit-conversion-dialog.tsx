@@ -33,9 +33,6 @@ export default function UnitConversionDialog({
     const [selectedUnit, setSelectedUnit] = useState<UnitOfMeasurement | null>(unitConversion?.unit_of_measurement ?? null);
     const [selectedUnitQuantity, setSelectedUnitQuantity] = useState(unitConversion?.conversion_unit_quantity ?? '');
     const [baseUnitQuantity, setBaseUnitQuantity] = useState(unitConversion?.base_unit_quantity ?? '');
-    const [isDefaultPurchaseUnit, setIsDefaultPurchaseUnit] = useState(unitConversion?.is_default_purchase_unit ?? false);
-    const [isDefaultSaleUnit, setIsDefaultSaleUnit] = useState(unitConversion?.is_default_sale_unit ?? false);
-    const [status, setStatus] = useState(unitConversion?.status ?? 'active');
 
     const selectedUnitName = selectedUnit?.name ?? 'N/A';
     const baseUnitName = product.base_unit_of_measurement.name;
@@ -90,15 +87,14 @@ export default function UnitConversionDialog({
                                         Unit <span className="text-red-500">*</span>
                                     </label>
 
-                                    <input type="hidden" name="unit_of_measurement_id" value={selectedUnit?.id ?? ''} readOnly />
-
                                     <Combobox
+                                        name="unit_of_measurement_id"
                                         items={units}
                                         value={selectedUnit}
                                         onValueChange={setSelectedUnit}
                                         itemToStringLabel={(unit) => unit.name}
                                         itemToStringValue={(unit) => unit.id.toString()}
-                                        disabled={isEditMode}
+                                        readOnly={isEditMode}
                                     >
                                         <ComboboxInput
                                             id="unit_of_measurement_id"
@@ -193,20 +189,16 @@ export default function UnitConversionDialog({
                                 </div>
 
                                 <div className="flex flex-col gap-2 md:col-span-2">
-                                    <input
-                                        type="hidden"
-                                        name="is_default_purchase_unit"
-                                        value={isDefaultPurchaseUnit ? '1' : '0'}
-                                        readOnly
-                                    />
+                                    <input type="hidden" name="is_default_purchase_unit" value="0" />
                                     <label
                                         htmlFor="is_default_purchase_unit"
                                         className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                                     >
                                         <Checkbox
                                             id="is_default_purchase_unit"
-                                            checked={isDefaultPurchaseUnit}
-                                            onCheckedChange={(checked) => setIsDefaultPurchaseUnit(checked === true)}
+                                            name="is_default_purchase_unit"
+                                            value="1"
+                                            defaultChecked={unitConversion?.is_default_purchase_unit ?? false}
                                             aria-invalid={Boolean(errors.is_default_purchase_unit)}
                                         />
                                         Use for purchases by default
@@ -215,15 +207,16 @@ export default function UnitConversionDialog({
                                 </div>
 
                                 <div className="flex flex-col gap-2 md:col-span-2">
-                                    <input type="hidden" name="is_default_sale_unit" value={isDefaultSaleUnit ? '1' : '0'} readOnly />
+                                    <input type="hidden" name="is_default_sale_unit" value="0" />
                                     <label
                                         htmlFor="is_default_sale_unit"
                                         className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                                     >
                                         <Checkbox
                                             id="is_default_sale_unit"
-                                            checked={isDefaultSaleUnit}
-                                            onCheckedChange={(checked) => setIsDefaultSaleUnit(checked === true)}
+                                            name="is_default_sale_unit"
+                                            value="1"
+                                            defaultChecked={unitConversion?.is_default_sale_unit ?? false}
                                             aria-invalid={Boolean(errors.is_default_sale_unit)}
                                         />
                                         Use for sales by default
@@ -235,8 +228,11 @@ export default function UnitConversionDialog({
                                     <label htmlFor="unit_conversion_status" className="text-sm font-medium">
                                         Status <span className="text-red-500">*</span>
                                     </label>
-                                    <input type="hidden" name="status" value={status} readOnly />
-                                    <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row items-center gap-6">
+                                    <RadioGroup
+                                        name="status"
+                                        defaultValue={unitConversion?.status ?? 'active'}
+                                        className="flex flex-row items-center gap-6"
+                                    >
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
                                                 <RadioGroupItem

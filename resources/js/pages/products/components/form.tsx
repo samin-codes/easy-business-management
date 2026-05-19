@@ -1,6 +1,5 @@
 import { Form, Link } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
-import { useState } from 'react';
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -23,8 +22,6 @@ export default function ProductForm({
     statusOptions: Option[];
     cancelHref: string;
 }) {
-    const [status, setStatus] = useState(product?.status ?? 'active');
-
     const categoryOptions: Option[] = productCategories.map((category) => ({
         label: category.name,
         value: category.id.toString(),
@@ -127,8 +124,7 @@ export default function ProductForm({
                             <label htmlFor="status" className="text-sm font-medium">
                                 Status <span className="text-red-500">*</span>
                             </label>
-                            <input type="hidden" name="status" value={status} readOnly />
-                            <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
+                            <RadioGroup name="status" defaultValue={product?.status ?? 'active'} className="flex flex-row gap-6">
                                 {statusOptions.map((option) => (
                                     <div key={option.value} className="flex items-center space-x-2">
                                         <RadioGroupItem
