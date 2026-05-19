@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import { formatCurrency } from '@/lib/utils';
 import { create, edit, index, show } from '@/routes/purchases';
 import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
 import type { Purchase } from './types';
@@ -16,14 +17,6 @@ type QueryString = {
     sort: 'purchase_no' | 'purchase_date' | 'total_amount' | 'paid_amount' | 'due_amount';
     direction: 'asc' | 'desc';
 };
-
-function formatCurrency(value: string | number) {
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    return num.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-}
 
 function formatDate(date: string) {
     return new Date(date).toLocaleDateString('en-US', {

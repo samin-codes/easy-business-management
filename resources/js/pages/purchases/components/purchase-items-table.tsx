@@ -2,8 +2,8 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
+import { formatCurrency } from '@/lib/utils';
 import type { Product, PurchaseItemFormData } from '../types';
-import { formatCurrency, numberValue } from './form-helpers';
 
 export type PurchaseItemPatch = Partial<
     Pick<PurchaseItemFormData, 'product_variant_id' | 'unit_of_measurement_id' | 'quantity' | 'unit_cost'>
@@ -65,7 +65,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemAdd,
                                     (conversion) => conversion.unit_of_measurement_id.toString() === purchaseItem.unit_of_measurement_id,
                                 ) ?? null;
 
-                            const lineTotal = numberValue(purchaseItem.quantity) * numberValue(purchaseItem.unit_cost);
+                            const lineTotal = (Number(purchaseItem.quantity) || 0) * (Number(purchaseItem.unit_cost) || 0);
 
                             return (
                                 <tr key={purchaseItem.uid} className="border-b transition-colors hover:bg-muted/50">

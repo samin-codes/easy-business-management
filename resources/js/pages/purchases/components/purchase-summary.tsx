@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { formatCurrency } from '@/lib/utils';
 import type { PurchaseFormData, PurchaseItemFormData } from '../types';
-import { formatCurrency, numberValue } from './form-helpers';
 
 export type PurchaseSummaryPatch = Partial<
     Pick<PurchaseFormData, 'discount_amount' | 'transport_cost' | 'labour_cost' | 'other_cost' | 'paid_amount'>
@@ -29,10 +29,11 @@ export default function PurchaseSummary({
     onChange,
 }: PurchaseSummaryProps) {
     const subtotal = items.reduce((sum, item) => {
-        return sum + numberValue(item.quantity) * numberValue(item.unit_cost);
+        return sum + (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0);
     }, 0);
-    const total = subtotal + numberValue(transportCost) + numberValue(labourCost) + numberValue(otherCost) - numberValue(discountAmount);
-    const paidAmountValue = numberValue(paidAmount);
+    const total =
+        subtotal + (Number(transportCost) || 0) + (Number(labourCost) || 0) + (Number(otherCost) || 0) - (Number(discountAmount) || 0);
+    const paidAmountValue = Number(paidAmount) || 0;
     const due = total - paidAmountValue;
     const paymentStatus = paidAmountValue <= 0 ? 'unpaid' : paidAmountValue >= total ? 'paid' : 'partial';
 

@@ -4,17 +4,10 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { formatCurrency } from '@/lib/utils';
 import { index as purchaseIndex, show as purchaseShow, edit as purchaseEdit } from '@/routes/purchases';
 import type { BreadcrumbItem } from '@/types';
 import type { Purchase } from './types';
-
-function formatCurrency(value: string | number) {
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    return num.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-}
 
 function formatDate(date: string) {
     return new Date(date).toLocaleDateString('en-US', {
