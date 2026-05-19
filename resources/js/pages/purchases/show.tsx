@@ -4,11 +4,7 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import {
-    index as purchaseIndex,
-    show as purchaseShow,
-    edit as purchaseEdit,
-} from '@/routes/purchases';
+import { index as purchaseIndex, show as purchaseShow, edit as purchaseEdit } from '@/routes/purchases';
 import type { BreadcrumbItem } from '@/types';
 import type { Purchase } from './types';
 
@@ -68,31 +64,15 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
 
                     <div className="space-y-6">
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Purchase Information
-                            </div>
+                            <div className="mb-3 text-base font-medium">Purchase Information</div>
                             <div className="space-y-3">
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Purchase Date"
-                                        value={formatDate(
-                                            purchase.purchase_date,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Outlet"
-                                        value={purchase.outlet?.name}
-                                    />
+                                    <TextEntry label="Purchase Date" value={formatDate(purchase.purchase_date)} />
+                                    <TextEntry label="Outlet" value={purchase.outlet?.name} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Supplier"
-                                        value={purchase.supplier?.name}
-                                    />
-                                    <TextEntry
-                                        label="Created By"
-                                        value={purchase.user?.name}
-                                    />
+                                    <TextEntry label="Supplier" value={purchase.supplier?.name} />
+                                    <TextEntry label="Created By" value={purchase.user?.name} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry
@@ -102,8 +82,7 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                                         color={
                                             purchase.status === 'confirmed'
                                                 ? 'success'
-                                                : purchase.status ===
-                                                    'cancelled'
+                                                : purchase.status === 'cancelled'
                                                   ? 'danger'
                                                   : 'gray'
                                         }
@@ -115,79 +94,44 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                                         color={
                                             purchase.payment_status === 'paid'
                                                 ? 'success'
-                                                : purchase.payment_status ===
-                                                    'partial'
+                                                : purchase.payment_status === 'partial'
                                                   ? 'warning'
                                                   : 'danger'
                                         }
                                     />
                                 </div>
-                                {purchase.note && (
-                                    <TextEntry
-                                        label="Note"
-                                        value={purchase.note}
-                                    />
-                                )}
+                                {purchase.note && <TextEntry label="Note" value={purchase.note} />}
                             </div>
                         </div>
 
                         <hr className="border-t" />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Purchase Items ({items.length})
-                            </div>
+                            <div className="mb-3 text-base font-medium">Purchase Items ({items.length})</div>
 
                             <div className="overflow-hidden rounded-md border">
                                 <div className="overflow-x-auto">
                                     <table className="w-full caption-bottom text-sm">
                                         <thead className="[&_tr]:border-b">
                                             <tr>
-                                                <th className="h-10 px-3 text-left align-middle font-medium">
-                                                    Product
-                                                </th>
-                                                <th className="h-10 px-3 text-left align-middle font-medium">
-                                                    Unit
-                                                </th>
-                                                <th className="h-10 px-3 text-right align-middle font-medium">
-                                                    Qty
-                                                </th>
-                                                <th className="h-10 px-3 text-right align-middle font-medium">
-                                                    Unit Cost
-                                                </th>
-                                                <th className="h-10 px-3 text-right align-middle font-medium">
-                                                    Line Total
-                                                </th>
+                                                <th className="h-10 px-3 text-left align-middle font-medium">Product / Variant</th>
+                                                <th className="h-10 px-3 text-left align-middle font-medium">Unit</th>
+                                                <th className="h-10 px-3 text-right align-middle font-medium">Qty</th>
+                                                <th className="h-10 px-3 text-right align-middle font-medium">Unit Cost</th>
+                                                <th className="h-10 px-3 text-right align-middle font-medium">Line Total</th>
                                             </tr>
                                         </thead>
                                         <tbody className="[&_tr:last-child]:border-0">
                                             {items.map((item) => (
-                                                <tr
-                                                    key={item.id}
-                                                    className="border-b"
-                                                >
-                                                    <td className="px-3 py-2 font-medium">
-                                                        {item.product?.name ??
-                                                            '-'}
-                                                    </td>
+                                                <tr key={item.id} className="border-b">
+                                                    <td className="px-3 py-2 font-medium">{item.product_variant?.purchase_label ?? '-'}</td>
                                                     <td className="px-3 py-2 text-muted-foreground">
-                                                        {item
-                                                            .unit_of_measurement
-                                                            ?.name ?? '-'}
+                                                        {item.unit_of_measurement?.name ?? '-'}
                                                     </td>
-                                                    <td className="px-3 py-2 text-right tabular-nums">
-                                                        {item.quantity}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right tabular-nums">
-                                                        {formatCurrency(
-                                                            item.unit_cost,
-                                                        )}
-                                                    </td>
+                                                    <td className="px-3 py-2 text-right tabular-nums">{item.quantity}</td>
+                                                    <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(item.unit_cost)}</td>
                                                     <td className="px-3 py-2 text-right font-medium tabular-nums">
-                                                        {formatCurrency(
-                                                            item.line_total ??
-                                                                0,
-                                                        )}
+                                                        {formatCurrency(item.line_total ?? 0)}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -200,64 +144,22 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                         <hr className="border-t" />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Summary
-                            </div>
+                            <div className="mb-3 text-base font-medium">Summary</div>
                             <div className="space-y-3">
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Subtotal"
-                                        value={formatCurrency(
-                                            purchase.subtotal,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Discount"
-                                        value={formatCurrency(
-                                            purchase.discount_amount,
-                                        )}
-                                    />
+                                    <TextEntry label="Subtotal" value={formatCurrency(purchase.subtotal)} />
+                                    <TextEntry label="Discount" value={formatCurrency(purchase.discount_amount)} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-3">
-                                    <TextEntry
-                                        label="Transport Cost"
-                                        value={formatCurrency(
-                                            purchase.transport_cost,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Labour Cost"
-                                        value={formatCurrency(
-                                            purchase.labour_cost,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Other Cost"
-                                        value={formatCurrency(
-                                            purchase.other_cost,
-                                        )}
-                                    />
+                                    <TextEntry label="Transport Cost" value={formatCurrency(purchase.transport_cost)} />
+                                    <TextEntry label="Labour Cost" value={formatCurrency(purchase.labour_cost)} />
+                                    <TextEntry label="Other Cost" value={formatCurrency(purchase.other_cost)} />
                                 </div>
                                 <hr />
                                 <div className="grid gap-3 md:grid-cols-3">
-                                    <TextEntry
-                                        label="Total Amount"
-                                        value={formatCurrency(
-                                            purchase.total_amount,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Paid Amount"
-                                        value={formatCurrency(
-                                            purchase.paid_amount,
-                                        )}
-                                    />
-                                    <TextEntry
-                                        label="Due Amount"
-                                        value={formatCurrency(
-                                            purchase.due_amount,
-                                        )}
-                                    />
+                                    <TextEntry label="Total Amount" value={formatCurrency(purchase.total_amount)} />
+                                    <TextEntry label="Paid Amount" value={formatCurrency(purchase.paid_amount)} />
+                                    <TextEntry label="Due Amount" value={formatCurrency(purchase.due_amount)} />
                                 </div>
                             </div>
                         </div>
@@ -299,9 +201,7 @@ function TextEntry({
 
     return (
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-            <div className="text-sm text-muted-foreground sm:w-40 sm:shrink-0">
-                {label}
-            </div>
+            <div className="text-sm text-muted-foreground sm:w-40 sm:shrink-0">{label}</div>
             <div className="text-sm font-medium">{content}</div>
         </div>
     );

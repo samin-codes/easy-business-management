@@ -18,7 +18,7 @@ class PurchaseItem extends Model
      */
     protected $fillable = [
         'purchase_id',
-        'product_id',
+        'product_variant_id',
         'unit_of_measurement_id',
         'product_unit_conversion_id',
         'quantity',
@@ -52,9 +52,9 @@ class PurchaseItem extends Model
         return $this->belongsTo(Purchase::class);
     }
 
-    public function product(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function unitOfMeasurement(): BelongsTo

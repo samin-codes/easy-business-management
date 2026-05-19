@@ -4,14 +4,7 @@ import { useState } from 'react';
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import {
-    Combobox,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxList,
-} from '@/components/ui/combobox';
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -42,11 +35,9 @@ export default function ProductForm({
         value: unit.id.toString(),
     }));
 
-    const selectedCategory =
-        categoryOptions.find((category) => category.value === product?.product_category_id?.toString()) ?? null;
+    const selectedCategory = categoryOptions.find((category) => category.value === product?.product_category_id?.toString()) ?? null;
 
-    const selectedUnit =
-        unitOptions.find((unit) => unit.value === product?.base_unit_of_measurement_id?.toString()) ?? null;
+    const selectedUnit = unitOptions.find((unit) => unit.value === product?.base_unit_of_measurement_id?.toString()) ?? null;
 
     return (
         <Form

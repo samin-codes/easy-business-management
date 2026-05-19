@@ -22,51 +22,69 @@ export type Supplier = {
     name: string;
 };
 
+export type Brand = {
+    id: number;
+    name: string;
+};
+
 export type ProductUnitConversion = {
     id: number;
     product_id: number;
     unit_of_measurement_id: number;
     conversion_factor_to_base: string;
-    is_base_unit?: boolean;
-    is_default_purchase_unit?: boolean;
-    is_default_sale_unit?: boolean;
-    status?: string;
+    is_base_unit: boolean;
+    is_default_purchase_unit: boolean;
+    is_default_sale_unit: boolean;
+    status: string;
     status_label: string;
-    unit_of_measurement?: UnitOfMeasurement;
+    unit_of_measurement: UnitOfMeasurement;
+};
+
+export type ProductVariant = {
+    id: number;
+    product_id: number;
+    variant_name: string;
+    sku: string;
+    is_placeholder_variant: boolean;
+    status: string;
+    purchase_label: string;
+    brand?: Brand | null;
+    product?: Pick<Product, 'id' | 'name'>;
 };
 
 export interface Product {
     id: number;
     name: string;
     base_unit_of_measurement_id: number;
-    default_purchase_unit_conversion?: ProductUnitConversion | null;
-    active_unit_conversions?: ProductUnitConversion[];
+    default_purchase_unit_conversion: ProductUnitConversion | null;
+    active_unit_conversions: ProductUnitConversion[];
+    product_variants: ProductVariant[];
 }
 
 export type PurchaseItem = {
     uid?: string;
-    id?: number;
-    purchase_id?: number;
-    product_id: number | string;
-    unit_of_measurement_id: number | string;
-    product_unit_conversion_id?: number;
+    id: number;
+    purchase_id: number;
+    product_variant_id: number;
+    unit_of_measurement_id: number;
+    product_unit_conversion_id: number;
     quantity: string;
-    base_quantity?: string;
+    base_quantity: string;
     unit_cost: string;
-    base_unit_cost?: string;
-    discount_amount?: string;
-    line_total?: string;
+    base_unit_cost: string;
+    discount_amount: string;
+    line_total: string;
     note?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
-    product?: Pick<Product, 'id' | 'name'>;
+    product_variant?: ProductVariant;
     unit_of_measurement?: UnitOfMeasurement;
     product_unit_conversion?: ProductUnitConversion;
 };
 
 export type PurchaseItemFormData = {
     uid: string;
-    product_id: string;
+    product_variant_id: string;
     unit_of_measurement_id: string;
     quantity: string;
     unit_cost: string;

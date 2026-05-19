@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { edit, show } from '@/routes/business';
 import type { BreadcrumbItem, Option } from '@/types';
-import BusinessForm from './form';
+import BusinessForm from './components/form';
 import type { Business } from './types';
 
 export default function BusinessesEdit({

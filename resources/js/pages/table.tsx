@@ -81,31 +81,18 @@ export default function DemoTablePage() {
                                 <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
                                     <div className="relative w-full sm:max-w-sm">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            value="INV00"
-                                            readOnly
-                                            className="pl-9"
-                                            aria-label="Filter invoices"
-                                        />
+                                        <Input value="INV00" readOnly className="pl-9" aria-label="Filter invoices" />
                                     </div>
 
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8"
-                                        >
+                                        <Button variant="outline" size="sm" className="h-8">
                                             Status
                                             <ChevronDown />
                                         </Button>
                                         <span className="inline-flex h-8 items-center rounded-md border bg-muted px-2.5 text-xs font-medium text-foreground">
                                             Paid
                                         </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 px-2 text-muted-foreground"
-                                        >
+                                        <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground">
                                             Reset
                                             <CircleX />
                                         </Button>
@@ -113,19 +100,11 @@ export default function DemoTablePage() {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8"
-                                    >
+                                    <Button variant="outline" size="sm" className="h-8">
                                         <SlidersHorizontal />
                                         View
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8"
-                                    >
+                                    <Button variant="outline" size="sm" className="h-8">
                                         <Columns3 />
                                         Columns
                                     </Button>
@@ -138,38 +117,23 @@ export default function DemoTablePage() {
                                         <thead className="[&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-transparent">
                                                 <th className="h-10 w-12 px-4 text-left align-middle font-medium">
-                                                    <Checkbox
-                                                        checked
-                                                        aria-label="Select all"
-                                                    />
+                                                    <Checkbox checked aria-label="Select all" />
                                                 </th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                    >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium">
                                                         Payment Status
                                                         <ArrowUpDown />
                                                     </Button>
                                                 </th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                    >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium">
                                                         Email
                                                         <ArrowUpDown />
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Amount
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Amount</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <span className="sr-only">
-                                                        Actions
-                                                    </span>
+                                                    <span className="sr-only">Actions</span>
                                                 </th>
                                             </tr>
                                         </thead>
@@ -178,41 +142,22 @@ export default function DemoTablePage() {
                                             {rows.map((row) => (
                                                 <tr
                                                     key={row.id}
-                                                    data-state={
-                                                        row.checked
-                                                            ? 'selected'
-                                                            : undefined
-                                                    }
+                                                    data-state={row.checked ? 'selected' : undefined}
                                                     className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted/50"
                                                 >
                                                     <td className="p-4 align-middle">
-                                                        <Checkbox
-                                                            checked={
-                                                                row.checked
-                                                            }
-                                                            aria-label={`Select ${row.id}`}
-                                                        />
+                                                        <Checkbox checked={row.checked} aria-label={`Select ${row.id}`} />
                                                     </td>
-                                                    <td className="px-4 py-3 align-middle font-medium">
-                                                        {row.paymentStatus}
-                                                    </td>
+                                                    <td className="px-4 py-3 align-middle font-medium">{row.paymentStatus}</td>
                                                     <td className="px-4 py-3 align-middle lowercase">
                                                         {row.id.toLowerCase()}
                                                         @example.com
                                                     </td>
-                                                    <td className="px-4 py-3 align-middle">
-                                                        {row.totalAmount}
-                                                    </td>
+                                                    <td className="px-4 py-3 align-middle">{row.totalAmount}</td>
                                                     <td className="px-4 py-3 text-right align-middle">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="size-8"
-                                                        >
+                                                        <Button variant="ghost" size="icon" className="size-8">
                                                             <MoreHorizontal />
-                                                            <span className="sr-only">
-                                                                Open menu
-                                                            </span>
+                                                            <span className="sr-only">Open menu</span>
                                                         </Button>
                                                     </td>
                                                 </tr>
@@ -223,69 +168,35 @@ export default function DemoTablePage() {
                             </div>
 
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                                <div className="text-sm text-muted-foreground">
-                                    2 of 5 row(s) selected.
-                                </div>
+                                <div className="text-sm text-muted-foreground">2 of 5 row(s) selected.</div>
 
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium">
-                                            Rows per page
-                                        </p>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8 w-[70px] justify-between"
-                                        >
+                                        <p className="text-sm font-medium">Rows per page</p>
+                                        <Button variant="outline" size="sm" className="h-8 w-[70px] justify-between">
                                             10
                                             <ChevronDown />
                                         </Button>
                                     </div>
 
-                                    <div className="text-sm font-medium">
-                                        Page 1 of 10
-                                    </div>
+                                    <div className="text-sm font-medium">Page 1 of 10</div>
 
                                     <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="hidden size-8 lg:inline-flex"
-                                        >
+                                        <Button variant="outline" size="icon" className="hidden size-8 lg:inline-flex">
                                             <ChevronsLeft />
-                                            <span className="sr-only">
-                                                First page
-                                            </span>
+                                            <span className="sr-only">First page</span>
                                         </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="size-8"
-                                        >
+                                        <Button variant="outline" size="icon" className="size-8">
                                             <ChevronLeft />
-                                            <span className="sr-only">
-                                                Previous page
-                                            </span>
+                                            <span className="sr-only">Previous page</span>
                                         </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="size-8"
-                                        >
+                                        <Button variant="outline" size="icon" className="size-8">
                                             <ChevronRight />
-                                            <span className="sr-only">
-                                                Next page
-                                            </span>
+                                            <span className="sr-only">Next page</span>
                                         </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="hidden size-8 lg:inline-flex"
-                                        >
+                                        <Button variant="outline" size="icon" className="hidden size-8 lg:inline-flex">
                                             <ChevronsRight />
-                                            <span className="sr-only">
-                                                Last page
-                                            </span>
+                                            <span className="sr-only">Last page</span>
                                         </Button>
                                     </div>
                                 </div>
@@ -297,23 +208,14 @@ export default function DemoTablePage() {
                                 <table className="w-full caption-bottom text-sm">
                                     <thead className="[&_tr]:border-b">
                                         <tr className="border-b">
-                                            <th className="h-10 px-4 text-left align-middle font-medium">
-                                                Payment Status
-                                            </th>
-                                            <th className="h-10 px-4 text-left align-middle font-medium">
-                                                Email
-                                            </th>
-                                            <th className="h-10 px-4 text-left align-middle font-medium">
-                                                Amount
-                                            </th>
+                                            <th className="h-10 px-4 text-left align-middle font-medium">Payment Status</th>
+                                            <th className="h-10 px-4 text-left align-middle font-medium">Email</th>
+                                            <th className="h-10 px-4 text-left align-middle font-medium">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td
-                                                colSpan={3}
-                                                className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
-                                            >
+                                            <td colSpan={3} className="h-24 px-4 text-center align-middle text-sm text-muted-foreground">
                                                 No results.
                                             </td>
                                         </tr>

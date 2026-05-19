@@ -5,15 +5,8 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import {
-    index as partyIndex,
-    edit as partyEdit,
-    show as partyShow,
-} from '@/routes/parties';
-import {
-    create as contactPersonCreate,
-    edit as contactPersonEdit,
-} from '@/routes/parties/party-contact-persons';
+import { index as partyIndex, edit as partyEdit, show as partyShow } from '@/routes/parties';
+import { create as contactPersonCreate, edit as contactPersonEdit } from '@/routes/parties/party-contact-persons';
 import type { BreadcrumbItem, Party, PartyContactPerson } from '@/types';
 
 type TextEntryColor = 'gray' | 'blue' | 'success' | 'danger' | 'warning';
@@ -29,8 +22,7 @@ export default function PartiesShow({ party }: { party: Party }) {
         flash: { status?: string };
     }>().props;
 
-    const openingBalanceTypeColor =
-        openingBalanceTypeColors[party.opening_balance_type] ?? 'gray';
+    const openingBalanceTypeColor = openingBalanceTypeColors[party.opening_balance_type] ?? 'gray';
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Parties', href: partyIndex().url },
@@ -66,33 +58,18 @@ export default function PartiesShow({ party }: { party: Party }) {
 
                     <div className="space-y-6">
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Party details
-                            </div>
+                            <div className="mb-3 text-base font-medium">Party details</div>
                             <div className="space-y-3">
-                                <TextEntry
-                                    label="Party name"
-                                    value={party.name}
-                                />
+                                <TextEntry label="Party name" value={party.name} />
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Trade name"
-                                        value={party.trade_name}
-                                    />
-                                    <TextEntry
-                                        label="Party type"
-                                        value={party.party_type_label}
-                                    />
+                                    <TextEntry label="Trade name" value={party.trade_name} />
+                                    <TextEntry label="Party type" value={party.party_type_label} />
                                 </div>
                                 <TextEntry
                                     label="Status"
                                     value={party.status_label}
                                     badge
-                                    color={
-                                        party.status === 'active'
-                                            ? 'success'
-                                            : 'gray'
-                                    }
+                                    color={party.status === 'active' ? 'success' : 'gray'}
                                 />
                             </div>
                         </div>
@@ -100,14 +77,9 @@ export default function PartiesShow({ party }: { party: Party }) {
                         <hr className="border-t" />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Contact
-                            </div>
+                            <div className="mb-3 text-base font-medium">Contact</div>
                             <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry
-                                    label="Mobile"
-                                    value={party.mobile}
-                                />
+                                <TextEntry label="Mobile" value={party.mobile} />
                                 <TextEntry label="Email" value={party.email} />
                             </div>
                         </div>
@@ -115,9 +87,7 @@ export default function PartiesShow({ party }: { party: Party }) {
                         <hr className="border-t" />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Financials
-                            </div>
+                            <div className="mb-3 text-base font-medium">Financials</div>
                             <div className="space-y-3">
                                 <TextEntry
                                     label="Opening balance type"
@@ -126,17 +96,10 @@ export default function PartiesShow({ party }: { party: Party }) {
                                     color={openingBalanceTypeColor}
                                 />
                                 {party.opening_balance_type !== 'none' && (
-                                    <TextEntry
-                                        label="Opening balance"
-                                        value={party.opening_balance}
-                                    />
+                                    <TextEntry label="Opening balance" value={party.opening_balance} />
                                 )}
-                                {(party.party_type === 'customer' ||
-                                    party.party_type === 'both') && (
-                                    <TextEntry
-                                        label="Credit limit"
-                                        value={party.credit_limit}
-                                    />
+                                {(party.party_type === 'customer' || party.party_type === 'both') && (
+                                    <TextEntry label="Credit limit" value={party.credit_limit} />
                                 )}
                             </div>
                         </div>
@@ -144,33 +107,16 @@ export default function PartiesShow({ party }: { party: Party }) {
                         <hr className="border-t" />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Address
-                            </div>
+                            <div className="mb-3 text-base font-medium">Address</div>
                             <div className="space-y-3">
-                                <TextEntry
-                                    label="Address line"
-                                    value={party.address_line}
-                                />
+                                <TextEntry label="Address line" value={party.address_line} />
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="District"
-                                        value={party.district}
-                                    />
-                                    <TextEntry
-                                        label="Postal code"
-                                        value={party.postal_code}
-                                    />
+                                    <TextEntry label="District" value={party.district} />
+                                    <TextEntry label="Postal code" value={party.postal_code} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Area type"
-                                        value={party.area_type_label}
-                                    />
-                                    <TextEntry
-                                        label="Area name"
-                                        value={party.area_name}
-                                    />
+                                    <TextEntry label="Area type" value={party.area_type_label} />
+                                    <TextEntry label="Area name" value={party.area_name} />
                                 </div>
                             </div>
                         </div>
@@ -179,13 +125,9 @@ export default function PartiesShow({ party }: { party: Party }) {
 
                         <div>
                             <div className="mb-3 flex items-center justify-between">
-                                <div className="text-base font-medium">
-                                    Contact Persons ({contactPersons.length})
-                                </div>
+                                <div className="text-base font-medium">Contact Persons ({contactPersons.length})</div>
                                 <Button asChild size="sm">
-                                    <Link
-                                        href={contactPersonCreate(party.id).url}
-                                    >
+                                    <Link href={contactPersonCreate(party.id).url}>
                                         <Plus className="size-4" />
                                         New Contact Person
                                     </Link>
@@ -193,17 +135,11 @@ export default function PartiesShow({ party }: { party: Party }) {
                             </div>
 
                             {contactPersons.length === 0 ? (
-                                <div className="py-4 text-sm text-muted-foreground">
-                                    No contact persons yet.
-                                </div>
+                                <div className="py-4 text-sm text-muted-foreground">No contact persons yet.</div>
                             ) : (
                                 <div className="divide-y">
                                     {contactPersons.map((contactPerson) => (
-                                        <ContactPersonListItem
-                                            key={contactPerson.id}
-                                            party={party}
-                                            contactPerson={contactPerson}
-                                        />
+                                        <ContactPersonListItem key={contactPerson.id} party={party} contactPerson={contactPerson} />
                                     ))}
                                 </div>
                             )}
@@ -215,28 +151,15 @@ export default function PartiesShow({ party }: { party: Party }) {
     );
 }
 
-function ContactPersonListItem({
-    party,
-    contactPerson,
-}: {
-    party: Party;
-    contactPerson: PartyContactPerson;
-}) {
+function ContactPersonListItem({ party, contactPerson }: { party: Party; contactPerson: PartyContactPerson }) {
     return (
         <div className="space-y-2 py-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="font-medium">{contactPerson.name}</span>
-                    {contactPerson.designation && (
-                        <span className="text-sm text-muted-foreground">
-                            ({contactPerson.designation})
-                        </span>
-                    )}
+                    {contactPerson.designation && <span className="text-sm text-muted-foreground">({contactPerson.designation})</span>}
                     {contactPerson.is_primary && (
-                        <Badge
-                            variant="outline"
-                            className="border-transparent bg-amber-100 text-amber-800"
-                        >
+                        <Badge variant="outline" className="border-transparent bg-amber-100 text-amber-800">
                             Primary
                         </Badge>
                     )}
@@ -254,19 +177,11 @@ function ContactPersonListItem({
             </div>
 
             <div className="flex gap-4 text-sm text-muted-foreground">
-                {contactPerson.mobile && (
-                    <span>Mobile: {contactPerson.mobile}</span>
-                )}
-                {contactPerson.email && (
-                    <span>Email: {contactPerson.email}</span>
-                )}
+                {contactPerson.mobile && <span>Mobile: {contactPerson.mobile}</span>}
+                {contactPerson.email && <span>Email: {contactPerson.email}</span>}
             </div>
 
-            {contactPerson.note && (
-                <div className="text-sm text-muted-foreground">
-                    Note: {contactPerson.note}
-                </div>
-            )}
+            {contactPerson.note && <div className="text-sm text-muted-foreground">Note: {contactPerson.note}</div>}
 
             <div className="flex gap-2">
                 <Button size="sm" variant="outline" asChild>
@@ -289,11 +204,7 @@ function ContactPersonListItem({
                         party_contact_person: contactPerson.id,
                     })}
                     options={{ preserveScroll: true }}
-                    onBefore={() =>
-                        window.confirm(
-                            `Delete the contact person "${contactPerson.name}" from this party?`,
-                        )
-                    }
+                    onBefore={() => window.confirm(`Delete the contact person "${contactPerson.name}" from this party?`)}
                 >
                     {({ processing }) => (
                         <Button
@@ -342,9 +253,7 @@ function TextEntry({
 
     return (
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-            <div className="text-sm text-muted-foreground sm:w-40 sm:shrink-0">
-                {label}
-            </div>
+            <div className="text-sm text-muted-foreground sm:w-40 sm:shrink-0">{label}</div>
             <div className="text-sm font-medium">{content}</div>
         </div>
     );

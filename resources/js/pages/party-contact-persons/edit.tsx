@@ -3,13 +3,8 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { show as partyShow } from '@/routes/parties';
 import { edit } from '@/routes/parties/party-contact-persons';
-import type {
-    BreadcrumbItem,
-    Option,
-    Party,
-    PartyContactPerson,
-} from '@/types';
-import PartyContactPersonForm from './form';
+import type { BreadcrumbItem, Option, Party, PartyContactPerson } from '@/types';
+import PartyContactPersonForm from './components/form';
 
 export default function PartyContactPersonsEdit({
     party,

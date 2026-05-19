@@ -6,16 +6,11 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Option } from '@/types';
-import type { Business } from './types';
+import type { Business } from '../types';
+import { Separator } from '@/components/ui/separator';
 
 export default function BusinessForm({
     business,
@@ -35,26 +30,15 @@ export default function BusinessForm({
     const [areaType, setAreaType] = useState(business.area_type ?? '');
 
     return (
-        <Form
-            action={BusinessController.update()}
-            options={{ preserveScroll: true }}
-            disableWhileProcessing
-            className="space-y-6"
-        >
+        <Form action={BusinessController.update()} options={{ preserveScroll: true }} disableWhileProcessing className="space-y-6">
             {({ errors, processing }) => (
                 <div className="space-y-6">
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Business details
-                        </div>
+                        <div className="mb-3 text-base font-medium">Business details</div>
                         <div className="flex flex-col gap-7">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="name"
-                                    className="text-sm font-medium"
-                                >
-                                    Business name{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="name" className="text-sm font-medium">
+                                    Business name <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     id="name"
@@ -68,105 +52,54 @@ export default function BusinessForm({
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="trade_name"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="trade_name" className="text-sm font-medium">
                                         Trade name
                                     </label>
                                     <Input
                                         id="trade_name"
                                         name="trade_name"
                                         defaultValue={business.trade_name ?? ''}
-                                        aria-invalid={Boolean(
-                                            errors.trade_name,
-                                        )}
+                                        aria-invalid={Boolean(errors.trade_name)}
                                         placeholder="Rahman Mart"
                                     />
                                     <InputError message={errors.trade_name} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="business_type"
-                                        className="text-sm font-medium"
-                                    >
-                                        Business type{' '}
-                                        <span className="text-red-500">*</span>
+                                    <label htmlFor="business_type" className="text-sm font-medium">
+                                        Business type <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="hidden"
-                                        name="business_type"
-                                        value={businessType}
-                                        readOnly
-                                    />
-                                    <Select
-                                        value={businessType}
-                                        onValueChange={setBusinessType}
-                                    >
-                                        <SelectTrigger
-                                            id="business_type"
-                                            className="w-full"
-                                            aria-invalid={Boolean(
-                                                errors.business_type,
-                                            )}
-                                        >
+                                    <input type="hidden" name="business_type" value={businessType} readOnly />
+                                    <Select value={businessType} onValueChange={setBusinessType}>
+                                        <SelectTrigger id="business_type" className="w-full" aria-invalid={Boolean(errors.business_type)}>
                                             <SelectValue placeholder="Select business type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {businessTypeOptions.map(
-                                                (option) => (
-                                                    <SelectItem
-                                                        key={option.value}
-                                                        value={option.value}
-                                                    >
-                                                        {option.label}
-                                                    </SelectItem>
-                                                ),
-                                            )}
+                                            {businessTypeOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
-                                    <InputError
-                                        message={errors.business_type}
-                                    />
+                                    <InputError message={errors.business_type} />
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="status"
-                                    className="text-sm font-medium"
-                                >
-                                    Status{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="status" className="text-sm font-medium">
+                                    Status <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="hidden"
-                                    name="status"
-                                    value={status}
-                                    readOnly
-                                />
-                                <RadioGroup
-                                    value={status}
-                                    onValueChange={setStatus}
-                                    className="flex flex-row gap-6"
-                                >
+                                <input type="hidden" name="status" value={status} readOnly />
+                                <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                     {statusOptions.map((option) => (
-                                        <div
-                                            key={option.value}
-                                            className="flex items-center space-x-2"
-                                        >
+                                        <div key={option.value} className="flex items-center space-x-2">
                                             <RadioGroupItem
                                                 value={option.value}
                                                 id={`status_${option.value}`}
-                                                aria-invalid={Boolean(
-                                                    errors.status,
-                                                )}
+                                                aria-invalid={Boolean(errors.status)}
                                             />
-                                            <label
-                                                htmlFor={`status_${option.value}`}
-                                                className="text-sm font-medium"
-                                            >
+                                            <label htmlFor={`status_${option.value}`} className="text-sm font-medium">
                                                 {option.label}
                                             </label>
                                         </div>
@@ -177,21 +110,15 @@ export default function BusinessForm({
                         </div>
                     </div>
 
-                    <hr className="my-2 border-t" />
+                    <Separator />
 
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Contact
-                        </div>
+                        <div className="mb-3 text-base font-medium">Contact</div>
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="mobile"
-                                    className="text-sm font-medium"
-                                >
-                                    Mobile{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="mobile" className="text-sm font-medium">
+                                    Mobile <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     id="mobile"
@@ -204,10 +131,7 @@ export default function BusinessForm({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="email"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="email" className="text-sm font-medium">
                                     Email
                                 </label>
                                 <Input
@@ -223,40 +147,28 @@ export default function BusinessForm({
                         </div>
                     </div>
 
-                    <hr className="my-2 border-t" />
+                    <Separator />
 
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Registration
-                        </div>
+                        <div className="mb-3 text-base font-medium">Registration</div>
 
                         <div className="flex flex-col gap-7">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="trade_license_no"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="trade_license_no" className="text-sm font-medium">
                                     Trade license no.
                                 </label>
                                 <Input
                                     id="trade_license_no"
                                     name="trade_license_no"
-                                    defaultValue={
-                                        business.trade_license_no ?? ''
-                                    }
-                                    aria-invalid={Boolean(
-                                        errors.trade_license_no,
-                                    )}
+                                    defaultValue={business.trade_license_no ?? ''}
+                                    aria-invalid={Boolean(errors.trade_license_no)}
                                 />
                                 <InputError message={errors.trade_license_no} />
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="tin_no"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="tin_no" className="text-sm font-medium">
                                         TIN no.
                                     </label>
                                     <Input
@@ -269,10 +181,7 @@ export default function BusinessForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="bin_no"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="bin_no" className="text-sm font-medium">
                                         BIN no.
                                     </label>
                                     <Input
@@ -287,19 +196,14 @@ export default function BusinessForm({
                         </div>
                     </div>
 
-                    <hr className="my-2 border-t" />
+                    <Separator />
 
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Address
-                        </div>
+                        <div className="mb-3 text-base font-medium">Address</div>
 
                         <div className="flex flex-col gap-7">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="address_line"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="address_line" className="text-sm font-medium">
                                     Address line
                                 </label>
                                 <Textarea
@@ -315,10 +219,7 @@ export default function BusinessForm({
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="district"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="district" className="text-sm font-medium">
                                         District
                                     </label>
                                     <Input
@@ -332,19 +233,14 @@ export default function BusinessForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="postal_code"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="postal_code" className="text-sm font-medium">
                                         Postal code
                                     </label>
                                     <Input
                                         id="postal_code"
                                         name="postal_code"
                                         defaultValue={business.postal_code ?? ''}
-                                        aria-invalid={Boolean(
-                                            errors.postal_code,
-                                        )}
+                                        aria-invalid={Boolean(errors.postal_code)}
                                         placeholder="1212"
                                     />
                                     <InputError message={errors.postal_code} />
@@ -354,10 +250,7 @@ export default function BusinessForm({
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
                                     <div className="relative flex items-center">
-                                        <label
-                                            htmlFor="area_type"
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor="area_type" className="text-sm font-medium">
                                             Area type
                                         </label>
                                         {areaType && (
@@ -372,33 +265,16 @@ export default function BusinessForm({
                                             </Button>
                                         )}
                                     </div>
-                                    <input
-                                        type="hidden"
-                                        name="area_type"
-                                        value={areaType}
-                                        readOnly
-                                    />
-                                    <RadioGroup
-                                        value={areaType}
-                                        onValueChange={setAreaType}
-                                        className="flex flex-row gap-6"
-                                    >
+                                    <input type="hidden" name="area_type" value={areaType} readOnly />
+                                    <RadioGroup value={areaType} onValueChange={setAreaType} className="flex flex-row gap-6">
                                         {areaTypeOptions.map((option) => (
-                                            <div
-                                                key={option.value}
-                                                className="flex items-center space-x-2"
-                                            >
+                                            <div key={option.value} className="flex items-center space-x-2">
                                                 <RadioGroupItem
                                                     value={option.value}
                                                     id={`area_type_${option.value}`}
-                                                    aria-invalid={Boolean(
-                                                        errors.area_type,
-                                                    )}
+                                                    aria-invalid={Boolean(errors.area_type)}
                                                 />
-                                                <label
-                                                    htmlFor={`area_type_${option.value}`}
-                                                    className="text-sm font-medium"
-                                                >
+                                                <label htmlFor={`area_type_${option.value}`} className="text-sm font-medium">
                                                     {option.label}
                                                 </label>
                                             </div>
@@ -408,28 +284,16 @@ export default function BusinessForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="area_name"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="area_name" className="text-sm font-medium">
                                         Area name
-                                        {areaType && (
-                                            <span className="text-red-500">
-                                                {' '}
-                                                *
-                                            </span>
-                                        )}
+                                        {areaType && <span className="text-red-500"> *</span>}
                                     </label>
                                     <Input
                                         id="area_name"
                                         name="area_name"
                                         defaultValue={business.area_name ?? ''}
                                         aria-invalid={Boolean(errors.area_name)}
-                                        placeholder={
-                                            areaType === 'thana'
-                                                ? 'Motijheel'
-                                                : 'Savar'
-                                        }
+                                        placeholder={areaType === 'thana' ? 'Motijheel' : 'Savar'}
                                     />
                                     <InputError message={errors.area_name} />
                                 </div>

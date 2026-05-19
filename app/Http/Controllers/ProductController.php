@@ -154,7 +154,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product): RedirectResponse
     {
-        if ($product->purchaseItems()->exists() || $product->stocks()->exists()) {
+        if ($product->purchaseItems()->exists() || $product->stockLedgers()->exists() || $product->stocks()->exists()) {
             throw ValidationException::withMessages([
                 'product' => 'Delete the related purchase items or stocks before deleting this product.',
             ]);

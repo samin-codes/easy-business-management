@@ -18,7 +18,7 @@ class ProductStock extends Model
     protected $fillable = [
         'business_id',
         'outlet_id',
-        'product_id',
+        'product_variant_id',
         'quantity',
         'average_cost',
         'stock_value',
@@ -50,8 +50,8 @@ class ProductStock extends Model
         return $this->belongsTo(Outlet::class);
     }
 
-    public function product(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 }

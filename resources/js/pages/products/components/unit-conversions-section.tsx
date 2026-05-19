@@ -27,8 +27,7 @@ export default function UnitConversionsSection({
         const usedUnitIds = new Set(unitConversions.map((unitConversion) => unitConversion.unit_of_measurement_id));
 
         return unitOfMeasurements.filter(
-            (unitOfMeasurement) =>
-                unitOfMeasurement.id === currentUnitOfMeasurementId || !usedUnitIds.has(unitOfMeasurement.id),
+            (unitOfMeasurement) => unitOfMeasurement.id === currentUnitOfMeasurementId || !usedUnitIds.has(unitOfMeasurement.id),
         );
     };
 
@@ -110,9 +109,7 @@ export default function UnitConversionsSection({
                                     }
                                 >
                                     <td className="px-3 py-3 align-top">
-                                        <div className="flex min-h-9 items-center">
-                                            {unitConversion.unit_of_measurement.name}
-                                        </div>
+                                        <div className="flex min-h-9 items-center">{unitConversion.unit_of_measurement.name}</div>
                                     </td>
                                     <td className="px-3 py-3 align-top">
                                         <div className="flex min-h-9 items-center">
@@ -150,12 +147,7 @@ export default function UnitConversionsSection({
                                     </td>
                                     <td className="px-3 py-3 text-right align-top">
                                         <div className="flex min-h-9 items-center justify-end gap-1">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                onClick={() => handleEdit(unitConversion)}
-                                            >
+                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => handleEdit(unitConversion)}>
                                                 <SquarePen className="size-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>

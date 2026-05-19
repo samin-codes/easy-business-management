@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
@@ -38,6 +40,7 @@ class ProductVariant extends Model
      * @var list<string>
      */
     protected $appends = [
+        'purchase_label',
         'status_label',
     ];
 
@@ -65,6 +68,41 @@ class ProductVariant extends Model
         return Attribute::get(fn (): string => $this->status->label());
     }
 
+    protected function purchaseLabel(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $productName = $this->relationLoaded('product')
+                ? $this->product?->name
+                : $this->product()->value('name');
+            $brandName = $this->relationLoaded('brand')
+                ? $this->brand?->name
+                : ($this->brand_id ? $this->brand()->value('name') : null);
+
+            $variantName = $brandName
+                ? Str::of($this->variant_name)
+                    ->replaceStart("{$brandName} / ", '')
+                    ->replaceStart($brandName, '')
+                    ->trim()
+                    ->toString()
+                : $this->variant_name;
+
+            $labelParts = [
+                $productName,
+                $brandName,
+            ];
+
+            if (! $this->is_placeholder_variant) {
+                $labelParts[] = $variantName;
+            }
+
+            $label = collect($labelParts)
+                ->filter(fn (?string $labelPart): bool => filled($labelPart))
+                ->implode(' / ') ?: $this->variant_name;
+
+            return $label;
+        });
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -83,5 +121,20 @@ class ProductVariant extends Model
     public function sizeUnit(): BelongsTo
     {
         return $this->belongsTo(ProductSizeUnit::class, 'size_unit_id');
+    }
+
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    public function stockLedgers(): HasMany
+    {
+        return $this->hasMany(ProductStockLedger::class);
+    }
+
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class);
     }
 }

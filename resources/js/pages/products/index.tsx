@@ -18,13 +18,7 @@ type QueryString = {
     direction: 'asc' | 'desc';
 };
 
-export default function ProductsIndex({
-    products,
-    queryString,
-}: {
-    products: LengthAwarePagination<Product>;
-    queryString: QueryString;
-}) {
+export default function ProductsIndex({ products, queryString }: { products: LengthAwarePagination<Product>; queryString: QueryString }) {
     const searchTimeout = useRef<number | undefined>(undefined);
     const reloadProps = ['products', 'queryString'];
 
@@ -116,12 +110,7 @@ export default function ProductsIndex({
                                         <thead className="[&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-transparent">
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
                                                         <Link
                                                             href={index({
                                                                 query: {
@@ -138,16 +127,14 @@ export default function ProductsIndex({
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'asc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'asc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
                                                                 />
                                                                 <ChevronDown
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'desc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'desc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
@@ -156,16 +143,10 @@ export default function ProductsIndex({
                                                         </Link>
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Category
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Business
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Category</th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Business</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Base Unit
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Base Unit</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
                                                     <span className="sr-only">Actions</span>
                                                 </th>
@@ -174,19 +155,12 @@ export default function ProductsIndex({
                                         <tbody className="[&_tr:last-child]:border-0">
                                             {products.data.length > 0 ? (
                                                 products.data.map((product) => (
-                                                    <tr
-                                                        key={product.id}
-                                                        className="border-b transition-colors hover:bg-muted/50"
-                                                    >
+                                                    <tr key={product.id} className="border-b transition-colors hover:bg-muted/50">
                                                         <td className="px-4 py-3 align-middle">
                                                             <div className="font-medium">{product.name}</div>
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {product.category.name}
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {product.business.name}
-                                                        </td>
+                                                        <td className="px-4 py-3 align-middle">{product.category.name}</td>
+                                                        <td className="px-4 py-3 align-middle">{product.business.name}</td>
                                                         <td className="px-4 py-3 align-middle">
                                                             <Badge
                                                                 variant="outline"

@@ -5,23 +5,8 @@ import ProductVariantController from '@/actions/App/Http/Controllers/ProductVari
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Combobox,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxList,
-} from '@/components/ui/combobox';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -49,12 +34,8 @@ export default function ProductVariantDialog({
     const isEditMode = Boolean(productVariant);
 
     const [selectedBrand, setSelectedBrand] = useState<Brand | null>(productVariant?.brand ?? null);
-    const [selectedGradeUnit, setSelectedGradeUnit] = useState<ProductGradeUnit | null>(
-        productVariant?.grade_unit ?? null,
-    );
-    const [selectedSizeUnit, setSelectedSizeUnit] = useState<ProductSizeUnit | null>(
-        productVariant?.size_unit ?? null,
-    );
+    const [selectedGradeUnit, setSelectedGradeUnit] = useState<ProductGradeUnit | null>(productVariant?.grade_unit ?? null);
+    const [selectedSizeUnit, setSelectedSizeUnit] = useState<ProductSizeUnit | null>(productVariant?.size_unit ?? null);
 
     const [isPlaceholderVariant, setIsPlaceholderVariant] = useState(productVariant?.is_placeholder_variant ?? false);
     const [status, setStatus] = useState(productVariant?.status ?? 'active');
@@ -128,13 +109,11 @@ export default function ProductVariantDialog({
                                 </div>
 
                                 <div className="flex flex-col gap-1 md:col-span-2">
-                                    <input
-                                        type="hidden"
-                                        name="is_placeholder_variant"
-                                        value={isPlaceholderVariant ? '1' : '0'}
-                                        readOnly
-                                    />
-                                    <label htmlFor="is_placeholder_variant" className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                                    <input type="hidden" name="is_placeholder_variant" value={isPlaceholderVariant ? '1' : '0'} readOnly />
+                                    <label
+                                        htmlFor="is_placeholder_variant"
+                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
+                                    >
                                         <Checkbox
                                             id="is_placeholder_variant"
                                             checked={isPlaceholderVariant}
@@ -203,12 +182,7 @@ export default function ProductVariantDialog({
                                     <label htmlFor="grade_unit_id" className="text-sm font-medium">
                                         Grade unit
                                     </label>
-                                    <input
-                                        type="hidden"
-                                        name="grade_unit_id"
-                                        value={selectedGradeUnit?.id ?? ''}
-                                        readOnly
-                                    />
+                                    <input type="hidden" name="grade_unit_id" value={selectedGradeUnit?.id ?? ''} readOnly />
                                     <Combobox
                                         items={productGradeUnits}
                                         value={selectedGradeUnit}
@@ -274,12 +248,7 @@ export default function ProductVariantDialog({
                                         <label htmlFor="size_unit_id" className="text-sm font-medium">
                                             Size unit
                                         </label>
-                                        <input
-                                            type="hidden"
-                                            name="size_unit_id"
-                                            value={selectedSizeUnit?.id ?? ''}
-                                            readOnly
-                                        />
+                                        <input type="hidden" name="size_unit_id" value={selectedSizeUnit?.id ?? ''} readOnly />
                                         <Combobox
                                             items={productSizeUnits}
                                             value={selectedSizeUnit}
@@ -340,10 +309,7 @@ export default function ProductVariantDialog({
                                                     id={`variant_status_${option.value}`}
                                                     aria-invalid={Boolean(errors.status)}
                                                 />
-                                                <label
-                                                    htmlFor={`variant_status_${option.value}`}
-                                                    className="text-sm font-medium"
-                                                >
+                                                <label htmlFor={`variant_status_${option.value}`} className="text-sm font-medium">
                                                     {option.label}
                                                 </label>
                                             </div>

@@ -6,14 +6,7 @@ import type { BreadcrumbItem, Option } from '@/types';
 import ProductVariantsSection from './components/product-variants-section';
 import UnitConversionsSection from './components/unit-conversions-section';
 import ProductForm from './components/form';
-import type {
-    Brand,
-    Product,
-    ProductCategory,
-    ProductGradeUnit,
-    ProductSizeUnit,
-    UnitOfMeasurement,
-} from './types';
+import type { Brand, Product, ProductCategory, ProductGradeUnit, ProductSizeUnit, UnitOfMeasurement } from './types';
 import { Separator } from '@/components/ui/separator';
 
 export default function ProductsEdit({
@@ -66,12 +59,7 @@ export default function ProductsEdit({
 
                     <Separator />
 
-                    <UnitConversionsSection
-                        product={product}
-                        unitOfMeasurements={unitOfMeasurements}
-                        statusOptions={statusOptions}
-                    />
-
+                    <UnitConversionsSection product={product} unitOfMeasurements={unitOfMeasurements} statusOptions={statusOptions} />
                 </div>
             </div>
         </AppLayout>

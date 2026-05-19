@@ -21,8 +21,8 @@ return new class extends Migration
                 ->constrained('outlets')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->foreignId('product_id')
-                ->constrained('products')
+            $table->foreignId('product_variant_id')
+                ->constrained('product_variants')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table->decimal('quantity', 15, 4)->default(0);
@@ -31,10 +31,10 @@ return new class extends Migration
             $table->timestamp('last_movement_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['outlet_id', 'product_id']);
+            $table->unique(['outlet_id', 'product_variant_id']);
             $table->index('business_id');
             $table->index('outlet_id');
-            $table->index('product_id');
+            $table->index('product_variant_id');
             $table->index('quantity');
         });
     }

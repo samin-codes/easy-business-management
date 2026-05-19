@@ -6,16 +6,11 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Option } from '@/types';
-import type { Business, Outlet } from './types';
+import type { Business, Outlet } from '../types';
+import { Separator } from '@/components/ui/separator';
 
 export default function OutletForm({
     business,
@@ -38,11 +33,7 @@ export default function OutletForm({
 
     return (
         <Form
-            action={
-                outlet
-                    ? OutletController.update({ business, outlet })
-                    : OutletController.store({ business })
-            }
+            action={outlet ? OutletController.update({ business, outlet }) : OutletController.store({ business })}
             options={{ preserveScroll: true }}
             disableWhileProcessing
             className="space-y-6"
@@ -50,17 +41,11 @@ export default function OutletForm({
             {({ errors, processing }) => (
                 <div className="space-y-6">
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Outlet details
-                        </div>
+                        <div className="mb-3 text-base font-medium">Outlet details</div>
                         <div className="flex flex-col gap-7">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="name"
-                                    className="text-sm font-medium"
-                                >
-                                    Outlet name{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="name" className="text-sm font-medium">
+                                    Outlet name <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     id="name"
@@ -74,10 +59,7 @@ export default function OutletForm({
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="code"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="code" className="text-sm font-medium">
                                         Outlet code
                                     </label>
                                     <Input
@@ -91,37 +73,17 @@ export default function OutletForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="outlet_type"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="outlet_type" className="text-sm font-medium">
                                         Outlet type
                                     </label>
-                                    <input
-                                        type="hidden"
-                                        name="outlet_type"
-                                        value={outletType}
-                                        readOnly
-                                    />
-                                    <Select
-                                        value={outletType}
-                                        onValueChange={setOutletType}
-                                    >
-                                        <SelectTrigger
-                                            id="outlet_type"
-                                            className="w-full"
-                                            aria-invalid={Boolean(
-                                                errors.outlet_type,
-                                            )}
-                                        >
+                                    <input type="hidden" name="outlet_type" value={outletType} readOnly />
+                                    <Select value={outletType} onValueChange={setOutletType}>
+                                        <SelectTrigger id="outlet_type" className="w-full" aria-invalid={Boolean(errors.outlet_type)}>
                                             <SelectValue placeholder="Select outlet type" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {outletTypeOptions.map((option) => (
-                                                <SelectItem
-                                                    key={option.value}
-                                                    value={option.value}
-                                                >
+                                                <SelectItem key={option.value} value={option.value}>
                                                     {option.label}
                                                 </SelectItem>
                                             ))}
@@ -132,40 +94,19 @@ export default function OutletForm({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="status"
-                                    className="text-sm font-medium"
-                                >
-                                    Status{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="status" className="text-sm font-medium">
+                                    Status <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="hidden"
-                                    name="status"
-                                    value={status}
-                                    readOnly
-                                />
-                                <RadioGroup
-                                    value={status}
-                                    onValueChange={setStatus}
-                                    className="flex flex-row gap-6"
-                                >
+                                <input type="hidden" name="status" value={status} readOnly />
+                                <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                     {statusOptions.map((option) => (
-                                        <div
-                                            key={option.value}
-                                            className="flex items-center space-x-2"
-                                        >
+                                        <div key={option.value} className="flex items-center space-x-2">
                                             <RadioGroupItem
                                                 value={option.value}
                                                 id={`status_${option.value}`}
-                                                aria-invalid={Boolean(
-                                                    errors.status,
-                                                )}
+                                                aria-invalid={Boolean(errors.status)}
                                             />
-                                            <label
-                                                htmlFor={`status_${option.value}`}
-                                                className="text-sm font-medium"
-                                            >
+                                            <label htmlFor={`status_${option.value}`} className="text-sm font-medium">
                                                 {option.label}
                                             </label>
                                         </div>
@@ -176,21 +117,15 @@ export default function OutletForm({
                         </div>
                     </div>
 
-                    <hr className="my-2 border-t" />
+                    <Separator />
 
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Contact
-                        </div>
+                        <div className="mb-3 text-base font-medium">Contact</div>
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="mobile"
-                                    className="text-sm font-medium"
-                                >
-                                    Mobile{' '}
-                                    <span className="text-red-500">*</span>
+                                <label htmlFor="mobile" className="text-sm font-medium">
+                                    Mobile <span className="text-red-500">*</span>
                                 </label>
                                 <Input
                                     id="mobile"
@@ -203,10 +138,7 @@ export default function OutletForm({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="email"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="email" className="text-sm font-medium">
                                     Email
                                 </label>
                                 <Input
@@ -222,19 +154,14 @@ export default function OutletForm({
                         </div>
                     </div>
 
-                    <hr className="my-2 border-t" />
+                    <Separator />
 
                     <div>
-                        <div className="mb-3 text-base font-medium">
-                            Address
-                        </div>
+                        <div className="mb-3 text-base font-medium">Address</div>
 
                         <div className="flex flex-col gap-7">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="address_line"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="address_line" className="text-sm font-medium">
                                     Address line
                                 </label>
                                 <Textarea
@@ -250,10 +177,7 @@ export default function OutletForm({
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="district"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="district" className="text-sm font-medium">
                                         District
                                     </label>
                                     <Input
@@ -267,19 +191,14 @@ export default function OutletForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="postal_code"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="postal_code" className="text-sm font-medium">
                                         Postal code
                                     </label>
                                     <Input
                                         id="postal_code"
                                         name="postal_code"
                                         defaultValue={outlet?.postal_code ?? ''}
-                                        aria-invalid={Boolean(
-                                            errors.postal_code,
-                                        )}
+                                        aria-invalid={Boolean(errors.postal_code)}
                                         placeholder="1213"
                                     />
                                     <InputError message={errors.postal_code} />
@@ -289,10 +208,7 @@ export default function OutletForm({
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="flex flex-col gap-2">
                                     <div className="relative flex items-center">
-                                        <label
-                                            htmlFor="area_type"
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor="area_type" className="text-sm font-medium">
                                             Area type
                                         </label>
                                         {areaType && (
@@ -307,33 +223,16 @@ export default function OutletForm({
                                             </Button>
                                         )}
                                     </div>
-                                    <input
-                                        type="hidden"
-                                        name="area_type"
-                                        value={areaType}
-                                        readOnly
-                                    />
-                                    <RadioGroup
-                                        value={areaType}
-                                        onValueChange={setAreaType}
-                                        className="flex flex-row gap-6"
-                                    >
+                                    <input type="hidden" name="area_type" value={areaType} readOnly />
+                                    <RadioGroup value={areaType} onValueChange={setAreaType} className="flex flex-row gap-6">
                                         {areaTypeOptions.map((option) => (
-                                            <div
-                                                key={option.value}
-                                                className="flex items-center space-x-2"
-                                            >
+                                            <div key={option.value} className="flex items-center space-x-2">
                                                 <RadioGroupItem
                                                     value={option.value}
                                                     id={`area_type_${option.value}`}
-                                                    aria-invalid={Boolean(
-                                                        errors.area_type,
-                                                    )}
+                                                    aria-invalid={Boolean(errors.area_type)}
                                                 />
-                                                <label
-                                                    htmlFor={`area_type_${option.value}`}
-                                                    className="text-sm font-medium"
-                                                >
+                                                <label htmlFor={`area_type_${option.value}`} className="text-sm font-medium">
                                                     {option.label}
                                                 </label>
                                             </div>
@@ -343,28 +242,16 @@ export default function OutletForm({
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label
-                                        htmlFor="area_name"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="area_name" className="text-sm font-medium">
                                         Area name
-                                        {areaType && (
-                                            <span className="text-red-500">
-                                                {' '}
-                                                *
-                                            </span>
-                                        )}
+                                        {areaType && <span className="text-red-500"> *</span>}
                                     </label>
                                     <Input
                                         id="area_name"
                                         name="area_name"
                                         defaultValue={outlet?.area_name ?? ''}
                                         aria-invalid={Boolean(errors.area_name)}
-                                        placeholder={
-                                            areaType === 'thana'
-                                                ? 'Gulshan'
-                                                : 'Keraniganj'
-                                        }
+                                        placeholder={areaType === 'thana' ? 'Gulshan' : 'Keraniganj'}
                                     />
                                     <InputError message={errors.area_name} />
                                 </div>
@@ -381,11 +268,7 @@ export default function OutletForm({
                         </Button>
                         <Button type="submit" disabled={processing}>
                             <Save />
-                            {processing
-                                ? 'Saving...'
-                                : outlet
-                                  ? 'Update Outlet'
-                                  : 'Create Outlet'}
+                            {processing ? 'Saving...' : outlet ? 'Update Outlet' : 'Create Outlet'}
                         </Button>
                     </div>
                 </div>

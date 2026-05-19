@@ -21,12 +21,8 @@ export default function PartyContactPersonForm({
     statusOptions: Option[];
     cancelHref: string;
 }) {
-    const [status, setStatus] = useState(
-        partyContactPerson?.status ?? 'active',
-    );
-    const [isPrimary, setIsPrimary] = useState(
-        partyContactPerson?.is_primary ?? false,
-    );
+    const [status, setStatus] = useState(partyContactPerson?.status ?? 'active');
+    const [isPrimary, setIsPrimary] = useState(partyContactPerson?.is_primary ?? false);
 
     return (
         <Form
@@ -46,10 +42,7 @@ export default function PartyContactPersonForm({
                 <div className="space-y-6">
                     <div className="flex flex-col gap-7">
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="name"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="name" className="text-sm font-medium">
                                 Name <span className="text-red-500">*</span>
                             </label>
                             <Input
@@ -63,18 +56,13 @@ export default function PartyContactPersonForm({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="designation"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="designation" className="text-sm font-medium">
                                 Designation
                             </label>
                             <Input
                                 id="designation"
                                 name="designation"
-                                defaultValue={
-                                    partyContactPerson?.designation ?? ''
-                                }
+                                defaultValue={partyContactPerson?.designation ?? ''}
                                 aria-invalid={Boolean(errors.designation)}
                                 placeholder="Sales Manager"
                             />
@@ -83,18 +71,13 @@ export default function PartyContactPersonForm({
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="mobile"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="mobile" className="text-sm font-medium">
                                     Mobile
                                 </label>
                                 <Input
                                     id="mobile"
                                     name="mobile"
-                                    defaultValue={
-                                        partyContactPerson?.mobile ?? ''
-                                    }
+                                    defaultValue={partyContactPerson?.mobile ?? ''}
                                     aria-invalid={Boolean(errors.mobile)}
                                     placeholder="01XXXXXXXXX"
                                 />
@@ -102,19 +85,14 @@ export default function PartyContactPersonForm({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="email"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="email" className="text-sm font-medium">
                                     Email
                                 </label>
                                 <Input
                                     id="email"
                                     name="email"
                                     type="email"
-                                    defaultValue={
-                                        partyContactPerson?.email ?? ''
-                                    }
+                                    defaultValue={partyContactPerson?.email ?? ''}
                                     aria-invalid={Boolean(errors.email)}
                                     placeholder="john@example.com"
                                 />
@@ -123,34 +101,21 @@ export default function PartyContactPersonForm({
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <input
-                                type="hidden"
-                                name="is_primary"
-                                value={isPrimary ? '1' : '0'}
-                                readOnly
-                            />
+                            <input type="hidden" name="is_primary" value={isPrimary ? '1' : '0'} readOnly />
                             <Checkbox
                                 id="is_primary"
                                 checked={isPrimary}
-                                onCheckedChange={(checked) =>
-                                    setIsPrimary(checked === true)
-                                }
+                                onCheckedChange={(checked) => setIsPrimary(checked === true)}
                                 aria-invalid={Boolean(errors.is_primary)}
                             />
-                            <label
-                                htmlFor="is_primary"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="is_primary" className="text-sm font-medium">
                                 Primary contact person
                             </label>
                             <InputError message={errors.is_primary} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="note"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="note" className="text-sm font-medium">
                                 Note
                             </label>
                             <Textarea
@@ -165,39 +130,19 @@ export default function PartyContactPersonForm({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="status"
-                                className="text-sm font-medium"
-                            >
+                            <label htmlFor="status" className="text-sm font-medium">
                                 Status <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="hidden"
-                                name="status"
-                                value={status}
-                                readOnly
-                            />
-                            <RadioGroup
-                                value={status}
-                                onValueChange={setStatus}
-                                className="flex flex-row gap-6"
-                            >
+                            <input type="hidden" name="status" value={status} readOnly />
+                            <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                 {statusOptions.map((option) => (
-                                    <div
-                                        key={option.value}
-                                        className="flex items-center space-x-2"
-                                    >
+                                    <div key={option.value} className="flex items-center space-x-2">
                                         <RadioGroupItem
                                             value={option.value}
                                             id={`status_${option.value}`}
-                                            aria-invalid={Boolean(
-                                                errors.status,
-                                            )}
+                                            aria-invalid={Boolean(errors.status)}
                                         />
-                                        <label
-                                            htmlFor={`status_${option.value}`}
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor={`status_${option.value}`} className="text-sm font-medium">
                                             {option.label}
                                         </label>
                                     </div>
@@ -216,11 +161,7 @@ export default function PartyContactPersonForm({
                         </Button>
                         <Button type="submit" disabled={processing}>
                             <Save />
-                            {processing
-                                ? 'Saving...'
-                                : partyContactPerson
-                                  ? 'Update Contact Person'
-                                  : 'Create Contact Person'}
+                            {processing ? 'Saving...' : partyContactPerson ? 'Update Contact Person' : 'Create Contact Person'}
                         </Button>
                     </div>
                 </div>

@@ -98,13 +98,9 @@ export default function ProductVariantsSection({
                                             <div className="font-medium">{productVariant.variant_name}</div>
                                             <div className="text-sm">
                                                 <span className="text-muted-foreground">Brand: </span>
-                                                <span className="font-medium text-foreground">
-                                                    {productVariant.brand?.name ?? '-'}
-                                                </span>
+                                                <span className="font-medium text-foreground">{productVariant.brand?.name ?? '-'}</span>
                                             </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                SKU: {productVariant.sku}
-                                            </div>
+                                            <div className="text-xs text-muted-foreground">SKU: {productVariant.sku}</div>
                                         </div>
                                     </td>
                                     <td className="px-3 py-3 align-top">
@@ -134,12 +130,7 @@ export default function ProductVariantsSection({
                                     </td>
                                     <td className="px-3 py-3 text-right align-top">
                                         <div className="flex min-h-9 items-center justify-end gap-1">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon-sm"
-                                                onClick={() => handleEdit(productVariant)}
-                                            >
+                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => handleEdit(productVariant)}>
                                                 <SquarePen className="size-4" />
                                                 <span className="sr-only">Edit</span>
                                             </Button>

@@ -3,7 +3,7 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/product-categories';
 import type { BreadcrumbItem, Option } from '@/types';
-import ProductCategoryForm from './form';
+import ProductCategoryForm from './components/form';
 import type { ProductCategory } from './types';
 
 export default function ProductCategoriesEdit({
@@ -26,11 +26,7 @@ export default function ProductCategoriesEdit({
                 <div className="mx-auto max-w-4xl space-y-6">
                     <Heading title="Edit Product Category" className="mb-8" />
 
-                    <ProductCategoryForm
-                        productCategory={productCategory}
-                        statusOptions={statusOptions}
-                        cancelHref={index().url}
-                    />
+                    <ProductCategoryForm productCategory={productCategory} statusOptions={statusOptions} cancelHref={index().url} />
                 </div>
             </div>
         </AppLayout>

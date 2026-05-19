@@ -17,8 +17,8 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->foreignId('product_id')
-                ->constrained()
+            $table->foreignId('product_variant_id')
+                ->constrained('product_variants')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->foreignId('unit_of_measurement_id')
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('purchase_id');
-            $table->index('product_id');
+            $table->index('product_variant_id');
             $table->index('unit_of_measurement_id');
             $table->index('product_unit_conversion_id');
         });

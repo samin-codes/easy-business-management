@@ -20,7 +20,7 @@ class ProductStockLedger extends Model
     protected $fillable = [
         'business_id',
         'outlet_id',
-        'product_id',
+        'product_variant_id',
         'transaction_type',
         'quantity_in',
         'quantity_out',
@@ -63,9 +63,9 @@ class ProductStockLedger extends Model
         return $this->belongsTo(Outlet::class);
     }
 
-    public function product(): BelongsTo
+    public function productVariant(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function unitOfMeasurement(): BelongsTo

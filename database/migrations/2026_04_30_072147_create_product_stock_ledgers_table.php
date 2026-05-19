@@ -21,8 +21,8 @@ return new class extends Migration
                 ->constrained('outlets')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->foreignId('product_id')
-                ->constrained('products')
+            $table->foreignId('product_variant_id')
+                ->constrained('product_variants')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
             $table->string('transaction_type');
@@ -48,7 +48,7 @@ return new class extends Migration
 
             $table->index('business_id');
             $table->index('outlet_id');
-            $table->index('product_id');
+            $table->index('product_variant_id');
             $table->index('transaction_type');
             $table->index('transaction_date');
             $table->index(['source_type', 'source_id']);

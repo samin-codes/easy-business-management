@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
@@ -70,7 +71,7 @@ class Product extends Model
 
     public function productVariants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class)->orderBy('id');
+        return $this->hasMany(ProductVariant::class)->chaperone()->orderBy('id');
     }
 
     public function unitConversions(): HasMany
@@ -98,19 +99,40 @@ class Product extends Model
         return $this->hasOne(ProductUnitConversion::class)->where('is_default_sale_unit', true);
     }
 
-    public function purchaseItems(): HasMany
+    public function purchaseItems(): HasManyThrough
     {
-        return $this->hasMany(PurchaseItem::class);
+        return $this->hasManyThrough(
+            PurchaseItem::class,
+            ProductVariant::class,
+            'product_id',
+            'product_variant_id',
+            'id',
+            'id',
+        );
     }
 
-    public function stockLedgers(): HasMany
+    public function stockLedgers(): HasManyThrough
     {
-        return $this->hasMany(ProductStockLedger::class);
+        return $this->hasManyThrough(
+            ProductStockLedger::class,
+            ProductVariant::class,
+            'product_id',
+            'product_variant_id',
+            'id',
+            'id',
+        );
     }
 
-    public function stocks(): HasMany
+    public function stocks(): HasManyThrough
     {
-        return $this->hasMany(ProductStock::class);
+        return $this->hasManyThrough(
+            ProductStock::class,
+            ProductVariant::class,
+            'product_id',
+            'product_variant_id',
+            'id',
+            'id',
+        );
     }
 
     public function convertToBaseQuantity(float|int|string $quantity, ProductUnitConversion $conversion): string

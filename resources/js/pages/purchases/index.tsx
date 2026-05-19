@@ -130,17 +130,8 @@ export default function PurchasesIndex({
                                         <thead className="[&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-transparent">
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={makeSortLink('purchase_no')}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
+                                                        <Link href={makeSortLink('purchase_no')} preserveScroll only={reloadProps}>
                                                             Purchase No
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
@@ -164,17 +155,8 @@ export default function PurchasesIndex({
                                                     </Button>
                                                 </th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={makeSortLink('purchase_date')}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
+                                                        <Link href={makeSortLink('purchase_date')} preserveScroll only={reloadProps}>
                                                             Date
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
@@ -197,22 +179,11 @@ export default function PurchasesIndex({
                                                         </Link>
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Supplier
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Supplier</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Outlet</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={makeSortLink('total_amount')}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
+                                                        <Link href={makeSortLink('total_amount')} preserveScroll only={reloadProps}>
                                                             Total
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
@@ -236,17 +207,8 @@ export default function PurchasesIndex({
                                                     </Button>
                                                 </th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={makeSortLink('paid_amount')}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
+                                                        <Link href={makeSortLink('paid_amount')} preserveScroll only={reloadProps}>
                                                             Paid
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
@@ -270,23 +232,13 @@ export default function PurchasesIndex({
                                                     </Button>
                                                 </th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
-                                                        <Link
-                                                            href={makeSortLink('due_amount')}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
+                                                        <Link href={makeSortLink('due_amount')} preserveScroll only={reloadProps}>
                                                             Due
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
                                                                     className={
-                                                                        queryString.sort === 'due_amount' &&
-                                                                        queryString.direction === 'asc'
+                                                                        queryString.sort === 'due_amount' && queryString.direction === 'asc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
@@ -303,12 +255,8 @@ export default function PurchasesIndex({
                                                         </Link>
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-center align-middle font-medium">
-                                                    Payment Status
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Created By
-                                                </th>
+                                                <th className="h-10 px-4 text-center align-middle font-medium">Payment Status</th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Created By</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
                                                     <span className="sr-only">Actions</span>
                                                 </th>
@@ -317,22 +265,13 @@ export default function PurchasesIndex({
                                         <tbody className="[&_tr:last-child]:border-0">
                                             {purchases.data.length > 0 ? (
                                                 purchases.data.map((purchase) => (
-                                                    <tr
-                                                        key={purchase.id}
-                                                        className="border-b transition-colors hover:bg-muted/50"
-                                                    >
-                                                        <td className="px-4 py-3 align-middle font-medium">
-                                                            {purchase.purchase_no}
-                                                        </td>
+                                                    <tr key={purchase.id} className="border-b transition-colors hover:bg-muted/50">
+                                                        <td className="px-4 py-3 align-middle font-medium">{purchase.purchase_no}</td>
                                                         <td className="px-4 py-3 align-middle text-nowrap">
                                                             {formatDate(purchase.purchase_date)}
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {purchase.supplier?.name ?? '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {purchase.outlet?.name ?? '-'}
-                                                        </td>
+                                                        <td className="px-4 py-3 align-middle">{purchase.supplier?.name ?? '-'}</td>
+                                                        <td className="px-4 py-3 align-middle">{purchase.outlet?.name ?? '-'}</td>
                                                         <td className="px-4 py-3 text-right align-middle tabular-nums">
                                                             {formatCurrency(purchase.total_amount)}
                                                         </td>
@@ -353,13 +292,10 @@ export default function PurchasesIndex({
                                                                           : 'border-transparent bg-red-100 text-red-800'
                                                                 }
                                                             >
-                                                                {purchase.payment_status_label ??
-                                                                    purchase.payment_status}
+                                                                {purchase.payment_status_label ?? purchase.payment_status}
                                                             </Badge>
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {purchase.user?.name ?? '-'}
-                                                        </td>
+                                                        <td className="px-4 py-3 align-middle">{purchase.user?.name ?? '-'}</td>
                                                         <td className="px-4 py-3 text-right align-middle">
                                                             <div className="flex justify-end gap-3">
                                                                 <Button variant="ghost" size="icon-sm" asChild>
@@ -384,9 +320,7 @@ export default function PurchasesIndex({
                                                         colSpan={10}
                                                         className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
                                                     >
-                                                        {queryString.search
-                                                            ? 'No purchases found.'
-                                                            : 'No purchases yet.'}
+                                                        {queryString.search ? 'No purchases found.' : 'No purchases yet.'}
                                                     </td>
                                                 </tr>
                                             )}

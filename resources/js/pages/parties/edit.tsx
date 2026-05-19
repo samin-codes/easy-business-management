@@ -3,7 +3,7 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/parties';
 import type { BreadcrumbItem, Option, Party } from '@/types';
-import PartyForm from './form';
+import PartyForm from './components/form';
 
 export default function PartiesEdit({
     party,

@@ -5,23 +5,8 @@ import ProductUnitConversionController from '@/actions/App/Http/Controllers/Prod
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Combobox,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxList,
-} from '@/components/ui/combobox';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -45,14 +30,10 @@ export default function UnitConversionDialog({
     const isEditMode = Boolean(unitConversion);
     const isBaseConversion = unitConversion?.is_base_unit === true;
 
-    const [selectedUnit, setSelectedUnit] = useState<UnitOfMeasurement | null>(
-        unitConversion?.unit_of_measurement ?? null,
-    );
+    const [selectedUnit, setSelectedUnit] = useState<UnitOfMeasurement | null>(unitConversion?.unit_of_measurement ?? null);
     const [selectedUnitQuantity, setSelectedUnitQuantity] = useState(unitConversion?.conversion_unit_quantity ?? '');
     const [baseUnitQuantity, setBaseUnitQuantity] = useState(unitConversion?.base_unit_quantity ?? '');
-    const [isDefaultPurchaseUnit, setIsDefaultPurchaseUnit] = useState(
-        unitConversion?.is_default_purchase_unit ?? false,
-    );
+    const [isDefaultPurchaseUnit, setIsDefaultPurchaseUnit] = useState(unitConversion?.is_default_purchase_unit ?? false);
     const [isDefaultSaleUnit, setIsDefaultSaleUnit] = useState(unitConversion?.is_default_sale_unit ?? false);
     const [status, setStatus] = useState(unitConversion?.status ?? 'active');
 
@@ -60,14 +41,9 @@ export default function UnitConversionDialog({
     const baseUnitName = product.base_unit_of_measurement.name;
 
     const hasConversionQuantities =
-        selectedUnitQuantity !== '' &&
-        baseUnitQuantity !== '' &&
-        Number(selectedUnitQuantity) > 0 &&
-        Number(baseUnitQuantity) > 0;
+        selectedUnitQuantity !== '' && baseUnitQuantity !== '' && Number(selectedUnitQuantity) > 0 && Number(baseUnitQuantity) > 0;
 
-    const conversionFactor = hasConversionQuantities
-        ? String(Number(baseUnitQuantity) / Number(selectedUnitQuantity))
-        : '';
+    const conversionFactor = hasConversionQuantities ? String(Number(baseUnitQuantity) / Number(selectedUnitQuantity)) : '';
 
     return (
         <Dialog
@@ -114,12 +90,7 @@ export default function UnitConversionDialog({
                                         Unit <span className="text-red-500">*</span>
                                     </label>
 
-                                    <input
-                                        type="hidden"
-                                        name="unit_of_measurement_id"
-                                        value={selectedUnit?.id ?? ''}
-                                        readOnly
-                                    />
+                                    <input type="hidden" name="unit_of_measurement_id" value={selectedUnit?.id ?? ''} readOnly />
 
                                     <Combobox
                                         items={units}
@@ -149,64 +120,50 @@ export default function UnitConversionDialog({
                                         </ComboboxContent>
                                     </Combobox>
 
-                                    <InputError
-                                        message={errors.unit_of_measurement_id ?? errors.product_unit_conversion}
-                                    />
+                                    <InputError message={errors.unit_of_measurement_id ?? errors.product_unit_conversion} />
                                 </div>
 
                                 <div className="flex flex-col gap-2 md:col-span-2">
                                     <label htmlFor="selected_unit_quantity" className="text-sm font-medium">
                                         Conversion <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="hidden"
-                                        name="conversion_factor_to_base"
-                                        value={conversionFactor}
-                                        readOnly
-                                    />
-                                    <div className="flex w-full flex-col gap-2 md:w-3/4">
-                                        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
-                                            <div className="flex flex-col gap-1.5">
-                                                <span className="text-xs text-muted-foreground">
-                                                    Selected unit quantity
-                                                </span>
+                                    <input type="hidden" name="conversion_factor_to_base" value={conversionFactor} readOnly />
+
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex items-end justify-center gap-3">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-xs text-muted-foreground">Selected unit quantity</span>
                                                 <div className="flex items-center gap-2">
                                                     <Input
                                                         id="selected_unit_quantity"
                                                         type="number"
-                                                        step="0.000001"
-                                                        min="0.000001"
+                                                        step="0.001"
+                                                        min="0.001"
                                                         value={selectedUnitQuantity}
-                                                        onChange={(event) =>
-                                                            setSelectedUnitQuantity(event.target.value)
-                                                        }
+                                                        onChange={(event) => setSelectedUnitQuantity(event.target.value)}
                                                         onBlur={() => {
                                                             if (selectedUnitQuantity !== '') {
-                                                                setSelectedUnitQuantity(
-                                                                    formatNumber(selectedUnitQuantity),
-                                                                );
+                                                                setSelectedUnitQuantity(formatNumber(selectedUnitQuantity));
                                                             }
                                                         }}
                                                         disabled={isBaseConversion}
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
-                                                        className="no-number-spinner text-right"
+                                                        className="no-number-spinner w-28 text-right"
                                                     />
-                                                    <span className="min-w-12 text-xs text-muted-foreground">
-                                                        {selectedUnitName}
-                                                    </span>
+                                                    <span className="text-sm text-muted-foreground">{selectedUnitName}</span>
                                                 </div>
                                             </div>
-                                            <div className="hidden pb-2 text-sm text-muted-foreground sm:block">=</div>
-                                            <div className="flex flex-col gap-1.5">
-                                                <span className="text-xs text-muted-foreground">
-                                                    Base unit quantity
-                                                </span>
+
+                                            <span className="pb-1.5 text-sm text-muted-foreground">=</span>
+
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-xs text-muted-foreground">Base unit quantity</span>
                                                 <div className="flex items-center gap-2">
                                                     <Input
                                                         id="base_unit_quantity"
                                                         type="number"
-                                                        step="0.000001"
-                                                        min="0.000001"
+                                                        step="0.001"
+                                                        min="0.001"
                                                         value={baseUnitQuantity}
                                                         onChange={(event) => setBaseUnitQuantity(event.target.value)}
                                                         onBlur={() => {
@@ -216,36 +173,26 @@ export default function UnitConversionDialog({
                                                         }}
                                                         disabled={isBaseConversion}
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
-                                                        className="no-number-spinner text-right"
+                                                        className="no-number-spinner w-28 text-right"
                                                     />
-                                                    <span className="min-w-12 text-xs text-muted-foreground">
-                                                        {baseUnitName}
-                                                    </span>
+                                                    <span className="text-sm text-muted-foreground">{baseUnitName}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-1 text-xs text-muted-foreground">
-                                            {isBaseConversion ? (
-                                                <div>
-                                                    {`Base unit conversion is always 1 ${baseUnitName} = 1 ${baseUnitName}`}
-                                                </div>
-                                            ) : hasConversionQuantities ? (
-                                                <>
-                                                    <div>
-                                                        {`Factor: ${formatNumber(baseUnitQuantity)} / ${formatNumber(
-                                                            selectedUnitQuantity,
-                                                        )} = ${formatNumber(conversionFactor)}`}
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div>Enter both quantities to calculate the conversion factor.</div>
-                                            )}
+
+                                        <div className="text-center text-xs text-muted-foreground">
+                                            {isBaseConversion
+                                                ? `Base unit conversion is always 1 ${baseUnitName} = 1 ${baseUnitName}`
+                                                : hasConversionQuantities
+                                                  ? `Factor: ${formatNumber(baseUnitQuantity)} / ${formatNumber(selectedUnitQuantity)} = ${formatNumber(conversionFactor)}`
+                                                  : 'Enter both quantities to calculate the conversion factor.'}
                                         </div>
-                                        <InputError message={errors.conversion_factor_to_base} />
                                     </div>
+
+                                    <InputError message={errors.conversion_factor_to_base} />
                                 </div>
 
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 md:col-span-2">
                                     <input
                                         type="hidden"
                                         name="is_default_purchase_unit"
@@ -254,7 +201,7 @@ export default function UnitConversionDialog({
                                     />
                                     <label
                                         htmlFor="is_default_purchase_unit"
-                                        className="flex min-h-9 cursor-pointer items-center gap-2 text-sm font-medium"
+                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                                     >
                                         <Checkbox
                                             id="is_default_purchase_unit"
@@ -267,16 +214,11 @@ export default function UnitConversionDialog({
                                     <InputError message={errors.is_default_purchase_unit} />
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <input
-                                        type="hidden"
-                                        name="is_default_sale_unit"
-                                        value={isDefaultSaleUnit ? '1' : '0'}
-                                        readOnly
-                                    />
+                                <div className="flex flex-col gap-2 md:col-span-2">
+                                    <input type="hidden" name="is_default_sale_unit" value={isDefaultSaleUnit ? '1' : '0'} readOnly />
                                     <label
                                         htmlFor="is_default_sale_unit"
-                                        className="flex min-h-9 cursor-pointer items-center gap-2 text-sm font-medium"
+                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                                     >
                                         <Checkbox
                                             id="is_default_sale_unit"
@@ -294,11 +236,7 @@ export default function UnitConversionDialog({
                                         Status <span className="text-red-500">*</span>
                                     </label>
                                     <input type="hidden" name="status" value={status} readOnly />
-                                    <RadioGroup
-                                        value={status}
-                                        onValueChange={setStatus}
-                                        className="flex min-h-9 flex-row items-center gap-6"
-                                    >
+                                    <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row items-center gap-6">
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
                                                 <RadioGroupItem
@@ -306,10 +244,7 @@ export default function UnitConversionDialog({
                                                     id={`unit_conversion_status_${option.value}`}
                                                     aria-invalid={Boolean(errors.status)}
                                                 />
-                                                <label
-                                                    htmlFor={`unit_conversion_status_${option.value}`}
-                                                    className="text-sm font-medium"
-                                                >
+                                                <label htmlFor={`unit_conversion_status_${option.value}`} className="text-sm font-medium">
                                                     {option.label}
                                                 </label>
                                             </div>

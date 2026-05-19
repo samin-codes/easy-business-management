@@ -11,8 +11,10 @@ use App\Models\Outlet;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductUnitConversion;
+use App\Models\ProductVariant;
 use App\Models\Purchase;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +66,9 @@ class PurchaseController extends Controller
             'supplier:id,name',
             'outlet:id,name,code',
             'user:id,name',
-            'items.product:id,name',
+            'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
+            'items.productVariant.product:id,name',
+            'items.productVariant.brand:id,name',
             'items.unitOfMeasurement:id,name,code',
         ]);
 
@@ -88,21 +92,10 @@ class PurchaseController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $products = Product::query()
-            ->with([
-                'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
-                'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
-                'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
-                'activeUnitConversions.unitOfMeasurement:id,name,code',
-            ])
-            ->whereBelongsTo($business)
-            ->orderBy('name')
-            ->get(['id', 'name', 'base_unit_of_measurement_id']);
-
         return Inertia::render('purchases/create', [
             'outlets' => $outlets,
             'suppliers' => $suppliers,
-            'products' => $products,
+            'products' => $this->getProducts($business),
         ]);
     }
 
@@ -145,16 +138,7 @@ class PurchaseController extends Controller
                 ->whereIn('party_type', [PartyType::Supplier->value, PartyType::Both->value])
                 ->orderBy('name')
                 ->get(['id', 'name']),
-            'products' => Product::query()
-                ->with([
-                    'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
-                    'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
-                    'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base,status',
-                    'activeUnitConversions.unitOfMeasurement:id,name,code',
-                ])
-                ->whereBelongsTo($business)
-                ->orderBy('name')
-                ->get(['id', 'name', 'base_unit_of_measurement_id']),
+            'products' => $this->getProducts($business),
         ]);
     }
 
@@ -196,17 +180,43 @@ class PurchaseController extends Controller
         unset($data['items']);
 
         $subtotal = 0.0;
+        $variantIds = collect($items)
+            ->pluck('product_variant_id')
+            ->map(fn (mixed $variantId): int => (int) $variantId)
+            ->unique()
+            ->values();
+        $unitIds = collect($items)
+            ->pluck('unit_of_measurement_id')
+            ->map(fn (mixed $unitId): int => (int) $unitId)
+            ->unique()
+            ->values();
+        $variants = ProductVariant::query()
+            ->with('product:id,business_id,name')
+            ->whereIn('id', $variantIds)
+            ->where('status', 'active')
+            ->get()
+            ->keyBy('id');
+        $conversions = ProductUnitConversion::query()
+            ->whereIn('product_id', $variants->pluck('product_id')->unique())
+            ->whereIn('unit_of_measurement_id', $unitIds)
+            ->where('status', 'active')
+            ->get()
+            ->keyBy(fn (ProductUnitConversion $conversion): string => "{$conversion->product_id}:{$conversion->unit_of_measurement_id}");
 
         foreach ($items as $index => $item) {
-            $conversion = ProductUnitConversion::query()
-                ->where('product_id', $item['product_id'])
-                ->where('unit_of_measurement_id', $item['unit_of_measurement_id'])
-                ->where('status', 'active')
-                ->first();
+            $variant = $variants->get((int) $item['product_variant_id']);
+
+            if ($variant === null || $variant->product?->business_id !== (int) $data['business_id']) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.product_variant_id" => 'Select a valid product variant.',
+                ]);
+            }
+
+            $conversion = $conversions->get("{$variant->product_id}:{$item['unit_of_measurement_id']}");
 
             if ($conversion === null) {
                 throw ValidationException::withMessages([
-                    "items.{$index}.unit_of_measurement_id" => 'Select a valid unit for this product.',
+                    "items.{$index}.unit_of_measurement_id" => 'Select a valid unit for this product variant.',
                 ]);
             }
 
@@ -216,7 +226,7 @@ class PurchaseController extends Controller
             $lineTotal = $quantity * $unitCost;
 
             $items[$index] = [
-                'product_id' => $item['product_id'],
+                'product_variant_id' => $item['product_variant_id'],
                 'unit_of_measurement_id' => $item['unit_of_measurement_id'],
                 'product_unit_conversion_id' => $conversion->id,
                 'quantity' => round($quantity, 4),
@@ -255,5 +265,26 @@ class PurchaseController extends Controller
         };
 
         return [$data, array_values($items)];
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    private function getProducts(Business $business): Collection
+    {
+        return Product::query()
+            ->with([
+                'productVariants' => fn ($query) => $query
+                    ->where('status', 'active')
+                    ->select(['id', 'product_id', 'variant_name', 'sku', 'brand_id', 'is_placeholder_variant', 'status']),
+                'productVariants.brand:id,name',
+                'defaultPurchaseUnitConversion:id,product_id,unit_of_measurement_id,conversion_factor_to_base,is_base_unit,is_default_purchase_unit,is_default_sale_unit,status',
+                'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
+                'activeUnitConversions:id,product_id,unit_of_measurement_id,conversion_factor_to_base,is_base_unit,is_default_purchase_unit,is_default_sale_unit,status',
+                'activeUnitConversions.unitOfMeasurement:id,name,code',
+            ])
+            ->whereBelongsTo($business)
+            ->orderBy('name')
+            ->get(['id', 'name', 'base_unit_of_measurement_id']);
     }
 }

@@ -3,8 +3,12 @@ import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/purchases';
 import type { BreadcrumbItem, Option } from '@/types';
-import PurchaseForm from './form';
-import type { Outlet, Product, Purchase, Supplier } from './types';
+import PurchaseForm from './components/form';
+import type { Outlet, Product, Purchase, PurchaseItem, Supplier } from './types';
+
+type PurchaseEditData = Purchase & {
+    items: PurchaseItem[];
+};
 
 export default function PurchasesEdit({
     purchase,
@@ -14,7 +18,7 @@ export default function PurchasesEdit({
     purchaseStatusOptions,
     purchasePaymentStatusOptions,
 }: {
-    purchase: Purchase;
+    purchase: PurchaseEditData;
     outlets: Outlet[];
     suppliers: Supplier[];
     products: Product[];
@@ -32,10 +36,7 @@ export default function PurchasesEdit({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-5xl space-y-6">
-                    <Heading
-                        title={`Edit ${purchase.purchase_no}`}
-                        className="mb-8"
-                    />
+                    <Heading title={`Edit ${purchase.purchase_no}`} className="mb-8" />
 
                     <PurchaseForm
                         purchase={purchase}
@@ -43,9 +44,7 @@ export default function PurchasesEdit({
                         suppliers={suppliers}
                         products={products}
                         purchaseStatusOptions={purchaseStatusOptions}
-                        purchasePaymentStatusOptions={
-                            purchasePaymentStatusOptions
-                        }
+                        purchasePaymentStatusOptions={purchasePaymentStatusOptions}
                         cancelHref={index().url}
                     />
                 </div>

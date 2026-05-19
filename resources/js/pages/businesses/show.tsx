@@ -6,12 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { edit as businessEdit, show as businessShow } from '@/routes/business';
-import {
-    create as outletCreate,
-    edit as outletEdit,
-} from '@/routes/businesses/outlets';
+import { create as outletCreate, edit as outletEdit } from '@/routes/businesses/outlets';
 import type { BreadcrumbItem } from '@/types';
 import type { Business, Outlet } from './types';
+import { Separator } from '@/components/ui/separator';
 
 export default function BusinessesShow({ business }: { business: Business }) {
     const { flash } = usePage<{
@@ -20,9 +18,7 @@ export default function BusinessesShow({ business }: { business: Business }) {
 
     const outlets = business.outlets ?? [];
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Business', href: businessShow().url },
-    ];
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Business', href: businessShow().url }];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -51,120 +47,67 @@ export default function BusinessesShow({ business }: { business: Business }) {
 
                     <div className="space-y-6">
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Business details
-                            </div>
+                            <div className="mb-3 text-base font-medium">Business details</div>
                             <div className="space-y-3">
-                                <TextEntry
-                                    label="Business name"
-                                    value={business.name}
-                                />
+                                <TextEntry label="Business name" value={business.name} />
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Trade name"
-                                        value={business.trade_name}
-                                    />
-                                    <TextEntry
-                                        label="Business type"
-                                        value={business.business_type_label}
-                                    />
+                                    <TextEntry label="Trade name" value={business.trade_name} />
+                                    <TextEntry label="Business type" value={business.business_type_label} />
                                 </div>
                                 <TextEntry
                                     label="Status"
                                     value={business.status_label}
                                     badge
-                                    color={
-                                        business.status === 'active'
-                                            ? 'success'
-                                            : 'gray'
-                                    }
+                                    color={business.status === 'active' ? 'success' : 'gray'}
                                 />
                             </div>
                         </div>
 
-                        <hr className="border-t" />
+                        <Separator />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Contact
-                            </div>
+                            <div className="mb-3 text-base font-medium">Contact</div>
                             <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry
-                                    label="Mobile"
-                                    value={business.mobile}
-                                />
-                                <TextEntry
-                                    label="Email"
-                                    value={business.email}
-                                />
+                                <TextEntry label="Mobile" value={business.mobile} />
+                                <TextEntry label="Email" value={business.email} />
                             </div>
                         </div>
 
-                        <hr className="border-t" />
+                        <Separator />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Registration
-                            </div>
+                            <div className="mb-3 text-base font-medium">Registration</div>
                             <div className="space-y-3">
-                                <TextEntry
-                                    label="Trade license no."
-                                    value={business.trade_license_no}
-                                />
+                                <TextEntry label="Trade license no." value={business.trade_license_no} />
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="TIN no."
-                                        value={business.tin_no}
-                                    />
-                                    <TextEntry
-                                        label="BIN no."
-                                        value={business.bin_no}
-                                    />
+                                    <TextEntry label="TIN no." value={business.tin_no} />
+                                    <TextEntry label="BIN no." value={business.bin_no} />
                                 </div>
                             </div>
                         </div>
 
-                        <hr className="border-t" />
+                        <Separator />
 
                         <div>
-                            <div className="mb-3 text-base font-medium">
-                                Address
-                            </div>
+                            <div className="mb-3 text-base font-medium">Address</div>
                             <div className="space-y-3">
-                                <TextEntry
-                                    label="Address line"
-                                    value={business.address_line}
-                                />
+                                <TextEntry label="Address line" value={business.address_line} />
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="District"
-                                        value={business.district}
-                                    />
-                                    <TextEntry
-                                        label="Postal code"
-                                        value={business.postal_code}
-                                    />
+                                    <TextEntry label="District" value={business.district} />
+                                    <TextEntry label="Postal code" value={business.postal_code} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Area type"
-                                        value={business.area_type_label}
-                                    />
-                                    <TextEntry
-                                        label="Area name"
-                                        value={business.area_name}
-                                    />
+                                    <TextEntry label="Area type" value={business.area_type_label} />
+                                    <TextEntry label="Area name" value={business.area_name} />
                                 </div>
                             </div>
                         </div>
 
-                        <hr className="border-t" />
+                        <Separator />
 
                         <div>
                             <div className="mb-3 flex items-center justify-between">
-                                <div className="text-base font-medium">
-                                    Outlets ({outlets.length})
-                                </div>
+                                <div className="text-base font-medium">Outlets ({outlets.length})</div>
                                 <Button asChild size="sm">
                                     <Link href={outletCreate(business.id).url}>
                                         <Plus className="size-4" />
@@ -174,17 +117,11 @@ export default function BusinessesShow({ business }: { business: Business }) {
                             </div>
 
                             {outlets.length === 0 ? (
-                                <div className="py-4 text-sm text-muted-foreground">
-                                    No outlets yet.
-                                </div>
+                                <div className="py-4 text-sm text-muted-foreground">No outlets yet.</div>
                             ) : (
                                 <div className="divide-y">
                                     {outlets.map((outlet) => (
-                                        <OutletListItem
-                                            key={outlet.id}
-                                            business={business}
-                                            outlet={outlet}
-                                        />
+                                        <OutletListItem key={outlet.id} business={business} outlet={outlet} />
                                     ))}
                                 </div>
                             )}
@@ -196,24 +133,14 @@ export default function BusinessesShow({ business }: { business: Business }) {
     );
 }
 
-function OutletListItem({
-    business,
-    outlet,
-}: {
-    business: Business;
-    outlet: Outlet;
-}) {
+function OutletListItem({ business, outlet }: { business: Business; outlet: Outlet }) {
     return (
         <div className="space-y-2 py-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="font-medium">{outlet.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                        ({outlet.code || 'No code'})
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                        {outlet.outlet_type_label || 'No type'}
-                    </span>
+                    <span className="text-sm text-muted-foreground">({outlet.code || 'No code'})</span>
+                    <span className="text-sm text-muted-foreground">{outlet.outlet_type_label || 'No type'}</span>
                 </div>
                 <Badge
                     variant="outline"
@@ -227,9 +154,7 @@ function OutletListItem({
                 </Badge>
             </div>
 
-            <div className="text-sm text-muted-foreground">
-                Mobile: {outlet.mobile}
-            </div>
+            <div className="text-sm text-muted-foreground">Mobile: {outlet.mobile}</div>
 
             <div className="flex gap-2">
                 <Button size="sm" variant="outline" asChild>
@@ -242,11 +167,7 @@ function OutletListItem({
                 <Form
                     action={OutletController.destroy({ business, outlet })}
                     options={{ preserveScroll: true }}
-                    onBefore={() =>
-                        window.confirm(
-                            `Delete the outlet "${outlet.name}" from this business?`,
-                        )
-                    }
+                    onBefore={() => window.confirm(`Delete the outlet "${outlet.name}" from this business?`)}
                 >
                     {({ processing }) => (
                         <Button
@@ -295,9 +216,7 @@ function TextEntry({
 
     return (
         <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
-            <div className="text-sm text-muted-foreground sm:w-32 sm:shrink-0">
-                {label}
-            </div>
+            <div className="text-sm text-muted-foreground sm:w-32 sm:shrink-0">{label}</div>
             <div className="text-sm font-medium">{content}</div>
         </div>
     );

@@ -7,6 +7,7 @@ use App\Models\Business;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 
 class ProductVariantController extends Controller
 {
@@ -36,6 +37,12 @@ class ProductVariantController extends Controller
     public function destroy(Product $product, ProductVariant $productVariant): RedirectResponse
     {
         $this->ensureProductVariantOwnership($product, $productVariant);
+
+        if ($productVariant->purchaseItems()->exists() || $productVariant->stockLedgers()->exists() || $productVariant->stocks()->exists()) {
+            throw ValidationException::withMessages([
+                'product_variant' => 'Delete the related purchase items or stocks before deleting this variant.',
+            ]);
+        }
 
         $productVariant->delete();
 

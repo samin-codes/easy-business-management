@@ -17,13 +17,7 @@ type QueryString = {
     direction: 'asc' | 'desc';
 };
 
-export default function PartiesIndex({
-    parties,
-    queryString,
-}: {
-    parties: LengthAwarePagination<Party>;
-    queryString: QueryString;
-}) {
+export default function PartiesIndex({ parties, queryString }: { parties: LengthAwarePagination<Party>; queryString: QueryString }) {
     const searchTimeout = useRef<number | undefined>(undefined);
     const reloadProps = ['parties', 'queryString'];
 
@@ -115,12 +109,7 @@ export default function PartiesIndex({
                                         <thead className="[&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-transparent">
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
                                                         <Link
                                                             href={index({
                                                                 query: {
@@ -137,16 +126,14 @@ export default function PartiesIndex({
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'asc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'asc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
                                                                 />
                                                                 <ChevronDown
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'desc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'desc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
@@ -155,9 +142,7 @@ export default function PartiesIndex({
                                                         </Link>
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Party Type
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Party Type</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Mobile</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
@@ -168,24 +153,15 @@ export default function PartiesIndex({
                                         <tbody className="[&_tr:last-child]:border-0">
                                             {parties.data.length > 0 ? (
                                                 parties.data.map((party) => (
-                                                    <tr
-                                                        key={party.id}
-                                                        className="border-b transition-colors hover:bg-muted/50"
-                                                    >
+                                                    <tr key={party.id} className="border-b transition-colors hover:bg-muted/50">
                                                         <td className="px-4 py-3 align-middle">
                                                             <div className="font-medium">{party.name}</div>
                                                             {party.trade_name && (
-                                                                <div className="text-sm text-muted-foreground">
-                                                                    {party.trade_name}
-                                                                </div>
+                                                                <div className="text-sm text-muted-foreground">{party.trade_name}</div>
                                                             )}
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {party.party_type_label ?? '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {party.mobile ?? '-'}
-                                                        </td>
+                                                        <td className="px-4 py-3 align-middle">{party.party_type_label ?? '-'}</td>
+                                                        <td className="px-4 py-3 align-middle">{party.mobile ?? '-'}</td>
                                                         <td className="px-4 py-3 align-middle">
                                                             <Badge
                                                                 variant="outline"

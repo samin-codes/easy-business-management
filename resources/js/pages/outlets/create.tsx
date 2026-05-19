@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { show as businessShow } from '@/routes/business';
 import { create } from '@/routes/businesses/outlets';
 import type { BreadcrumbItem, Option } from '@/types';
-import OutletForm from './form';
+import OutletForm from './components/form';
 import type { Business } from './types';
 
 export default function OutletsCreate({

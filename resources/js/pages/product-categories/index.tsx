@@ -112,12 +112,7 @@ export default function ProductCategoriesIndex({
                                         <thead className="[&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-transparent">
                                                 <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="-ml-3 h-8 px-3 font-medium"
-                                                        asChild
-                                                    >
+                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
                                                         <Link
                                                             href={index({
                                                                 query: {
@@ -134,16 +129,14 @@ export default function ProductCategoriesIndex({
                                                             <span className="flex flex-col" aria-hidden="true">
                                                                 <ChevronUp
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'asc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'asc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
                                                                 />
                                                                 <ChevronDown
                                                                     className={
-                                                                        queryString.sort === 'name' &&
-                                                                        queryString.direction === 'desc'
+                                                                        queryString.sort === 'name' && queryString.direction === 'desc'
                                                                             ? 'size-3 text-primary'
                                                                             : 'size-3 text-muted-foreground'
                                                                     }
@@ -152,9 +145,7 @@ export default function ProductCategoriesIndex({
                                                         </Link>
                                                     </Button>
                                                 </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    Business
-                                                </th>
+                                                <th className="h-10 px-4 text-left align-middle font-medium">Business</th>
                                                 <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
                                                 <th className="h-10 px-4 text-right align-middle font-medium">
                                                     <span className="sr-only">Actions</span>
@@ -164,16 +155,11 @@ export default function ProductCategoriesIndex({
                                         <tbody className="[&_tr:last-child]:border-0">
                                             {productCategories.data.length > 0 ? (
                                                 productCategories.data.map((productCategory) => (
-                                                    <tr
-                                                        key={productCategory.id}
-                                                        className="border-b transition-colors hover:bg-muted/50"
-                                                    >
+                                                    <tr key={productCategory.id} className="border-b transition-colors hover:bg-muted/50">
                                                         <td className="px-4 py-3 align-middle">
                                                             <div className="font-medium">{productCategory.name}</div>
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {productCategory.business?.name ?? '-'}
-                                                        </td>
+                                                        <td className="px-4 py-3 align-middle">{productCategory.business?.name ?? '-'}</td>
                                                         <td className="px-4 py-3 align-middle">
                                                             <Badge
                                                                 variant="outline"
@@ -191,9 +177,7 @@ export default function ProductCategoriesIndex({
                                                                 <Button variant="ghost" size="icon-sm" asChild>
                                                                     <Link href={edit(productCategory.id)}>
                                                                         <SquarePen className="size-4" />
-                                                                        <span className="sr-only">
-                                                                            Edit product category
-                                                                        </span>
+                                                                        <span className="sr-only">Edit product category</span>
                                                                     </Link>
                                                                 </Button>
                                                             </div>
@@ -206,9 +190,7 @@ export default function ProductCategoriesIndex({
                                                         colSpan={5}
                                                         className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
                                                     >
-                                                        {queryString.search
-                                                            ? 'No product categories found.'
-                                                            : 'No product categories yet.'}
+                                                        {queryString.search ? 'No product categories found.' : 'No product categories yet.'}
                                                     </td>
                                                 </tr>
                                             )}
