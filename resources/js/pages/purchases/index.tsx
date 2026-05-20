@@ -288,7 +288,7 @@ export default function PurchasesIndex({
                                                                 {purchase.payment_status_label ?? purchase.payment_status}
                                                             </Badge>
                                                         </td>
-                                                        <td className="px-4 py-3 align-middle">{purchase.user?.name ?? '-'}</td>
+                                                        <td className="px-4 py-3 align-middle">{purchase.createdBy?.name ?? '-'}</td>
                                                         <td className="px-4 py-3 text-right align-middle">
                                                             <div className="flex justify-end gap-3">
                                                                 <Button variant="ghost" size="icon-sm" asChild>

@@ -25,6 +25,10 @@ return new class extends Migration
                 ->constrained('parties')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
+            $table->foreignId('created_by_id')
+                ->constrained('users')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->string('purchase_no');
             $table->date('purchase_date');
             $table->decimal('subtotal', 15, 2)->default(0);
@@ -44,6 +48,7 @@ return new class extends Migration
             $table->index('business_id');
             $table->index('outlet_id');
             $table->index('supplier_party_id');
+            $table->index('created_by_id');
             $table->index('purchase_date');
             $table->index('payment_status');
             $table->index('status');

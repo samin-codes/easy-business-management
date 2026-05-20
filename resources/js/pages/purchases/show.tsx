@@ -65,7 +65,7 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry label="Supplier" value={purchase.supplier?.name} />
-                                    <TextEntry label="Created By" value={purchase.user?.name} />
+                                    <TextEntry label="Created By" value={purchase.createdBy?.name} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry

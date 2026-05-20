@@ -24,7 +24,7 @@ class Purchase extends Model
         'business_id',
         'outlet_id',
         'supplier_party_id',
-        'user_id',
+        'created_by_id',
         'purchase_no',
         'purchase_date',
         'subtotal',
@@ -97,9 +97,9 @@ class Purchase extends Model
         return $this->belongsTo(Party::class, 'supplier_party_id');
     }
 
-    public function user(): BelongsTo
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by_id');
     }
 
     public function items(): HasMany

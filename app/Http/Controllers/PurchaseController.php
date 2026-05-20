@@ -40,7 +40,7 @@ class PurchaseController extends Controller
         }
 
         $purchases = Purchase::query()
-            ->with(['supplier:id,name', 'outlet:id,name', 'user:id,name', 'business:id,name'])
+            ->with(['supplier:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
             ->whereBelongsTo($business)
             ->when($search, function ($query, $search) {
                 $query->where('purchase_no', 'like', "%{$search}%");
@@ -65,7 +65,7 @@ class PurchaseController extends Controller
         $purchase->load([
             'supplier:id,name',
             'outlet:id,name,code',
-            'user:id,name',
+            'createdBy:id,name',
             'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
             'items.productVariant.product:id,name',
             'items.productVariant.brand:id,name',
@@ -103,7 +103,7 @@ class PurchaseController extends Controller
     {
         [$data, $items] = $this->preparePurchaseData($request->validated());
 
-        $data['user_id'] = auth()->id();
+        $data['created_by_id'] = auth()->id();
         $data['purchase_no'] = Purchase::generatePurchaseNumber((int) $data['outlet_id'], Carbon::parse($data['purchase_date']));
 
         $purchase = DB::transaction(function () use ($data, $items): Purchase {

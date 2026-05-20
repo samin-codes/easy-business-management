@@ -109,7 +109,7 @@ export type Purchase = {
     business_id: number;
     outlet_id: number;
     supplier_party_id: number;
-    user_id: number;
+    created_by_id: number;
     purchase_no: string;
     purchase_date: string;
     subtotal: string;
@@ -129,7 +129,7 @@ export type Purchase = {
     updated_at: string | null;
     supplier?: Supplier;
     outlet?: Outlet;
-    user?: Pick<User, 'id' | 'name'>;
+    createdBy?: Pick<User, 'id' | 'name'>;
     business?: Business;
     items: PurchaseItem[];
 };
