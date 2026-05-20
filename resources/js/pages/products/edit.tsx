@@ -115,7 +115,7 @@ export default function ProductsEdit({
             </div>
 
             <ProductVariantDialog
-                key={selectedProductVariant ? `edit-${selectedProductVariant.id}` : 'create'}
+                key={selectedProductVariant ? `edit-${selectedProductVariant.id}` : 'create-variant'}
                 product={product}
                 productVariant={selectedProductVariant}
                 brands={brands}
@@ -127,7 +127,7 @@ export default function ProductsEdit({
             />
 
             <UnitConversionDialog
-                key={selectedUnitConversion ? `edit-${selectedUnitConversion.id}` : 'create'}
+                key={selectedUnitConversion ? `edit-${selectedUnitConversion.id}` : 'create-conversion'}
                 product={product}
                 unitConversion={selectedUnitConversion}
                 units={getAvailableUnits(selectedUnitConversion?.unit_of_measurement_id)}
