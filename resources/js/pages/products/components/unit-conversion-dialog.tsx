@@ -188,39 +188,29 @@ export default function UnitConversionDialog({
                                     <FieldError errors={[{ message: errors.conversion_factor_to_base }]} />
                                 </Field>
 
-                                <Field className="md:col-span-2">
+                                <Field orientation="horizontal" className="md:col-span-2">
                                     <input type="hidden" name="is_default_purchase_unit" value="0" />
-                                    <label
-                                        htmlFor="is_default_purchase_unit"
-                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
-                                    >
-                                        <Checkbox
-                                            id="is_default_purchase_unit"
-                                            name="is_default_purchase_unit"
-                                            value="1"
-                                            defaultChecked={unitConversion?.is_default_purchase_unit ?? false}
-                                            aria-invalid={Boolean(errors.is_default_purchase_unit)}
-                                        />
-                                        Use for purchases by default
-                                    </label>
+                                    <Checkbox
+                                        id="is_default_purchase_unit"
+                                        name="is_default_purchase_unit"
+                                        value="1"
+                                        defaultChecked={unitConversion?.is_default_purchase_unit ?? false}
+                                        aria-invalid={Boolean(errors.is_default_purchase_unit)}
+                                    />
+                                    <FieldLabel htmlFor="is_default_purchase_unit">Use for purchases by default</FieldLabel>
                                     <FieldError errors={[{ message: errors.is_default_purchase_unit }]} />
                                 </Field>
 
-                                <Field className="md:col-span-2">
+                                <Field orientation="horizontal" className="md:col-span-2">
                                     <input type="hidden" name="is_default_sale_unit" value="0" />
-                                    <label
-                                        htmlFor="is_default_sale_unit"
-                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
-                                    >
-                                        <Checkbox
-                                            id="is_default_sale_unit"
-                                            name="is_default_sale_unit"
-                                            value="1"
-                                            defaultChecked={unitConversion?.is_default_sale_unit ?? false}
-                                            aria-invalid={Boolean(errors.is_default_sale_unit)}
-                                        />
-                                        Use for sales by default
-                                    </label>
+                                    <Checkbox
+                                        id="is_default_sale_unit"
+                                        name="is_default_sale_unit"
+                                        value="1"
+                                        defaultChecked={unitConversion?.is_default_sale_unit ?? false}
+                                        aria-invalid={Boolean(errors.is_default_sale_unit)}
+                                    />
+                                    <FieldLabel htmlFor="is_default_sale_unit">Use for sales by default</FieldLabel>
                                     <FieldError errors={[{ message: errors.is_default_sale_unit }]} />
                                 </Field>
 

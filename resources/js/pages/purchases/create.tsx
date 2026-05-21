@@ -5,6 +5,7 @@ import PurchaseController from '@/actions/App/Http/Controllers/PurchaseControlle
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -445,7 +446,8 @@ export default function PurchasesCreate({
                                         </Field>
                                     </FieldGroup>
 
-                                    <div className="space-y-1 overflow-hidden rounded-lg border bg-card p-4">
+                                    <Card className="overflow-hidden p-0">
+                                        <CardContent className="space-y-1 p-4">
                                         <div className="flex items-center justify-between gap-4 py-1">
                                             <span className="text-sm text-muted-foreground">Subtotal</span>
                                             <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
@@ -584,7 +586,8 @@ export default function PurchasesCreate({
                                                 </Badge>
                                             </span>
                                         </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 </SectionContent>
                             </Section>
 

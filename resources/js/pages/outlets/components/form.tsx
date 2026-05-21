@@ -2,15 +2,16 @@ import { Form, Link } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
 import OutletController from '@/actions/App/Http/Controllers/OutletController';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import type { Option } from '@/types';
 import type { Business, Outlet } from '../types';
-import { Separator } from '@/components/ui/separator';
 
 export default function OutletForm({
     business,
@@ -40,13 +41,16 @@ export default function OutletForm({
         >
             {({ errors, processing }) => (
                 <div className="space-y-6">
-                    <div>
-                        <div className="mb-3 text-base font-medium">Outlet details</div>
-                        <div className="flex flex-col gap-7">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="name" className="text-sm font-medium">
-                                    Outlet name <span className="text-red-500">*</span>
-                                </label>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Outlet details</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <Field>
+                                <FieldLabel htmlFor="name">
+                                    Outlet name <span className="-ml-1 text-red-500">*</span>
+                                </FieldLabel>
                                 <Input
                                     id="name"
                                     name="name"
@@ -54,14 +58,12 @@ export default function OutletForm({
                                     aria-invalid={Boolean(errors.name)}
                                     placeholder="Banani Branch"
                                 />
-                                <InputError message={errors.name} />
-                            </div>
+                                <FieldError errors={[{ message: errors.name }]} />
+                            </Field>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="code" className="text-sm font-medium">
-                                        Outlet code
-                                    </label>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="code">Outlet code</FieldLabel>
                                     <Input
                                         id="code"
                                         name="code"
@@ -69,13 +71,11 @@ export default function OutletForm({
                                         aria-invalid={Boolean(errors.code)}
                                         placeholder="BAN-01"
                                     />
-                                    <InputError message={errors.code} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.code }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="outlet_type" className="text-sm font-medium">
-                                        Outlet type
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="outlet_type">Outlet type</FieldLabel>
                                     <input type="hidden" name="outlet_type" value={outletType} readOnly />
                                     <Select value={outletType} onValueChange={setOutletType}>
                                         <SelectTrigger id="outlet_type" className="w-full" aria-invalid={Boolean(errors.outlet_type)}>
@@ -89,14 +89,14 @@ export default function OutletForm({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <InputError message={errors.outlet_type} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.outlet_type }]} />
+                                </Field>
+                            </FieldGroup>
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="status" className="text-sm font-medium">
-                                    Status <span className="text-red-500">*</span>
-                                </label>
+                            <Field>
+                                <FieldLabel htmlFor="status">
+                                    Status <span className="-ml-1 text-red-500">*</span>
+                                </FieldLabel>
                                 <input type="hidden" name="status" value={status} readOnly />
                                 <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                     {statusOptions.map((option) => (
@@ -112,58 +112,58 @@ export default function OutletForm({
                                         </div>
                                     ))}
                                 </RadioGroup>
-                                <InputError message={errors.status} />
-                            </div>
-                        </div>
-                    </div>
+                                <FieldError errors={[{ message: errors.status }]} />
+                            </Field>
+                        </SectionContent>
+                    </Section>
 
-                    <Separator />
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Contact</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
 
-                    <div>
-                        <div className="mb-3 text-base font-medium">Contact</div>
+                        <SectionContent>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="mobile">
+                                        Mobile <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
+                                    <Input
+                                        id="mobile"
+                                        name="mobile"
+                                        defaultValue={outlet?.mobile ?? ''}
+                                        aria-invalid={Boolean(errors.mobile)}
+                                        placeholder="01XXXXXXXXX"
+                                    />
+                                    <FieldError errors={[{ message: errors.mobile }]} />
+                                </Field>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="mobile" className="text-sm font-medium">
-                                    Mobile <span className="text-red-500">*</span>
-                                </label>
-                                <Input
-                                    id="mobile"
-                                    name="mobile"
-                                    defaultValue={outlet?.mobile ?? ''}
-                                    aria-invalid={Boolean(errors.mobile)}
-                                    placeholder="01XXXXXXXXX"
-                                />
-                                <InputError message={errors.mobile} />
-                            </div>
+                                <Field>
+                                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        defaultValue={outlet?.email ?? ''}
+                                        aria-invalid={Boolean(errors.email)}
+                                        placeholder="branch@example.com"
+                                    />
+                                    <FieldError errors={[{ message: errors.email }]} />
+                                </Field>
+                            </FieldGroup>
+                        </SectionContent>
+                    </Section>
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="email" className="text-sm font-medium">
-                                    Email
-                                </label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    defaultValue={outlet?.email ?? ''}
-                                    aria-invalid={Boolean(errors.email)}
-                                    placeholder="branch@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-                        </div>
-                    </div>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Address</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
 
-                    <Separator />
-
-                    <div>
-                        <div className="mb-3 text-base font-medium">Address</div>
-
-                        <div className="flex flex-col gap-7">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="address_line" className="text-sm font-medium">
-                                    Address line
-                                </label>
+                        <SectionContent>
+                            <Field>
+                                <FieldLabel htmlFor="address_line">Address line</FieldLabel>
                                 <Textarea
                                     id="address_line"
                                     name="address_line"
@@ -172,14 +172,12 @@ export default function OutletForm({
                                     placeholder="House, road, market or landmark"
                                     className="min-h-28 resize-none"
                                 />
-                                <InputError message={errors.address_line} />
-                            </div>
+                                <FieldError errors={[{ message: errors.address_line }]} />
+                            </Field>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="district" className="text-sm font-medium">
-                                        District
-                                    </label>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="district">District</FieldLabel>
                                     <Input
                                         id="district"
                                         name="district"
@@ -187,13 +185,11 @@ export default function OutletForm({
                                         aria-invalid={Boolean(errors.district)}
                                         placeholder="Dhaka"
                                     />
-                                    <InputError message={errors.district} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.district }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="postal_code" className="text-sm font-medium">
-                                        Postal code
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="postal_code">Postal code</FieldLabel>
                                     <Input
                                         id="postal_code"
                                         name="postal_code"
@@ -201,16 +197,14 @@ export default function OutletForm({
                                         aria-invalid={Boolean(errors.postal_code)}
                                         placeholder="1213"
                                     />
-                                    <InputError message={errors.postal_code} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.postal_code }]} />
+                                </Field>
+                            </FieldGroup>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
                                     <div className="relative flex items-center">
-                                        <label htmlFor="area_type" className="text-sm font-medium">
-                                            Area type
-                                        </label>
+                                        <FieldLabel htmlFor="area_type">Area type</FieldLabel>
                                         {areaType && (
                                             <Button
                                                 type="button"
@@ -238,14 +232,14 @@ export default function OutletForm({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <InputError message={errors.area_type} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.area_type }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="area_name" className="text-sm font-medium">
+                                <Field>
+                                    <FieldLabel htmlFor="area_name">
                                         Area name
-                                        {areaType && <span className="text-red-500"> *</span>}
-                                    </label>
+                                        {areaType && <span className="-ml-1 text-red-500"> *</span>}
+                                    </FieldLabel>
                                     <Input
                                         id="area_name"
                                         name="area_name"
@@ -253,11 +247,11 @@ export default function OutletForm({
                                         aria-invalid={Boolean(errors.area_name)}
                                         placeholder={areaType === 'thana' ? 'Gulshan' : 'Keraniganj'}
                                     />
-                                    <InputError message={errors.area_name} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                    <FieldError errors={[{ message: errors.area_name }]} />
+                                </Field>
+                            </FieldGroup>
+                        </SectionContent>
+                    </Section>
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>

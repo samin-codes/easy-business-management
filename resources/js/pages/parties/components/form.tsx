@@ -10,6 +10,7 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { formatDecimal } from '@/lib/utils';
 import type { Option, Party } from '@/types';
 
 export default function PartyForm({
@@ -204,6 +205,9 @@ export default function PartyForm({
                                             step="0.01"
                                             className="no-number-spinner w-40"
                                             defaultValue={party?.opening_balance ?? ''}
+                                            onBlur={(event) => {
+                                                event.currentTarget.value = formatDecimal(event.currentTarget.value);
+                                            }}
                                             aria-invalid={Boolean(errors.opening_balance)}
                                             placeholder="0.00"
                                         />
@@ -221,6 +225,9 @@ export default function PartyForm({
                                             step="0.01"
                                             className="no-number-spinner w-40"
                                             defaultValue={party?.credit_limit ?? ''}
+                                            onBlur={(event) => {
+                                                event.currentTarget.value = formatDecimal(event.currentTarget.value);
+                                            }}
                                             aria-invalid={Boolean(errors.credit_limit)}
                                             placeholder="0.00"
                                         />
