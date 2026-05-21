@@ -2,11 +2,11 @@ import { Form } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
 import ProductUnitConversionController from '@/actions/App/Http/Controllers/ProductUnitConversionController';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -81,11 +81,11 @@ export default function UnitConversionDialog({
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-5 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="unit_of_measurement_id" className="text-sm font-medium">
-                                        Unit <span className="text-red-500">*</span>
-                                    </label>
+                            <FieldGroup className="grid gap-5 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="unit_of_measurement_id">
+                                        Unit <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
 
                                     <Combobox
                                         name="unit_of_measurement_id"
@@ -116,13 +116,13 @@ export default function UnitConversionDialog({
                                         </ComboboxContent>
                                     </Combobox>
 
-                                    <InputError message={errors.unit_of_measurement_id ?? errors.product_unit_conversion} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.unit_of_measurement_id ?? errors.product_unit_conversion }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2 md:col-span-2">
-                                    <label htmlFor="selected_unit_quantity" className="text-sm font-medium">
-                                        Conversion <span className="text-red-500">*</span>
-                                    </label>
+                                <Field className="md:col-span-2">
+                                    <FieldLabel htmlFor="selected_unit_quantity">
+                                        Conversion <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
                                     <input type="hidden" name="conversion_factor_to_base" value={conversionFactor} readOnly />
 
                                     <div className="flex flex-col gap-3">
@@ -185,10 +185,10 @@ export default function UnitConversionDialog({
                                         </div>
                                     </div>
 
-                                    <InputError message={errors.conversion_factor_to_base} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.conversion_factor_to_base }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2 md:col-span-2">
+                                <Field className="md:col-span-2">
                                     <input type="hidden" name="is_default_purchase_unit" value="0" />
                                     <label
                                         htmlFor="is_default_purchase_unit"
@@ -203,10 +203,10 @@ export default function UnitConversionDialog({
                                         />
                                         Use for purchases by default
                                     </label>
-                                    <InputError message={errors.is_default_purchase_unit} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.is_default_purchase_unit }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2 md:col-span-2">
+                                <Field className="md:col-span-2">
                                     <input type="hidden" name="is_default_sale_unit" value="0" />
                                     <label
                                         htmlFor="is_default_sale_unit"
@@ -221,17 +221,17 @@ export default function UnitConversionDialog({
                                         />
                                         Use for sales by default
                                     </label>
-                                    <InputError message={errors.is_default_sale_unit} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.is_default_sale_unit }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2 md:col-span-2">
-                                    <label htmlFor="unit_conversion_status" className="text-sm font-medium">
-                                        Status <span className="text-red-500">*</span>
-                                    </label>
+                                <Field className="md:col-span-2">
+                                    <FieldLabel htmlFor="status">
+                                        Status <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
                                     <RadioGroup
                                         name="status"
                                         defaultValue={unitConversion?.status ?? 'active'}
-                                        className="flex flex-row items-center gap-6"
+                                        className="flex flex-row items-center gap-6 pt-2"
                                     >
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
@@ -246,9 +246,9 @@ export default function UnitConversionDialog({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <InputError message={errors.status} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.status }]} />
+                                </Field>
+                            </FieldGroup>
 
                             <DialogFooter>
                                 <DialogClose asChild>

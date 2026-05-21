@@ -39,7 +39,7 @@ type ProductVariant = {
     id: number;
     product_id: number;
     variant_name: string;
-    sku: string;
+    sku: string | null;
     brand_id: number | null;
     grade_value: string | null;
     grade_unit_id: number | null;

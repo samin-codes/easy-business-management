@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\RecordStatus;
-use App\Models\ProductVariant;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,16 +21,12 @@ class SaveProductVariantRequest extends FormRequest
      */
     public function rules(): array
     {
-        /** @var ProductVariant|null $productVariant */
-        $productVariant = $this->route('product_variant');
-
         return [
             'variant_name' => ['required', 'string', 'max:255'],
             'sku' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
-                Rule::unique('product_variants', 'sku')->ignore($productVariant?->id),
             ],
             'brand_id' => ['nullable', 'exists:brands,id'],
             'grade_value' => ['nullable', 'numeric', 'gte:0', 'required_with:grade_unit_id'],
@@ -52,8 +47,6 @@ class SaveProductVariantRequest extends FormRequest
     {
         return [
             'variant_name.required' => 'Enter a variant name.',
-            'sku.required' => 'Enter a SKU.',
-            'sku.unique' => 'This SKU is already used by another variant.',
             'grade_value.required_with' => 'Enter the grade value when selecting a grade unit.',
             'grade_unit_id.required_with' => 'Select the grade unit when entering a grade value.',
             'width.required_with' => 'Enter the width when defining dimensions.',
@@ -66,6 +59,7 @@ class SaveProductVariantRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'sku' => $this->filled('sku') ? $this->input('sku') : null,
             'brand_id' => $this->filled('brand_id') ? $this->input('brand_id') : null,
             'grade_value' => $this->filled('grade_value') ? $this->input('grade_value') : null,
             'grade_unit_id' => $this->filled('grade_unit_id') ? $this->input('grade_unit_id') : null,

@@ -1,15 +1,18 @@
 import { Head } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/products';
 import type { BreadcrumbItem, Option } from '@/types';
 import ProductForm from './components/form';
 import ProductVariantDialog from './components/product-variant-dialog';
-import ProductVariantsSection from './components/product-variants-section';
+import ProductVariantTable from './components/product-variant-table';
 import UnitConversionDialog from './components/unit-conversion-dialog';
-import UnitConversionsSection from './components/unit-conversions-section';
+import UnitConversionTable from './components/unit-conversion-table';
 import type {
     Brand,
     Product,
@@ -106,11 +109,37 @@ export default function ProductsEdit({
 
                     <Separator />
 
-                    <ProductVariantsSection product={product} onCreate={handleCreateProductVariant} onEdit={handleEditProductVariant} />
+                    <Section>
+                        <SectionHeader>
+                            <div className="flex items-center justify-between gap-4">
+                                <SectionTitle>Product Variants</SectionTitle>
+                                <Button type="button" size="sm" onClick={handleCreateProductVariant}>
+                                    <Plus className="size-4" />
+                                    Add Variant
+                                </Button>
+                            </div>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <ProductVariantTable product={product} onEdit={handleEditProductVariant} />
+                        </SectionContent>
+                    </Section>
 
-                    <Separator />
-
-                    <UnitConversionsSection product={product} onCreate={handleCreateUnitConversion} onEdit={handleEditUnitConversion} />
+                    <Section>
+                        <SectionHeader>
+                            <div className="flex items-center justify-between gap-4">
+                                <SectionTitle>Unit Conversions</SectionTitle>
+                                <Button type="button" size="sm" onClick={handleCreateUnitConversion}>
+                                    <Plus className="size-4" />
+                                    Add Unit Conversion
+                                </Button>
+                            </div>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <UnitConversionTable product={product} onEdit={handleEditUnitConversion} />
+                        </SectionContent>
+                    </Section>
                 </div>
             </div>
 

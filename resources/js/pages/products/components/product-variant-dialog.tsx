@@ -1,11 +1,11 @@
 import { Form } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import ProductVariantController from '@/actions/App/Http/Controllers/ProductVariantController';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -71,11 +71,11 @@ export default function ProductVariantDialog({
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-5 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="variant_name" className="text-sm font-medium">
-                                        Variant name <span className="text-red-500">*</span>
-                                    </label>
+                            <FieldGroup className="grid gap-5 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="variant_name">
+                                        Variant name <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
                                     <Input
                                         id="variant_name"
                                         name="variant_name"
@@ -83,13 +83,11 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.variant_name)}
                                         placeholder="Local Mill / 80 GSM / 23x36"
                                     />
-                                    <InputError message={errors.variant_name} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.variant_name }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="sku" className="text-sm font-medium">
-                                        SKU <span className="text-red-500">*</span>
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="sku">SKU</FieldLabel>
                                     <Input
                                         id="sku"
                                         name="sku"
@@ -97,10 +95,10 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.sku)}
                                         placeholder="OFF-80-2336-001"
                                     />
-                                    <InputError message={errors.sku} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.sku }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-1 md:col-span-2">
+                                <Field className="md:col-span-2">
                                     <input type="hidden" name="is_placeholder_variant" value="0" />
                                     <label
                                         htmlFor="is_placeholder_variant"
@@ -118,13 +116,11 @@ export default function ProductVariantDialog({
                                     <div className="pl-6 text-xs leading-5 text-muted-foreground">
                                         Use when this product does not need separate brand, grade, or size variants.
                                     </div>
-                                    <InputError message={errors.is_placeholder_variant} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.is_placeholder_variant }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="brand_id" className="text-sm font-medium">
-                                        Brand
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
                                     <Combobox
                                         name="brand_id"
                                         items={brands}
@@ -150,13 +146,11 @@ export default function ProductVariantDialog({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <InputError message={errors.brand_id} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.brand_id }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="grade_value" className="text-sm font-medium">
-                                        Grade value
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="grade_value">Grade value</FieldLabel>
                                     <Input
                                         id="grade_value"
                                         name="grade_value"
@@ -167,13 +161,11 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.grade_value)}
                                         placeholder="80"
                                     />
-                                    <InputError message={errors.grade_value} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.grade_value }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="grade_unit_id" className="text-sm font-medium">
-                                        Grade unit
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="grade_unit_id">Grade unit</FieldLabel>
                                     <Combobox
                                         name="grade_unit_id"
                                         items={productGradeUnits}
@@ -199,14 +191,12 @@ export default function ProductVariantDialog({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <InputError message={errors.grade_unit_id} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.grade_unit_id }]} />
+                                </Field>
 
                                 <div className="grid gap-5 md:col-span-2 md:grid-cols-3">
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="width" className="text-sm font-medium">
-                                            Width
-                                        </label>
+                                    <Field>
+                                        <FieldLabel htmlFor="width">Width</FieldLabel>
                                         <Input
                                             id="width"
                                             name="width"
@@ -216,13 +206,11 @@ export default function ProductVariantDialog({
                                             aria-invalid={Boolean(errors.width)}
                                             placeholder="23"
                                         />
-                                        <InputError message={errors.width} />
-                                    </div>
+                                        <FieldError errors={[{ message: errors.width }]} />
+                                    </Field>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="height" className="text-sm font-medium">
-                                            Height
-                                        </label>
+                                    <Field>
+                                        <FieldLabel htmlFor="height">Height</FieldLabel>
                                         <Input
                                             id="height"
                                             name="height"
@@ -232,13 +220,11 @@ export default function ProductVariantDialog({
                                             aria-invalid={Boolean(errors.height)}
                                             placeholder="36"
                                         />
-                                        <InputError message={errors.height} />
-                                    </div>
+                                        <FieldError errors={[{ message: errors.height }]} />
+                                    </Field>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label htmlFor="size_unit_id" className="text-sm font-medium">
-                                            Size unit
-                                        </label>
+                                    <Field>
+                                        <FieldLabel htmlFor="size_unit_id">Size unit</FieldLabel>
                                         <Combobox
                                             name="size_unit_id"
                                             items={productSizeUnits}
@@ -264,14 +250,12 @@ export default function ProductVariantDialog({
                                                 </ComboboxList>
                                             </ComboboxContent>
                                         </Combobox>
-                                        <InputError message={errors.size_unit_id} />
-                                    </div>
+                                        <FieldError errors={[{ message: errors.size_unit_id }]} />
+                                    </Field>
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="size_label" className="text-sm font-medium">
-                                        Size label
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="size_label">Size label</FieldLabel>
                                     <Input
                                         id="size_label"
                                         name="size_label"
@@ -279,17 +263,17 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.size_label)}
                                         placeholder="A4 or 23x36"
                                     />
-                                    <InputError message={errors.size_label} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.size_label }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2 md:col-span-2">
-                                    <label htmlFor="status" className="text-sm font-medium">
-                                        Status <span className="text-red-500">*</span>
-                                    </label>
+                                <Field className="md:col-span-2">
+                                    <FieldLabel htmlFor="status">
+                                        Status <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
                                     <RadioGroup
                                         name="status"
                                         defaultValue={productVariant?.status ?? 'active'}
-                                        className="flex min-h-9 flex-row items-center gap-6"
+                                        className="flex flex-row items-center gap-6 pt-2"
                                     >
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
@@ -304,9 +288,9 @@ export default function ProductVariantDialog({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <InputError message={errors.status} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.status }]} />
+                                </Field>
+                            </FieldGroup>
 
                             <DialogFooter>
                                 <DialogClose asChild>

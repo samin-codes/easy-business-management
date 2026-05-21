@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table->string('variant_name');
-            $table->string('sku')->unique();
+            $table->string('sku')->nullable();
             $table->foreignId('brand_id')
                 ->nullable()
                 ->constrained()
