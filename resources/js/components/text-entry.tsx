@@ -199,7 +199,7 @@ export function TextEntry({
         );
 
     return (
-        <div className={cn(inlineLabel ? 'grid gap-1 sm:grid-cols-[10rem_1fr] sm:gap-4' : 'space-y-1', className)}>
+        <div className={cn(inlineLabel ? 'grid gap-1 sm:grid-cols-[10rem_1fr] sm:gap-4' : 'grid gap-2', className)}>
             <dt className={cn('text-sm text-muted-foreground', hiddenLabel && 'sr-only')}>{label}</dt>
 
             <dd

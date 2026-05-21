@@ -5,10 +5,6 @@ description: Use when reading or writing React components (.tsx, .jsx files with
 
 # React Best Practices
 
-## Pair with TypeScript
-
-When working with React, always load both this skill and `typescript-best-practices` together. TypeScript patterns (type-first development, discriminated unions, Zod validation) apply to React code.
-
 ## Core Principle: Effects Are Escape Hatches
 
 Effects let you "step outside" React to synchronize with external systems. **Most component logic should NOT use Effects.** Before writing an Effect, ask: "Is there a way to do this without an Effect?"
