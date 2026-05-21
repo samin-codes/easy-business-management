@@ -104,103 +104,96 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                                 )}
                             </div>
 
-                            <div className="overflow-hidden rounded-md border">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full caption-bottom text-sm">
-                                        <thead className="[&_tr]:border-b">
-                                            <tr className="border-b transition-colors hover:bg-transparent">
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link
-                                                            href={index({
-                                                                query: {
-                                                                    search: queryString.search ?? undefined,
-                                                                    sort: 'name',
-                                                                    direction: nextNameDirection,
-                                                                    page: 1,
-                                                                },
-                                                            })}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
-                                                            Name
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'name' && queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'name' && queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Category</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Business</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Base Unit</th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <span className="sr-only">Actions</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="[&_tr:last-child]:border-0">
-                                            {products.data.length > 0 ? (
-                                                products.data.map((product) => (
-                                                    <tr key={product.id} className="border-b transition-colors hover:bg-muted/50">
-                                                        <td className="px-4 py-3 align-middle">
-                                                            <div className="font-medium">{product.name}</div>
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">{product.category.name}</td>
-                                                        <td className="px-4 py-3 align-middle">{product.business.name}</td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={
-                                                                    product.status === 'active'
-                                                                        ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                                                        : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
-                                                                }
-                                                            >
-                                                                {product.status_label ?? '-'}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            {product.base_unit_of_measurement?.name ?? '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right align-middle">
-                                                            <div className="flex justify-end gap-3">
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link href={edit(product.id)}>
-                                                                        <SquarePen className="size-4" />
-                                                                        <span className="sr-only">Edit product</span>
-                                                                    </Link>
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td
-                                                        colSpan={6}
-                                                        className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
+                            <div className="overflow-x-auto rounded-md border">
+                                <table className="table-hover table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link
+                                                        href={index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'name',
+                                                                direction: nextNameDirection,
+                                                                page: 1,
+                                                            },
+                                                        })}
+                                                        preserveScroll
+                                                        only={reloadProps}
                                                     >
-                                                        {queryString.search ? 'No products found.' : 'No products yet.'}
+                                                        Name
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'name' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th>Category</th>
+                                            <th>Business</th>
+                                            <th>Status</th>
+                                            <th>Base Unit</th>
+                                            <th className="text-right">
+                                                <span className="sr-only">Actions</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {products.data.length > 0 ? (
+                                            products.data.map((product) => (
+                                                <tr key={product.id}>
+                                                    <td>
+                                                        <div className="font-medium">{product.name}</div>
+                                                    </td>
+                                                    <td>{product.category.name}</td>
+                                                    <td>{product.business.name}</td>
+                                                    <td>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={
+                                                                product.status === 'active'
+                                                                    ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                                                    : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                                                            }
+                                                        >
+                                                            {product.status_label ?? '-'}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>{product.base_unit_of_measurement?.name ?? '-'}</td>
+                                                    <td className="text-right">
+                                                        <div className="flex justify-end gap-3">
+                                                            <Button variant="ghost" size="icon-sm" asChild>
+                                                                <Link href={edit(product.id)}>
+                                                                    <SquarePen className="size-4" />
+                                                                    <span className="sr-only">Edit product</span>
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={6} className="h-24 text-center text-muted-foreground">
+                                                    {queryString.search ? 'No products found.' : 'No products yet.'}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
 
                             {hasPages && (

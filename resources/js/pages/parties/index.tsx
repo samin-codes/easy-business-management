@@ -103,108 +103,103 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                 )}
                             </div>
 
-                            <div className="overflow-hidden rounded-md border">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full caption-bottom text-sm">
-                                        <thead className="[&_tr]:border-b">
-                                            <tr className="border-b transition-colors hover:bg-transparent">
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link
-                                                            href={index({
-                                                                query: {
-                                                                    search: queryString.search ?? undefined,
-                                                                    sort: 'name',
-                                                                    direction: nextNameDirection,
-                                                                    page: 1,
-                                                                },
-                                                            })}
-                                                            preserveScroll
-                                                            only={reloadProps}
-                                                        >
-                                                            Name
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'name' && queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'name' && queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Party Type</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Mobile</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Status</th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <span className="sr-only">Actions</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="[&_tr:last-child]:border-0">
-                                            {parties.data.length > 0 ? (
-                                                parties.data.map((party) => (
-                                                    <tr key={party.id} className="border-b transition-colors hover:bg-muted/50">
-                                                        <td className="px-4 py-3 align-middle">
-                                                            <div className="font-medium">{party.name}</div>
-                                                            {party.trade_name && (
-                                                                <div className="text-sm text-muted-foreground">{party.trade_name}</div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">{party.party_type_label ?? '-'}</td>
-                                                        <td className="px-4 py-3 align-middle">{party.mobile ?? '-'}</td>
-                                                        <td className="px-4 py-3 align-middle">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={
-                                                                    party.status === 'active'
-                                                                        ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                                                        : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
-                                                                }
-                                                            >
-                                                                {party.status_label ?? '-'}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right align-middle">
-                                                            <div className="flex justify-end gap-3">
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link href={show(party.id)}>
-                                                                        <Eye className="size-4" />
-                                                                        <span className="sr-only">View party</span>
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link href={edit(party.id)}>
-                                                                        <SquarePen className="size-4" />
-                                                                        <span className="sr-only">Edit party</span>
-                                                                    </Link>
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td
-                                                        colSpan={5}
-                                                        className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
+                            <div className="overflow-x-auto rounded-md border">
+                                <table className="table-hover table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link
+                                                        href={index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'name',
+                                                                direction: nextNameDirection,
+                                                                page: 1,
+                                                            },
+                                                        })}
+                                                        preserveScroll
+                                                        only={reloadProps}
                                                     >
-                                                        {queryString.search ? 'No parties found.' : 'No parties yet.'}
+                                                        Name
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'name' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th>Party Type</th>
+                                            <th>Mobile</th>
+                                            <th>Status</th>
+                                            <th className="text-right">
+                                                <span className="sr-only">Actions</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {parties.data.length > 0 ? (
+                                            parties.data.map((party) => (
+                                                <tr key={party.id}>
+                                                    <td>
+                                                        <div className="font-medium">{party.name}</div>
+                                                        {party.trade_name && (
+                                                            <div className="text-sm text-muted-foreground">{party.trade_name}</div>
+                                                        )}
+                                                    </td>
+                                                    <td>{party.party_type_label ?? '-'}</td>
+                                                    <td>{party.mobile ?? '-'}</td>
+                                                    <td>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={
+                                                                party.status === 'active'
+                                                                    ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                                                    : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                                                            }
+                                                        >
+                                                            {party.status_label ?? '-'}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <div className="flex justify-end gap-3">
+                                                            <Button variant="ghost" size="icon-sm" asChild>
+                                                                <Link href={show(party.id)}>
+                                                                    <Eye className="size-4" />
+                                                                    <span className="sr-only">View party</span>
+                                                                </Link>
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon-sm" asChild>
+                                                                <Link href={edit(party.id)}>
+                                                                    <SquarePen className="size-4" />
+                                                                    <span className="sr-only">Edit party</span>
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className="h-24 text-center text-muted-foreground">
+                                                    {queryString.search ? 'No parties found.' : 'No parties yet.'}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
 
                             {hasPages && (

@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { format as formatDate, isValid, parseISO } from 'date-fns';
 import { Plus, Save, X } from 'lucide-react';
-import { store } from '@/actions/App/Http/Controllers/PurchaseController';
+import PurchaseController from '@/actions/App/Http/Controllers/PurchaseController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -112,7 +112,7 @@ export default function PurchasesCreate({
             }),
         }));
 
-        form.submit(store(), {
+        form.submit(PurchaseController.store(), {
             preserveScroll: true,
         });
     }
@@ -295,7 +295,7 @@ export default function PurchasesCreate({
                                     <Separator />
                                 </SectionHeader>
 
-                                <SectionContent className="overflow-x-auto rounded-md border p-0">
+                                <SectionContent>
                                     <PurchaseItemsTable
                                         items={form.data.items}
                                         products={products}
@@ -305,7 +305,7 @@ export default function PurchasesCreate({
                                     />
                                 </SectionContent>
 
-                                <div className="mt-4 flex justify-center pb-4">
+                                <div className="flex justify-center">
                                     <Button type="button" variant="outline" size="sm" onClick={handlePurchaseItemAdd}>
                                         <Plus className="size-4" />
                                         Add Item

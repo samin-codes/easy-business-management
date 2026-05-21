@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { format, parseISO } from 'date-fns';
 import { ChevronDown, ChevronUp, Eye, Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
@@ -17,14 +18,6 @@ type QueryString = {
     sort: 'purchase_no' | 'purchase_date' | 'total_amount' | 'paid_amount' | 'due_amount';
     direction: 'asc' | 'desc';
 };
-
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
 
 export default function PurchasesIndex({
     purchases,
@@ -117,203 +110,183 @@ export default function PurchasesIndex({
                                 )}
                             </div>
 
-                            <div className="overflow-hidden rounded-md border">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full caption-bottom text-sm">
-                                        <thead className="[&_tr]:border-b">
-                                            <tr className="border-b transition-colors hover:bg-transparent">
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link href={makeSortLink('purchase_no')} preserveScroll only={reloadProps}>
-                                                            Purchase No
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'purchase_no' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'purchase_no' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link href={makeSortLink('purchase_date')} preserveScroll only={reloadProps}>
-                                                            Date
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'purchase_date' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'purchase_date' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Supplier</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Outlet</th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link href={makeSortLink('total_amount')} preserveScroll only={reloadProps}>
-                                                            Total
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'total_amount' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'total_amount' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link href={makeSortLink('paid_amount')} preserveScroll only={reloadProps}>
-                                                            Paid
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'paid_amount' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'paid_amount' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <Button variant="ghost" size="sm" className="-ml-3 h-8 px-3 font-medium" asChild>
-                                                        <Link href={makeSortLink('due_amount')} preserveScroll only={reloadProps}>
-                                                            Due
-                                                            <span className="flex flex-col" aria-hidden="true">
-                                                                <ChevronUp
-                                                                    className={
-                                                                        queryString.sort === 'due_amount' && queryString.direction === 'asc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                                <ChevronDown
-                                                                    className={
-                                                                        queryString.sort === 'due_amount' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'size-3 text-primary'
-                                                                            : 'size-3 text-muted-foreground'
-                                                                    }
-                                                                />
-                                                            </span>
-                                                        </Link>
-                                                    </Button>
-                                                </th>
-                                                <th className="h-10 px-4 text-center align-middle font-medium">Payment Status</th>
-                                                <th className="h-10 px-4 text-left align-middle font-medium">Created By</th>
-                                                <th className="h-10 px-4 text-right align-middle font-medium">
-                                                    <span className="sr-only">Actions</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="[&_tr:last-child]:border-0">
-                                            {purchases.data.length > 0 ? (
-                                                purchases.data.map((purchase) => (
-                                                    <tr key={purchase.id} className="border-b transition-colors hover:bg-muted/50">
-                                                        <td className="px-4 py-3 align-middle font-medium">{purchase.purchase_no}</td>
-                                                        <td className="px-4 py-3 align-middle text-nowrap">
-                                                            {formatDate(purchase.purchase_date)}
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">{purchase.supplier?.name ?? '-'}</td>
-                                                        <td className="px-4 py-3 align-middle">{purchase.outlet?.name ?? '-'}</td>
-                                                        <td className="px-4 py-3 text-right align-middle tabular-nums">
-                                                            {formatCurrency(purchase.total_amount)}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right align-middle tabular-nums">
-                                                            {formatCurrency(purchase.paid_amount)}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right align-middle tabular-nums">
-                                                            {formatCurrency(purchase.due_amount)}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-center align-middle">
-                                                            <Badge
-                                                                variant="outline"
+                            <div className="overflow-x-auto rounded-md border">
+                                <table className="table-hover table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={makeSortLink('purchase_no')} preserveScroll only={reloadProps}>
+                                                        Purchase No
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
                                                                 className={
-                                                                    purchase.payment_status === 'paid'
-                                                                        ? 'border-transparent bg-emerald-100 text-emerald-800'
-                                                                        : purchase.payment_status === 'partial'
-                                                                          ? 'border-transparent bg-amber-100 text-amber-800'
-                                                                          : 'border-transparent bg-red-100 text-red-800'
+                                                                    queryString.sort === 'purchase_no' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
                                                                 }
-                                                            >
-                                                                {purchase.payment_status_label ?? purchase.payment_status}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="px-4 py-3 align-middle">{purchase.createdBy?.name ?? '-'}</td>
-                                                        <td className="px-4 py-3 text-right align-middle">
-                                                            <div className="flex justify-end">
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link href={show(purchase.id)}>
-                                                                        <Eye className="size-4" />
-                                                                        <span className="sr-only">View purchase</span>
-                                                                    </Link>
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td
-                                                        colSpan={10}
-                                                        className="h-24 px-4 text-center align-middle text-sm text-muted-foreground"
-                                                    >
-                                                        {queryString.search ? 'No purchases found.' : 'No purchases yet.'}
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'purchase_no' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th>
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={makeSortLink('purchase_date')} preserveScroll only={reloadProps}>
+                                                        Date
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'purchase_date' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'purchase_date' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th>Supplier</th>
+                                            <th>Outlet</th>
+                                            <th className="text-right">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={makeSortLink('total_amount')} preserveScroll only={reloadProps}>
+                                                        Total
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'total_amount' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'total_amount' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th className="text-right">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={makeSortLink('paid_amount')} preserveScroll only={reloadProps}>
+                                                        Paid
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'paid_amount' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'paid_amount' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th className="text-right">
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={makeSortLink('due_amount')} preserveScroll only={reloadProps}>
+                                                        Due
+                                                        <span className="flex flex-col" aria-hidden="true">
+                                                            <ChevronUp
+                                                                className={
+                                                                    queryString.sort === 'due_amount' && queryString.direction === 'asc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                            <ChevronDown
+                                                                className={
+                                                                    queryString.sort === 'due_amount' && queryString.direction === 'desc'
+                                                                        ? 'size-3 text-primary'
+                                                                        : 'size-3 text-muted-foreground'
+                                                                }
+                                                            />
+                                                        </span>
+                                                    </Link>
+                                                </Button>
+                                            </th>
+                                            <th className="text-center">Payment Status</th>
+                                            <th>Created By</th>
+                                            <th className="text-right">
+                                                <span className="sr-only">Actions</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {purchases.data.length > 0 ? (
+                                            purchases.data.map((purchase) => (
+                                                <tr key={purchase.id}>
+                                                    <td className="font-medium">{purchase.purchase_no}</td>
+                                                    <td className="text-nowrap">
+                                                        {format(parseISO(purchase.purchase_date), 'MMM d, yyyy')}
+                                                    </td>
+                                                    <td>{purchase.supplier?.name ?? '-'}</td>
+                                                    <td>{purchase.outlet?.name ?? '-'}</td>
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.total_amount)}</td>
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.paid_amount)}</td>
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.due_amount)}</td>
+                                                    <td className="text-center">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={
+                                                                purchase.payment_status === 'paid'
+                                                                    ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                                    : purchase.payment_status === 'partial'
+                                                                      ? 'border-transparent bg-amber-100 text-amber-800'
+                                                                      : 'border-transparent bg-red-100 text-red-800'
+                                                            }
+                                                        >
+                                                            {purchase.payment_status_label ?? purchase.payment_status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>{purchase.createdBy?.name ?? '-'}</td>
+                                                    <td className="text-right">
+                                                        <div className="flex justify-end">
+                                                            <Button variant="ghost" size="icon-sm" asChild>
+                                                                <Link href={show(purchase.id)}>
+                                                                    <Eye className="size-4" />
+                                                                    <span className="sr-only">View purchase</span>
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={10} className="h-24 text-center text-muted-foreground">
+                                                    {queryString.search ? 'No purchases found.' : 'No purchases yet.'}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
 
                             {hasPages && (
