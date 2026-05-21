@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
@@ -98,25 +98,25 @@ export default function ProductVariantDialog({
                                     <FieldError errors={[{ message: errors.sku }]} />
                                 </Field>
 
-                                <Field className="md:col-span-2">
+                                <Field className="gap-1 md:col-span-2">
                                     <input type="hidden" name="is_placeholder_variant" value="0" />
-                                    <label
-                                        htmlFor="is_placeholder_variant"
-                                        className="flex cursor-pointer items-center gap-2 text-sm font-medium"
-                                    >
+                                    <div className="flex items-start gap-3">
                                         <Checkbox
                                             id="is_placeholder_variant"
                                             name="is_placeholder_variant"
                                             value="1"
                                             defaultChecked={productVariant?.is_placeholder_variant ?? false}
                                             aria-invalid={Boolean(errors.is_placeholder_variant)}
+                                            className="mt-0.5"
                                         />
-                                        Use as default variant
-                                    </label>
-                                    <div className="pl-6 text-xs leading-5 text-muted-foreground">
-                                        Use when this product does not need separate brand, grade, or size variants.
+                                        <FieldContent className="gap-1">
+                                            <FieldLabel htmlFor="is_placeholder_variant">Use as default variant</FieldLabel>
+                                            <FieldDescription className="text-xs leading-5">
+                                                Use when this product does not need separate brand, grade, or size variants.
+                                            </FieldDescription>
+                                            <FieldError errors={[{ message: errors.is_placeholder_variant }]} />
+                                        </FieldContent>
                                     </div>
-                                    <FieldError errors={[{ message: errors.is_placeholder_variant }]} />
                                 </Field>
 
                                 <Field>

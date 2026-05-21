@@ -2,15 +2,16 @@ import { Form, Link } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
 import BusinessController from '@/actions/App/Http/Controllers/BusinessController';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import type { Option } from '@/types';
 import type { Business } from '../types';
-import { Separator } from '@/components/ui/separator';
 
 export default function BusinessForm({
     business,
@@ -33,13 +34,16 @@ export default function BusinessForm({
         <Form action={BusinessController.update()} options={{ preserveScroll: true }} disableWhileProcessing className="space-y-6">
             {({ errors, processing }) => (
                 <div className="space-y-6">
-                    <div>
-                        <div className="mb-3 text-base font-medium">Business details</div>
-                        <div className="flex flex-col gap-7">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="name" className="text-sm font-medium">
-                                    Business name <span className="text-red-500">*</span>
-                                </label>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Business details</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <Field>
+                                <FieldLabel htmlFor="name">
+                                    Business name <span className="-ml-1 text-red-500">*</span>
+                                </FieldLabel>
                                 <Input
                                     id="name"
                                     name="name"
@@ -47,14 +51,12 @@ export default function BusinessForm({
                                     aria-invalid={Boolean(errors.name)}
                                     placeholder="Rahman Trading Co."
                                 />
-                                <InputError message={errors.name} />
-                            </div>
+                                <FieldError errors={[{ message: errors.name }]} />
+                            </Field>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="trade_name" className="text-sm font-medium">
-                                        Trade name
-                                    </label>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="trade_name">Trade name</FieldLabel>
                                     <Input
                                         id="trade_name"
                                         name="trade_name"
@@ -62,13 +64,13 @@ export default function BusinessForm({
                                         aria-invalid={Boolean(errors.trade_name)}
                                         placeholder="Rahman Mart"
                                     />
-                                    <InputError message={errors.trade_name} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.trade_name }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="business_type" className="text-sm font-medium">
-                                        Business type <span className="text-red-500">*</span>
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="business_type">
+                                        Business type <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
                                     <input type="hidden" name="business_type" value={businessType} readOnly />
                                     <Select value={businessType} onValueChange={setBusinessType}>
                                         <SelectTrigger id="business_type" className="w-full" aria-invalid={Boolean(errors.business_type)}>
@@ -82,14 +84,14 @@ export default function BusinessForm({
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <InputError message={errors.business_type} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.business_type }]} />
+                                </Field>
+                            </FieldGroup>
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="status" className="text-sm font-medium">
-                                    Status <span className="text-red-500">*</span>
-                                </label>
+                            <Field>
+                                <FieldLabel htmlFor="status">
+                                    Status <span className="-ml-1 text-red-500">*</span>
+                                </FieldLabel>
                                 <input type="hidden" name="status" value={status} readOnly />
                                 <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                     {statusOptions.map((option) => (
@@ -105,107 +107,99 @@ export default function BusinessForm({
                                         </div>
                                     ))}
                                 </RadioGroup>
-                                <InputError message={errors.status} />
-                            </div>
-                        </div>
-                    </div>
+                                <FieldError errors={[{ message: errors.status }]} />
+                            </Field>
+                        </SectionContent>
+                    </Section>
 
-                    <Separator />
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Contact</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="mobile">
+                                        Mobile <span className="-ml-1 text-red-500">*</span>
+                                    </FieldLabel>
+                                    <Input
+                                        id="mobile"
+                                        name="mobile"
+                                        defaultValue={business.mobile}
+                                        aria-invalid={Boolean(errors.mobile)}
+                                        placeholder="01XXXXXXXXX"
+                                    />
+                                    <FieldError errors={[{ message: errors.mobile }]} />
+                                </Field>
 
-                    <div>
-                        <div className="mb-3 text-base font-medium">Contact</div>
+                                <Field>
+                                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        defaultValue={business.email ?? ''}
+                                        aria-invalid={Boolean(errors.email)}
+                                        placeholder="hello@business.com"
+                                    />
+                                    <FieldError errors={[{ message: errors.email }]} />
+                                </Field>
+                            </FieldGroup>
+                        </SectionContent>
+                    </Section>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="mobile" className="text-sm font-medium">
-                                    Mobile <span className="text-red-500">*</span>
-                                </label>
-                                <Input
-                                    id="mobile"
-                                    name="mobile"
-                                    defaultValue={business.mobile}
-                                    aria-invalid={Boolean(errors.mobile)}
-                                    placeholder="01XXXXXXXXX"
-                                />
-                                <InputError message={errors.mobile} />
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="email" className="text-sm font-medium">
-                                    Email
-                                </label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    defaultValue={business.email ?? ''}
-                                    aria-invalid={Boolean(errors.email)}
-                                    placeholder="hello@business.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                        <div className="mb-3 text-base font-medium">Registration</div>
-
-                        <div className="flex flex-col gap-7">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="trade_license_no" className="text-sm font-medium">
-                                    Trade license no.
-                                </label>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Registration</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <Field>
+                                <FieldLabel htmlFor="trade_license_no">Trade license no.</FieldLabel>
                                 <Input
                                     id="trade_license_no"
                                     name="trade_license_no"
                                     defaultValue={business.trade_license_no ?? ''}
                                     aria-invalid={Boolean(errors.trade_license_no)}
                                 />
-                                <InputError message={errors.trade_license_no} />
-                            </div>
+                                <FieldError errors={[{ message: errors.trade_license_no }]} />
+                            </Field>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="tin_no" className="text-sm font-medium">
-                                        TIN no.
-                                    </label>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="tin_no">TIN no.</FieldLabel>
                                     <Input
                                         id="tin_no"
                                         name="tin_no"
                                         defaultValue={business.tin_no ?? ''}
                                         aria-invalid={Boolean(errors.tin_no)}
                                     />
-                                    <InputError message={errors.tin_no} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.tin_no }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="bin_no" className="text-sm font-medium">
-                                        BIN no.
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="bin_no">BIN no.</FieldLabel>
                                     <Input
                                         id="bin_no"
                                         name="bin_no"
                                         defaultValue={business.bin_no ?? ''}
                                         aria-invalid={Boolean(errors.bin_no)}
                                     />
-                                    <InputError message={errors.bin_no} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                    <FieldError errors={[{ message: errors.bin_no }]} />
+                                </Field>
+                            </FieldGroup>
+                        </SectionContent>
+                    </Section>
 
-                    <Separator />
-
-                    <div>
-                        <div className="mb-3 text-base font-medium">Address</div>
-
-                        <div className="flex flex-col gap-7">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="address_line" className="text-sm font-medium">
-                                    Address line
-                                </label>
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Address</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+                        <SectionContent>
+                            <Field>
+                                <FieldLabel htmlFor="address_line">Address line</FieldLabel>
                                 <Textarea
                                     id="address_line"
                                     name="address_line"
@@ -214,14 +208,12 @@ export default function BusinessForm({
                                     placeholder="House, road, market, village or landmark"
                                     className="min-h-28 resize-none"
                                 />
-                                <InputError message={errors.address_line} />
-                            </div>
+                                <FieldError errors={[{ message: errors.address_line }]} />
+                            </Field>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="district" className="text-sm font-medium">
-                                        District
-                                    </label>
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
+                                    <FieldLabel htmlFor="district">District</FieldLabel>
                                     <Input
                                         id="district"
                                         name="district"
@@ -229,13 +221,11 @@ export default function BusinessForm({
                                         aria-invalid={Boolean(errors.district)}
                                         placeholder="Dhaka"
                                     />
-                                    <InputError message={errors.district} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.district }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="postal_code" className="text-sm font-medium">
-                                        Postal code
-                                    </label>
+                                <Field>
+                                    <FieldLabel htmlFor="postal_code">Postal code</FieldLabel>
                                     <Input
                                         id="postal_code"
                                         name="postal_code"
@@ -243,16 +233,14 @@ export default function BusinessForm({
                                         aria-invalid={Boolean(errors.postal_code)}
                                         placeholder="1212"
                                     />
-                                    <InputError message={errors.postal_code} />
-                                </div>
-                            </div>
+                                    <FieldError errors={[{ message: errors.postal_code }]} />
+                                </Field>
+                            </FieldGroup>
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="flex flex-col gap-2">
+                            <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                <Field>
                                     <div className="relative flex items-center">
-                                        <label htmlFor="area_type" className="text-sm font-medium">
-                                            Area type
-                                        </label>
+                                        <FieldLabel htmlFor="area_type">Area type</FieldLabel>
                                         {areaType && (
                                             <Button
                                                 type="button"
@@ -280,14 +268,14 @@ export default function BusinessForm({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <InputError message={errors.area_type} />
-                                </div>
+                                    <FieldError errors={[{ message: errors.area_type }]} />
+                                </Field>
 
-                                <div className="flex flex-col gap-2">
-                                    <label htmlFor="area_name" className="text-sm font-medium">
+                                <Field>
+                                    <FieldLabel htmlFor="area_name">
                                         Area name
-                                        {areaType && <span className="text-red-500"> *</span>}
-                                    </label>
+                                        {areaType && <span className="-ml-1 text-red-500"> *</span>}
+                                    </FieldLabel>
                                     <Input
                                         id="area_name"
                                         name="area_name"
@@ -295,11 +283,11 @@ export default function BusinessForm({
                                         aria-invalid={Boolean(errors.area_name)}
                                         placeholder={areaType === 'thana' ? 'Motijheel' : 'Savar'}
                                     />
-                                    <InputError message={errors.area_name} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                    <FieldError errors={[{ message: errors.area_name }]} />
+                                </Field>
+                            </FieldGroup>
+                        </SectionContent>
+                    </Section>
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>

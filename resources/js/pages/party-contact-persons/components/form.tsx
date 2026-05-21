@@ -2,9 +2,9 @@ import { Form, Link } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
 import PartyContactPersonController from '@/actions/App/Http/Controllers/PartyContactPersonController';
-import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,11 +40,11 @@ export default function PartyContactPersonForm({
         >
             {({ errors, processing }) => (
                 <div className="space-y-6">
-                    <div className="flex flex-col gap-7">
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="name" className="text-sm font-medium">
-                                Name <span className="text-red-500">*</span>
-                            </label>
+                    <FieldGroup>
+                        <Field>
+                            <FieldLabel htmlFor="name">
+                                Name <span className="-ml-1 text-red-500">*</span>
+                            </FieldLabel>
                             <Input
                                 id="name"
                                 name="name"
@@ -52,13 +52,11 @@ export default function PartyContactPersonForm({
                                 aria-invalid={Boolean(errors.name)}
                                 placeholder="John Doe"
                             />
-                            <InputError message={errors.name} />
-                        </div>
+                            <FieldError errors={[{ message: errors.name }]} />
+                        </Field>
 
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="designation" className="text-sm font-medium">
-                                Designation
-                            </label>
+                        <Field>
+                            <FieldLabel htmlFor="designation">Designation</FieldLabel>
                             <Input
                                 id="designation"
                                 name="designation"
@@ -66,14 +64,12 @@ export default function PartyContactPersonForm({
                                 aria-invalid={Boolean(errors.designation)}
                                 placeholder="Sales Manager"
                             />
-                            <InputError message={errors.designation} />
-                        </div>
+                            <FieldError errors={[{ message: errors.designation }]} />
+                        </Field>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="mobile" className="text-sm font-medium">
-                                    Mobile
-                                </label>
+                        <FieldGroup className="grid gap-4 md:grid-cols-2">
+                            <Field>
+                                <FieldLabel htmlFor="mobile">Mobile</FieldLabel>
                                 <Input
                                     id="mobile"
                                     name="mobile"
@@ -81,13 +77,11 @@ export default function PartyContactPersonForm({
                                     aria-invalid={Boolean(errors.mobile)}
                                     placeholder="01XXXXXXXXX"
                                 />
-                                <InputError message={errors.mobile} />
-                            </div>
+                                <FieldError errors={[{ message: errors.mobile }]} />
+                            </Field>
 
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="email" className="text-sm font-medium">
-                                    Email
-                                </label>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email</FieldLabel>
                                 <Input
                                     id="email"
                                     name="email"
@@ -96,11 +90,11 @@ export default function PartyContactPersonForm({
                                     aria-invalid={Boolean(errors.email)}
                                     placeholder="john@example.com"
                                 />
-                                <InputError message={errors.email} />
-                            </div>
-                        </div>
+                                <FieldError errors={[{ message: errors.email }]} />
+                            </Field>
+                        </FieldGroup>
 
-                        <div className="flex items-center gap-2">
+                        <Field orientation="horizontal">
                             <input type="hidden" name="is_primary" value={isPrimary ? '1' : '0'} readOnly />
                             <Checkbox
                                 id="is_primary"
@@ -108,16 +102,12 @@ export default function PartyContactPersonForm({
                                 onCheckedChange={(checked) => setIsPrimary(checked === true)}
                                 aria-invalid={Boolean(errors.is_primary)}
                             />
-                            <label htmlFor="is_primary" className="text-sm font-medium">
-                                Primary contact person
-                            </label>
-                            <InputError message={errors.is_primary} />
-                        </div>
+                            <FieldLabel htmlFor="is_primary">Primary contact person</FieldLabel>
+                            <FieldError errors={[{ message: errors.is_primary }]} />
+                        </Field>
 
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="note" className="text-sm font-medium">
-                                Note
-                            </label>
+                        <Field>
+                            <FieldLabel htmlFor="note">Note</FieldLabel>
                             <Textarea
                                 id="note"
                                 name="note"
@@ -126,13 +116,13 @@ export default function PartyContactPersonForm({
                                 placeholder="Internal note about this contact person"
                                 className="min-h-24 resize-none"
                             />
-                            <InputError message={errors.note} />
-                        </div>
+                            <FieldError errors={[{ message: errors.note }]} />
+                        </Field>
 
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="status" className="text-sm font-medium">
-                                Status <span className="text-red-500">*</span>
-                            </label>
+                        <Field>
+                            <FieldLabel htmlFor="status">
+                                Status <span className="-ml-1 text-red-500">*</span>
+                            </FieldLabel>
                             <input type="hidden" name="status" value={status} readOnly />
                             <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
                                 {statusOptions.map((option) => (
@@ -148,9 +138,9 @@ export default function PartyContactPersonForm({
                                     </div>
                                 ))}
                             </RadioGroup>
-                            <InputError message={errors.status} />
-                        </div>
-                    </div>
+                            <FieldError errors={[{ message: errors.status }]} />
+                        </Field>
+                    </FieldGroup>
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
