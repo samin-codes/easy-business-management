@@ -151,3 +151,78 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    /* Base Table */
+    .table {
+        @apply w-full text-sm text-left caption-bottom;
+    }
+    .table thead tr {
+        @apply border-b border-border;
+    }
+    .table tbody tr {
+        @apply border-b border-border last:border-0;
+    }
+    .table th {
+        @apply h-10 px-3 font-medium text-foreground align-middle;
+    }
+    .table td {
+        @apply p-3 align-middle;
+    }
+
+    /* Modifiers */
+    .table-striped tbody tr:nth-child(odd) {
+        @apply bg-muted/30;
+    }
+    .table-hover tbody tr:hover {
+        @apply bg-muted/50 transition-colors;
+    }
+    .table-bordered {
+        @apply border border-border;
+    }
+    .table-bordered th, 
+    .table-bordered td {
+        @apply border border-border;
+    }
+    .table-borderless tbody tr,
+    .table-borderless thead tr {
+        @apply border-0;
+    }
+    
+    /* Sizing */
+    .table-sm th {
+        @apply h-8 px-2;
+    }
+    .table-sm td {
+        @apply p-2;
+    }
+
+    /* Contextual Variants (Colors) */
+    .table-primary {
+        @apply bg-primary/10 text-primary-foreground;
+    }
+    .table-secondary {
+        @apply bg-secondary text-secondary-foreground;
+    }
+    .table-success {
+        @apply bg-emerald-500/10 text-emerald-700 dark:text-emerald-400;
+    }
+    .table-info {
+        @apply bg-cyan-500/10 text-cyan-700 dark:text-cyan-400;
+    }
+    .table-warning {
+        @apply bg-amber-500/10 text-amber-700 dark:text-amber-400;
+    }
+    .table-danger {
+        @apply bg-destructive/10 text-destructive-foreground;
+    }
+    .table-light {
+        @apply bg-muted/50;
+    }
+    .table-dark {
+        @apply bg-primary text-primary-foreground;
+    }
+    .table-active {
+        @apply bg-muted/80;
+    }
+}

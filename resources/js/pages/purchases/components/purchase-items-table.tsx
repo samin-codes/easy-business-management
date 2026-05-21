@@ -24,28 +24,28 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
     }, 0);
 
     return (
-        <table className="w-full min-w-240 caption-bottom text-sm">
-            <thead className="[&_tr]:border-b">
-                <tr className="border-b">
-                    <th className="h-10 min-w-90 px-3 text-left align-middle font-medium">
+        <table className="table table-hover min-w-240">
+            <thead>
+                <tr>
+                    <th className="min-w-90">
                         Product / Variant <span className="text-red-500">*</span>
                     </th>
-                    <th className="h-10 w-36 px-3 text-left align-middle font-medium">
+                    <th className="w-36">
                         Unit <span className="text-red-500">*</span>
                     </th>
-                    <th className="h-10 w-32 px-3 text-right align-middle font-medium">
+                    <th className="w-32 text-right">
                         Qty <span className="text-red-500">*</span>
                     </th>
-                    <th className="h-10 w-32 px-3 text-right align-middle font-medium">
+                    <th className="w-32 text-right">
                         Unit Price <span className="text-red-500">*</span>
                     </th>
-                    <th className="h-10 w-32 px-3 text-right align-middle font-medium whitespace-nowrap">Line Total</th>
-                    <th className="h-10 w-12 px-3 text-center align-middle font-medium">
+                    <th className="w-32 text-right whitespace-nowrap">Line Total</th>
+                    <th className="w-12 text-center">
                         <span className="sr-only">Actions</span>
                     </th>
                 </tr>
             </thead>
-            <tbody className="[&_tr:last-child]:border-0">
+            <tbody>
                 {items.map((purchaseItem, purchaseItemIndex) => {
                     const selectedProductVariant =
                         productVariants.find((productVariant) => productVariant.id.toString() === purchaseItem.product_variant_id) ?? null;
@@ -62,8 +62,8 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                     const lineTotal = (Number(purchaseItem.quantity) || 0) * (Number(purchaseItem.unit_cost) || 0);
 
                     return (
-                        <tr key={purchaseItem.uid} className="border-b transition-colors hover:bg-muted/50">
-                            <td className="min-w-[360px] px-3 py-2">
+                        <tr key={purchaseItem.uid}>
+                            <td className="min-w-[360px]">
                                 <Combobox
                                     items={productVariants}
                                     value={selectedProductVariant}
@@ -105,7 +105,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                     </ComboboxContent>
                                 </Combobox>
                             </td>
-                            <td className="w-36 px-3 py-2">
+                            <td className="w-36">
                                 <Combobox
                                     items={availableConversions}
                                     value={selectedUnitConversion}
@@ -138,7 +138,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                     </ComboboxContent>
                                 </Combobox>
                             </td>
-                            <td className="w-32 px-3 py-2">
+                            <td className="w-32">
                                 <Input
                                     type="number"
                                     value={purchaseItem.quantity}
@@ -176,10 +176,10 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                     aria-invalid={Boolean(errors[`items.${purchaseItemIndex}.unit_cost`])}
                                 />
                             </td>
-                            <td className="w-32 px-3 py-2 text-right align-middle">
+                            <td className="w-32 text-right">
                                 <span className="font-medium tabular-nums">{lineTotal > 0 ? formatCurrency(lineTotal) : '-'}</span>
                             </td>
-                            <td className="w-12 px-3 py-2 align-middle">
+                            <td className="w-12">
                                 {items.length > 1 && (
                                     <Button
                                         type="button"
@@ -198,14 +198,14 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                 })}
             </tbody>
             <tfoot>
-                <tr className="border-t bg-muted/30">
-                    <td colSpan={4} className="px-3 py-3 text-right text-sm font-medium text-muted-foreground">
+                <tr className="table-light border-t">
+                    <td colSpan={4} className="text-right font-medium text-muted-foreground">
                         Subtotal
                     </td>
-                    <td className="w-32 px-3 py-3 text-right align-middle">
-                        <span className="text-sm font-semibold tabular-nums">{formatCurrency(subtotal)}</span>
+                    <td className="w-32 text-right">
+                        <span className="font-semibold tabular-nums">{formatCurrency(subtotal)}</span>
                     </td>
-                    <td className="w-12 px-3 py-3" />
+                    <td className="w-12" />
                 </tr>
             </tfoot>
         </table>
