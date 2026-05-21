@@ -43,7 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('parties.party-contact-persons', PartyContactPersonController::class)
         ->except(['index', 'show'])
         ->scoped();
-    Route::resource('purchases', PurchaseController::class);
+    Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
 });
 
 require __DIR__.'/settings.php';

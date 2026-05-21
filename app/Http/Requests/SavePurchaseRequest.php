@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PaymentMethod;
 use App\Enums\PurchaseStatus;
 use App\Models\Business;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,6 +36,12 @@ class SavePurchaseRequest extends FormRequest
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'status' => ['required', Rule::enum(PurchaseStatus::class)],
             'note' => ['nullable', 'string', 'max:2000'],
+            'payment' => ['required', 'array'],
+            'payment.payment_date' => ['required', 'date'],
+            'payment.payment_method' => ['required', Rule::enum(PaymentMethod::class)],
+            'payment.amount' => ['required', 'numeric', 'min:0'],
+            'payment.reference_no' => ['nullable', 'string', 'max:255'],
+            'payment.note' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_variant_id' => ['required', 'exists:product_variants,id'],
             'items.*.unit_of_measurement_id' => ['required', 'exists:unit_of_measurements,id'],
@@ -54,6 +61,9 @@ class SavePurchaseRequest extends FormRequest
             'outlet_id.required' => 'Select an outlet.',
             'supplier_party_id.required' => 'Select a supplier.',
             'purchase_date.required' => 'Pick a purchase date.',
+            'payment.payment_date.required' => 'Pick a payment date.',
+            'payment.payment_method.required' => 'Select a payment method.',
+            'payment.amount.required' => 'Enter the payment amount.',
             'items.required' => 'Add at least one purchase item.',
             'items.*.product_variant_id.required' => 'Select a product variant for each item.',
             'items.*.unit_of_measurement_id.required' => 'Select a unit.',

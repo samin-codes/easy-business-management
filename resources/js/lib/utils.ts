@@ -18,6 +18,18 @@ export function formatCurrency(value: string | number): string {
     return currencyFormatter.format(numericValue);
 }
 
+export const formatDecimal = (value: string | number, places = 2): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+
+    return Number.isNaN(num) ? String(value) : num.toFixed(places);
+};
+
+export const formatInteger = (value: string | number): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+
+    return Number.isNaN(num) ? String(value) : Math.trunc(num).toString();
+};
+
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }

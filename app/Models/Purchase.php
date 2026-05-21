@@ -107,6 +107,11 @@ class Purchase extends Model
         return $this->hasMany(PurchaseItem::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(PurchasePayment::class);
+    }
+
     /**
      * Generate a unique purchase number for the given outlet and date.
      *

@@ -20,7 +20,7 @@ enum PurchaseStatus: string
     /**
      * @return array<int, array{label: string, value: string}>
      */
-    public static function options(): array
+    public static function toArray(): array
     {
         return array_map(
             fn (self $case): array => [

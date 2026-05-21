@@ -1,11 +1,9 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
-import { index as purchaseIndex, show as purchaseShow, edit as purchaseEdit } from '@/routes/purchases';
+import { index as purchaseIndex, show as purchaseShow } from '@/routes/purchases';
 import type { BreadcrumbItem } from '@/types';
 import type { Purchase } from './types';
 
@@ -38,15 +36,8 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-5xl space-y-6">
-                    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="mb-8">
                         <Heading title={purchase.purchase_no} />
-
-                        <Button asChild variant="outline">
-                            <Link href={purchaseEdit(purchase.id).url}>
-                                <Pencil className="size-4" />
-                                Edit
-                            </Link>
-                        </Button>
                     </div>
 
                     {flash.status && (

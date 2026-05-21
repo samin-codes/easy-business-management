@@ -90,6 +90,38 @@ export type PurchaseItemFormData = {
     unit_cost: string;
 };
 
+export type PaymentFormData = {
+    payment_date: string;
+    amount: string;
+    payment_method: string;
+    reference_no: string;
+    note: string;
+};
+
+export type PaymentMethod = {
+    value: string;
+    label: string;
+};
+
+export type PurchasePayment = {
+    id: number;
+    business_id: number;
+    purchase_id: number;
+    supplier_party_id: number;
+    created_by_id: number;
+    payment_date: string;
+    amount: string;
+    payment_method: string;
+    reference_no: string | null;
+    note: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+    business?: Business;
+    purchase?: Purchase;
+    supplier?: Supplier;
+    createdBy?: Pick<User, 'id' | 'name'>;
+};
+
 export type PurchaseFormData = {
     purchase_date: string;
     status: string;
@@ -101,6 +133,7 @@ export type PurchaseFormData = {
     labour_cost: string;
     other_cost: string;
     paid_amount: string;
+    payment: PaymentFormData;
     items: PurchaseItemFormData[];
 };
 
@@ -132,4 +165,5 @@ export type Purchase = {
     createdBy?: Pick<User, 'id' | 'name'>;
     business?: Business;
     items: PurchaseItem[];
+    payments?: PurchasePayment[];
 };

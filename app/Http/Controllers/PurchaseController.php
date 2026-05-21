@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PartyType;
+use App\Enums\PaymentMethod;
 use App\Enums\PurchasePaymentStatus;
-use App\Enums\PurchaseStatus;
 use App\Http\Requests\SavePurchaseRequest;
 use App\Models\Business;
 use App\Models\Outlet;
@@ -70,6 +70,8 @@ class PurchaseController extends Controller
             'items.productVariant.product:id,name',
             'items.productVariant.brand:id,name',
             'items.unitOfMeasurement:id,name,code',
+            'payments:id,business_id,purchase_id,supplier_party_id,created_by_id,payment_date,amount,payment_method,reference_no,note,created_at,updated_at',
+            'payments.createdBy:id,name',
         ]);
 
         return Inertia::render('purchases/show', [
@@ -96,6 +98,7 @@ class PurchaseController extends Controller
             'outlets' => $outlets,
             'suppliers' => $suppliers,
             'products' => $this->getProducts($business),
+            'paymentMethods' => PaymentMethod::toArray(),
         ]);
     }
 
@@ -118,46 +121,6 @@ class PurchaseController extends Controller
 
         return to_route('purchases.show', $purchase)
             ->with('status', 'Purchase created successfully.');
-    }
-
-    public function edit(Purchase $purchase): Response
-    {
-        $business = Business::current();
-        $purchase->load('items');
-
-        return Inertia::render('purchases/edit', [
-            'purchase' => $purchase,
-            'purchaseStatusOptions' => PurchaseStatus::options(),
-            'purchasePaymentStatusOptions' => PurchasePaymentStatus::options(),
-            'outlets' => Outlet::query()
-                ->whereBelongsTo($business)
-                ->orderBy('name')
-                ->get(['id', 'name', 'code']),
-            'suppliers' => Party::query()
-                ->whereBelongsTo($business)
-                ->whereIn('party_type', [PartyType::Supplier->value, PartyType::Both->value])
-                ->orderBy('name')
-                ->get(['id', 'name']),
-            'products' => $this->getProducts($business),
-        ]);
-    }
-
-    public function update(SavePurchaseRequest $request, Purchase $purchase): RedirectResponse
-    {
-        [$data, $items] = $this->preparePurchaseData($request->validated());
-
-        DB::transaction(function () use ($purchase, $data, $items): void {
-            $purchase->update($data);
-
-            $purchase->items()->delete();
-
-            foreach ($items as $item) {
-                $purchase->items()->create($item);
-            }
-        });
-
-        return to_route('purchases.show', $purchase)
-            ->with('status', 'Purchase updated successfully.');
     }
 
     public function destroy(Purchase $purchase): RedirectResponse

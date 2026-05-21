@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronDown, ChevronUp, Eye, Plus, Search, SquarePen } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
-import { create, edit, index, show } from '@/routes/purchases';
+import { create, index, show } from '@/routes/purchases';
 import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
 import type { Purchase } from './types';
 
@@ -290,17 +290,11 @@ export default function PurchasesIndex({
                                                         </td>
                                                         <td className="px-4 py-3 align-middle">{purchase.createdBy?.name ?? '-'}</td>
                                                         <td className="px-4 py-3 text-right align-middle">
-                                                            <div className="flex justify-end gap-3">
+                                                            <div className="flex justify-end">
                                                                 <Button variant="ghost" size="icon-sm" asChild>
                                                                     <Link href={show(purchase.id)}>
                                                                         <Eye className="size-4" />
                                                                         <span className="sr-only">View purchase</span>
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link href={edit(purchase.id)}>
-                                                                        <SquarePen className="size-4" />
-                                                                        <span className="sr-only">Edit purchase</span>
                                                                     </Link>
                                                                 </Button>
                                                             </div>
