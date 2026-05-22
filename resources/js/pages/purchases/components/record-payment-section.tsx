@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { format } from 'date-fns';
+import { format as formatDate } from 'date-fns';
 import { Save } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
+import PurchasePaymentController from '@/actions/App/Http/Controllers/PurchasePaymentController';
 import type { PaymentFormData, PaymentMethod, Purchase } from '../types';
 
 function createPaymentFormData(): PaymentFormData {
     return {
-        payment_date: format(new Date(), 'yyyy-MM-dd'),
+        payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
         amount: '',
         payment_method: 'cash',
         reference_no: '',
@@ -27,23 +28,23 @@ function createPaymentFormData(): PaymentFormData {
 type RecordPaymentSectionProps = {
     purchase: Pick<Purchase, 'id' | 'total_amount' | 'paid_amount' | 'due_amount' | 'payment_status'>;
     paymentMethods: PaymentMethod[];
-    paymentStoreRoute: ReturnType<typeof import('@/routes/purchases/payments').store>;
 };
 
-export default function RecordPaymentSection({ purchase, paymentMethods, paymentStoreRoute }: RecordPaymentSectionProps) {
+export default function RecordPaymentSection({ purchase, paymentMethods }: RecordPaymentSectionProps) {
     const form = useForm<PaymentFormData>(() => createPaymentFormData());
 
     const totalAmount = Number(purchase.total_amount) || 0;
-    const existingPaid = Number(purchase.paid_amount) || 0;
-    const newPaymentAmount = Number(form.data.amount) || 0;
-    const runningTotalPaid = existingPaid + newPaymentAmount;
-    const dueAmount = Math.max(totalAmount - runningTotalPaid, 0);
-    const paymentStatus = newPaymentAmount <= 0 ? purchase.payment_status : runningTotalPaid >= totalAmount ? 'paid' : 'partial';
+    const paidAmount = Number(purchase.paid_amount) || 0;
+    const currentPaymentAmount = Number(form.data.amount) || 0;
+    const totalAfterPayment = paidAmount + currentPaymentAmount;
+    const dueAmount = Math.max(totalAmount - totalAfterPayment, 0);
+    const paymentStatus =
+        currentPaymentAmount <= 0 ? purchase.payment_status : totalAfterPayment >= totalAmount ? 'paid' : 'partial';
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        form.submit(paymentStoreRoute, {
+        form.submit(PurchasePaymentController.store({ purchase: purchase.id }), {
             preserveScroll: true,
             onSuccess: () => form.reset(),
         });
@@ -69,7 +70,7 @@ export default function RecordPaymentSection({ purchase, paymentMethods, payment
                                 onChange={(date) =>
                                     form.setData((data) => ({
                                         ...data,
-                                        payment_date: date ? format(date, 'yyyy-MM-dd') : '',
+                                        payment_date: date ? formatDate(date, 'yyyy-MM-dd') : '',
                                     }))
                                 }
                                 aria-invalid={Boolean(form.errors.payment_date)}
@@ -161,11 +162,20 @@ export default function RecordPaymentSection({ purchase, paymentMethods, payment
                         <div className="my-2 border-t border-border" />
 
                         <div className="flex items-center justify-between gap-4 py-1">
-                            <span className="text-sm text-muted-foreground">Paid Amount</span>
+                            <span className="text-sm text-muted-foreground">Paid to Date</span>
                             <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
-                                {formatCurrency(runningTotalPaid)}
+                                {formatCurrency(paidAmount)}
                             </span>
                         </div>
+
+                        {currentPaymentAmount > 0 && (
+                            <div className="flex items-center justify-between gap-4 py-1">
+                                <span className="text-sm text-muted-foreground">This Payment</span>
+                                <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
+                                    {formatCurrency(currentPaymentAmount)}
+                                </span>
+                            </div>
+                        )}
 
                         <div className="flex items-center justify-between gap-4 py-1">
                             <span className="text-sm text-muted-foreground">Due Amount</span>

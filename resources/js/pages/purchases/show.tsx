@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { format as formatDate } from 'date-fns';
 import Heading from '@/components/heading';
 import { TextEntry } from '@/components/text-entry';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,19 +7,10 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatInteger } from '@/lib/utils';
-import { index as purchaseIndex, show as purchaseShow } from '@/routes/purchases';
-import { store as paymentStore } from '@/routes/purchases/payments';
+import { index , show } from '@/routes/purchases';
 import type { BreadcrumbItem } from '@/types';
 import RecordPaymentSection from './components/record-payment-section';
 import type { PaymentMethod, Purchase } from './types';
-
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-}
 
 export default function PurchasesShow({ purchase, paymentMethods }: { purchase: Purchase; paymentMethods: PaymentMethod[] }) {
     const { flash } = usePage<{
@@ -30,8 +22,8 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
     const isDue = purchase.payment_status !== 'paid';
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Purchases', href: purchaseIndex().url },
-        { title: purchase.purchase_no, href: purchaseShow(purchase.id).url },
+        { title: 'Purchases', href: index().url },
+        { title: purchase.purchase_no, href: show(purchase.id).url },
     ];
 
     return (
@@ -57,7 +49,7 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
                             <SectionContent className="gap-3">
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry label="Purchase No" value={purchase.purchase_no} />
-                                    <TextEntry label="Purchase Date" value={formatDate(purchase.purchase_date)} />
+                                    <TextEntry label="Purchase Date" value={formatDate(new Date(purchase.purchase_date), 'MMMM d, yyyy')} />
                                 </div>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry label="Outlet" value={purchase.outlet?.name} />
@@ -217,7 +209,7 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
                                                 <tbody>
                                                     {payments.map((payment) => (
                                                         <tr key={payment.id}>
-                                                            <td>{formatDate(payment.payment_date)}</td>
+                                                            <td>{formatDate(new Date(payment.payment_date), 'MMMM d, yyyy')}</td>
                                                             <td className="text-muted-foreground capitalize">
                                                                 {payment.payment_method.replace('_', ' ')}
                                                             </td>
@@ -237,11 +229,7 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
                         )}
 
                         {isDue && (
-                            <RecordPaymentSection
-                                purchase={purchase}
-                                paymentMethods={paymentMethods}
-                                paymentStoreRoute={paymentStore(purchase.id)}
-                            />
+                            <RecordPaymentSection purchase={purchase} paymentMethods={paymentMethods} />
                         )}
                     </div>
                 </div>
