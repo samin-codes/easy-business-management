@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "laravel-boost": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "php",
+      "args": [
+        "artisan",
+        "boost:mcp"
+      ]
+    }
+  }
+}
