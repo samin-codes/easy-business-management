@@ -22,9 +22,9 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { show as businessShow } from '@/routes/business';
+import { index as partyIndex } from '@/routes/parties';
 import { index as productCategoryIndex } from '@/routes/product-categories';
 import { index as productIndex } from '@/routes/products';
-import { index as partyIndex } from '@/routes/parties';
 import { index as purchaseIndex } from '@/routes/purchases';
 import type { NavItem } from '@/types';
 

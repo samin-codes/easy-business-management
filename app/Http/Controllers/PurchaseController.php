@@ -4,21 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Enums\PartyType;
 use App\Enums\PaymentMethod;
-use App\Enums\PurchasePaymentStatus;
 use App\Http\Requests\SavePurchaseRequest;
 use App\Models\Business;
 use App\Models\Outlet;
 use App\Models\Party;
 use App\Models\Product;
-use App\Models\ProductUnitConversion;
-use App\Models\ProductVariant;
 use App\Models\Purchase;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -76,6 +72,7 @@ class PurchaseController extends Controller
 
         return Inertia::render('purchases/show', [
             'purchase' => $purchase,
+            'paymentMethods' => PaymentMethod::toArray(),
         ]);
     }
 
@@ -104,16 +101,28 @@ class PurchaseController extends Controller
 
     public function store(SavePurchaseRequest $request): RedirectResponse
     {
-        [$data, $items] = $this->preparePurchaseData($request->validated());
+        $purchaseData = $request->purchaseData();
+        $purchase = $purchaseData['purchase'];
+        $items = $purchaseData['items'];
+        $payment = $purchaseData['payment'];
 
-        $data['created_by_id'] = auth()->id();
-        $data['purchase_no'] = Purchase::generatePurchaseNumber((int) $data['outlet_id'], Carbon::parse($data['purchase_date']));
+        $purchase['created_by_id'] = auth()->id();
+        $purchase['purchase_no'] = Purchase::generatePurchaseNumber(
+            (int) $purchase['outlet_id'],
+            Carbon::parse($purchase['purchase_date']),
+        );
 
-        $purchase = DB::transaction(function () use ($data, $items): Purchase {
-            $purchase = Purchase::create($data);
+        $purchase = DB::transaction(function () use ($purchase, $items, $payment): Purchase {
+            $purchase = Purchase::create($purchase);
 
             foreach ($items as $item) {
                 $purchase->items()->create($item);
+            }
+
+            if ($payment !== null) {
+                $payment['purchase_id'] = $purchase->id;
+                $payment['created_by_id'] = auth()->id();
+                $purchase->payments()->create($payment);
             }
 
             return $purchase;
@@ -129,105 +138,6 @@ class PurchaseController extends Controller
 
         return to_route('purchases.index')
             ->with('status', 'Purchase deleted successfully.');
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array{0: array<string, mixed>, 1: list<array<string, mixed>>}
-     *
-     * @throws ValidationException
-     */
-    private function preparePurchaseData(array $data): array
-    {
-        $items = $data['items'];
-        unset($data['items']);
-
-        $subtotal = 0.0;
-        $variantIds = collect($items)
-            ->pluck('product_variant_id')
-            ->map(fn (mixed $variantId): int => (int) $variantId)
-            ->unique()
-            ->values();
-        $unitIds = collect($items)
-            ->pluck('unit_of_measurement_id')
-            ->map(fn (mixed $unitId): int => (int) $unitId)
-            ->unique()
-            ->values();
-        $variants = ProductVariant::query()
-            ->with('product:id,business_id,name')
-            ->whereIn('id', $variantIds)
-            ->where('status', 'active')
-            ->get()
-            ->keyBy('id');
-        $conversions = ProductUnitConversion::query()
-            ->whereIn('product_id', $variants->pluck('product_id')->unique())
-            ->whereIn('unit_of_measurement_id', $unitIds)
-            ->where('status', 'active')
-            ->get()
-            ->keyBy(fn (ProductUnitConversion $conversion): string => "{$conversion->product_id}:{$conversion->unit_of_measurement_id}");
-
-        foreach ($items as $index => $item) {
-            $variant = $variants->get((int) $item['product_variant_id']);
-
-            if ($variant === null || $variant->product?->business_id !== (int) $data['business_id']) {
-                throw ValidationException::withMessages([
-                    "items.{$index}.product_variant_id" => 'Select a valid product variant.',
-                ]);
-            }
-
-            $conversion = $conversions->get("{$variant->product_id}:{$item['unit_of_measurement_id']}");
-
-            if ($conversion === null) {
-                throw ValidationException::withMessages([
-                    "items.{$index}.unit_of_measurement_id" => 'Select a valid unit for this product variant.',
-                ]);
-            }
-
-            $quantity = (float) $item['quantity'];
-            $unitCost = (float) $item['unit_cost'];
-            $conversionFactor = (float) $conversion->conversion_factor_to_base;
-            $lineTotal = $quantity * $unitCost;
-
-            $items[$index] = [
-                'product_variant_id' => $item['product_variant_id'],
-                'unit_of_measurement_id' => $item['unit_of_measurement_id'],
-                'product_unit_conversion_id' => $conversion->id,
-                'quantity' => round($quantity, 4),
-                'base_quantity' => round($quantity * $conversionFactor, 4),
-                'unit_cost' => round($unitCost, 2),
-                'base_unit_cost' => $conversionFactor > 0
-                    ? round($unitCost / $conversionFactor, 6)
-                    : 0,
-                'discount_amount' => 0,
-                'line_total' => round($lineTotal, 2),
-            ];
-
-            $subtotal += $lineTotal;
-        }
-
-        $discountAmount = (float) $data['discount_amount'];
-        $transportCost = (float) $data['transport_cost'];
-        $labourCost = (float) $data['labour_cost'];
-        $otherCost = (float) $data['other_cost'];
-        $paidAmount = (float) $data['paid_amount'];
-        $totalAmount = $subtotal + $transportCost + $labourCost + $otherCost - $discountAmount;
-
-        if ($totalAmount < 0) {
-            throw ValidationException::withMessages([
-                'discount_amount' => 'Discount cannot exceed subtotal and costs.',
-            ]);
-        }
-
-        $data['subtotal'] = round($subtotal, 2);
-        $data['total_amount'] = round($totalAmount, 2);
-        $data['due_amount'] = round($totalAmount - $paidAmount, 2);
-        $data['payment_status'] = match (true) {
-            $paidAmount <= 0 => PurchasePaymentStatus::Unpaid,
-            $paidAmount >= $totalAmount => PurchasePaymentStatus::Paid,
-            default => PurchasePaymentStatus::Partial,
-        };
-
-        return [$data, array_values($items)];
     }
 
     /**

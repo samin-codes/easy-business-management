@@ -35,7 +35,7 @@ function createPurchaseItemFormData(): PurchaseItemFormData {
 function createPaymentFormData(): PaymentFormData {
     return {
         payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
-        amount: '0',
+        amount: '',
         payment_method: 'cash',
         reference_no: '',
         note: '',
@@ -49,11 +49,11 @@ function createPurchaseFormData(): PurchaseFormData {
         outlet_id: '',
         supplier_party_id: '',
         note: '',
-        discount_amount: '0',
-        transport_cost: '0',
-        labour_cost: '0',
-        other_cost: '0',
-        paid_amount: '0',
+        discount_amount: '0.00',
+        transport_cost: '0.00',
+        labour_cost: '0.00',
+        other_cost: '0.00',
+        paid_amount: '0.00',
         payment: createPaymentFormData(),
         items: [createPurchaseItemFormData()],
     };
@@ -100,8 +100,9 @@ export default function PurchasesCreate({
     const paidAmount = Number(form.data.payment.amount) || 0;
     const due = total - paidAmount;
     const paymentStatus = paidAmount <= 0 ? 'unpaid' : paidAmount >= total ? 'paid' : 'partial';
+    const hasPayment = Number(form.data.payment.amount) > 0;
 
-    function submit(event: React.SubmitEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         form.transform((data) => ({
@@ -170,7 +171,7 @@ export default function PurchasesCreate({
                 <div className="mx-auto max-w-5xl space-y-6">
                     <Heading title="Create Purchase" className="mb-8" />
 
-                    <form onSubmit={submit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-6">
                             <Section>
                                 <SectionHeader>
@@ -324,7 +325,7 @@ export default function PurchasesCreate({
                                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                                         <Field>
                                             <FieldLabel htmlFor="payment_date">
-                                                Payment Date <span className="-ml-1 text-red-500">*</span>
+                                                Payment Date{hasPayment && <span className="-ml-1 text-red-500">*</span>}
                                             </FieldLabel>
                                             <DatePicker
                                                 id="payment_date"
@@ -345,7 +346,7 @@ export default function PurchasesCreate({
 
                                         <Field>
                                             <FieldLabel htmlFor="payment_method">
-                                                Method <span className="-ml-1 text-red-500">*</span>
+                                                Method{hasPayment && <span className="-ml-1 text-red-500">*</span>}
                                             </FieldLabel>
                                             <Select
                                                 value={form.data.payment.payment_method}
@@ -378,9 +379,7 @@ export default function PurchasesCreate({
                                         </Field>
 
                                         <Field>
-                                            <FieldLabel htmlFor="payment_amount">
-                                                Amount <span className="-ml-1 text-red-500">*</span>
-                                            </FieldLabel>
+                                            <FieldLabel htmlFor="payment_amount">Amount</FieldLabel>
                                             <Input
                                                 id="payment_amount"
                                                 type="number"
@@ -448,144 +447,148 @@ export default function PurchasesCreate({
 
                                     <Card className="overflow-hidden p-0">
                                         <CardContent className="space-y-1 p-4">
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <span className="text-sm text-muted-foreground">Subtotal</span>
-                                            <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
-                                                {formatCurrency(subtotal)}
-                                            </span>
-                                        </div>
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <span className="text-sm text-muted-foreground">Subtotal</span>
+                                                <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
+                                                    {formatCurrency(subtotal)}
+                                                </span>
+                                            </div>
 
-                                        <div className="border-t border-border" />
+                                            <div className="border-t border-border" />
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <label htmlFor="transport_cost" className="text-sm text-muted-foreground">
-                                                Transport Cost
-                                            </label>
-                                            <Input
-                                                id="transport_cost"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                value={form.data.transport_cost}
-                                                onChange={(event) => form.setData('transport_cost', event.target.value)}
-                                                onBlur={(event) => form.setData('transport_cost', formatDecimal(event.target.value))}
-                                                className="no-number-spinner h-9 w-36 text-right"
-                                                aria-invalid={Boolean(form.errors.transport_cost)}
-                                            />
-                                        </div>
-                                        {form.errors.transport_cost && (
-                                            <div className="text-right text-xs text-red-500">{form.errors.transport_cost}</div>
-                                        )}
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <label htmlFor="transport_cost" className="text-sm text-muted-foreground">
+                                                    Transport Cost
+                                                </label>
+                                                <Input
+                                                    id="transport_cost"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={form.data.transport_cost}
+                                                    onChange={(event) => form.setData('transport_cost', event.target.value)}
+                                                    onBlur={(event) => form.setData('transport_cost', formatDecimal(event.target.value))}
+                                                    className="no-number-spinner h-9 w-36 text-right"
+                                                    aria-invalid={Boolean(form.errors.transport_cost)}
+                                                />
+                                            </div>
+                                            {form.errors.transport_cost && (
+                                                <div className="text-right text-xs text-red-500">{form.errors.transport_cost}</div>
+                                            )}
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <label htmlFor="labour_cost" className="text-sm text-muted-foreground">
-                                                Labour Cost
-                                            </label>
-                                            <Input
-                                                id="labour_cost"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                value={form.data.labour_cost}
-                                                onChange={(event) => form.setData('labour_cost', event.target.value)}
-                                                onBlur={(event) => form.setData('labour_cost', formatDecimal(event.target.value))}
-                                                className="no-number-spinner h-9 w-36 text-right"
-                                                aria-invalid={Boolean(form.errors.labour_cost)}
-                                            />
-                                        </div>
-                                        {form.errors.labour_cost && (
-                                            <div className="text-right text-xs text-red-500">{form.errors.labour_cost}</div>
-                                        )}
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <label htmlFor="labour_cost" className="text-sm text-muted-foreground">
+                                                    Labour Cost
+                                                </label>
+                                                <Input
+                                                    id="labour_cost"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={form.data.labour_cost}
+                                                    onChange={(event) => form.setData('labour_cost', event.target.value)}
+                                                    onBlur={(event) => form.setData('labour_cost', formatDecimal(event.target.value))}
+                                                    className="no-number-spinner h-9 w-36 text-right"
+                                                    aria-invalid={Boolean(form.errors.labour_cost)}
+                                                />
+                                            </div>
+                                            {form.errors.labour_cost && (
+                                                <div className="text-right text-xs text-red-500">{form.errors.labour_cost}</div>
+                                            )}
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <label htmlFor="other_cost" className="text-sm text-muted-foreground">
-                                                Other Cost
-                                            </label>
-                                            <Input
-                                                id="other_cost"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                value={form.data.other_cost}
-                                                onChange={(event) => form.setData('other_cost', event.target.value)}
-                                                onBlur={(event) => form.setData('other_cost', formatDecimal(event.target.value))}
-                                                className="no-number-spinner h-9 w-36 text-right"
-                                                aria-invalid={Boolean(form.errors.other_cost)}
-                                            />
-                                        </div>
-                                        {form.errors.other_cost && (
-                                            <div className="text-right text-xs text-red-500">{form.errors.other_cost}</div>
-                                        )}
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <label htmlFor="other_cost" className="text-sm text-muted-foreground">
+                                                    Other Cost
+                                                </label>
+                                                <Input
+                                                    id="other_cost"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={form.data.other_cost}
+                                                    onChange={(event) => form.setData('other_cost', event.target.value)}
+                                                    onBlur={(event) => form.setData('other_cost', formatDecimal(event.target.value))}
+                                                    className="no-number-spinner h-9 w-36 text-right"
+                                                    aria-invalid={Boolean(form.errors.other_cost)}
+                                                />
+                                            </div>
+                                            {form.errors.other_cost && (
+                                                <div className="text-right text-xs text-red-500">{form.errors.other_cost}</div>
+                                            )}
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <label htmlFor="discount_amount" className="text-sm text-muted-foreground">
-                                                Discount Amount
-                                            </label>
-                                            <Input
-                                                id="discount_amount"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                value={form.data.discount_amount}
-                                                onChange={(event) => form.setData('discount_amount', event.target.value)}
-                                                onBlur={(event) => form.setData('discount_amount', formatDecimal(event.target.value))}
-                                                className="no-number-spinner h-9 w-36 text-right"
-                                                aria-invalid={Boolean(form.errors.discount_amount)}
-                                            />
-                                        </div>
-                                        {form.errors.discount_amount && (
-                                            <div className="text-right text-xs text-red-500">{form.errors.discount_amount}</div>
-                                        )}
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <label htmlFor="discount_amount" className="text-sm text-muted-foreground">
+                                                    Discount Amount
+                                                </label>
+                                                <Input
+                                                    id="discount_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={form.data.discount_amount}
+                                                    onChange={(event) => form.setData('discount_amount', event.target.value)}
+                                                    onBlur={(event) => form.setData('discount_amount', formatDecimal(event.target.value))}
+                                                    className="no-number-spinner h-9 w-36 text-right"
+                                                    aria-invalid={Boolean(form.errors.discount_amount)}
+                                                />
+                                            </div>
+                                            {form.errors.discount_amount && (
+                                                <div className="text-right text-xs text-red-500">{form.errors.discount_amount}</div>
+                                            )}
 
-                                        <div className="my-2 border-t border-border" />
+                                            <div className="my-2 border-t border-border" />
 
-                                        <div className="flex items-center justify-between gap-4 py-2">
-                                            <span className="text-sm font-medium">Total Amount</span>
-                                            <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">
-                                                {formatCurrency(total)}
-                                            </span>
-                                        </div>
+                                            <div className="flex items-center justify-between gap-4 py-2">
+                                                <span className="text-sm font-medium">Total Amount</span>
+                                                <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">
+                                                    {formatCurrency(total)}
+                                                </span>
+                                            </div>
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <span className="text-sm text-muted-foreground">Paid Amount</span>
-                                            <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
-                                                {formatCurrency(paidAmount)}
-                                            </span>
-                                        </div>
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <span className="text-sm text-muted-foreground">Paid Amount</span>
+                                                <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
+                                                    {formatCurrency(paidAmount)}
+                                                </span>
+                                            </div>
 
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <span className="text-sm text-muted-foreground">Due Amount</span>
-                                            <span
-                                                className={
-                                                    'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
-                                                    (paymentStatus === 'paid'
-                                                        ? 'text-emerald-600'
-                                                        : paymentStatus === 'partial'
-                                                          ? 'text-amber-600'
-                                                          : 'text-red-600')
-                                                }
-                                            >
-                                                {formatCurrency(due)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between gap-4 py-1">
-                                            <span className="text-sm text-muted-foreground">Payment Status</span>
-                                            <span className="flex w-36 justify-end">
-                                                <Badge
-                                                    variant="outline"
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <span className="text-sm text-muted-foreground">Due Amount</span>
+                                                <span
                                                     className={
-                                                        paymentStatus === 'paid'
-                                                            ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                        'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
+                                                        (paymentStatus === 'paid'
+                                                            ? 'text-emerald-600'
                                                             : paymentStatus === 'partial'
-                                                              ? 'border-transparent bg-amber-100 text-amber-800'
-                                                              : 'border-transparent bg-red-100 text-red-800'
+                                                              ? 'text-amber-600'
+                                                              : 'text-red-600')
                                                     }
                                                 >
-                                                    {paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partial' ? 'Partial' : 'Unpaid'}
-                                                </Badge>
-                                            </span>
-                                        </div>
+                                                    {formatCurrency(due)}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <span className="text-sm text-muted-foreground">Payment Status</span>
+                                                <span className="flex w-36 justify-end">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={
+                                                            paymentStatus === 'paid'
+                                                                ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                                : paymentStatus === 'partial'
+                                                                  ? 'border-transparent bg-amber-100 text-amber-800'
+                                                                  : 'border-transparent bg-red-100 text-red-800'
+                                                        }
+                                                    >
+                                                        {paymentStatus === 'paid'
+                                                            ? 'Paid'
+                                                            : paymentStatus === 'partial'
+                                                              ? 'Partial'
+                                                              : 'Unpaid'}
+                                                    </Badge>
+                                                </span>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </SectionContent>

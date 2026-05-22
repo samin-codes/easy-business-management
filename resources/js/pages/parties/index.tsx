@@ -1,9 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronUp, Eye, Plus, Search, SquarePen } from 'lucide-react';
+import { Eye, Plus, Search, SquarePen } from 'lucide-react';
 import { useRef } from 'react';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
+import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,6 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
         errors: Record<string, string>;
     }>().props;
 
-    const nextNameDirection = queryString.sort === 'name' && queryString.direction === 'asc' ? 'desc' : 'asc';
     const hasPages = parties.last_page > 1;
 
     return (
@@ -108,38 +108,24 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                     <thead>
                                         <tr>
                                             <th>
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link
-                                                        href={index({
-                                                            query: {
-                                                                search: queryString.search ?? undefined,
-                                                                sort: 'name',
-                                                                direction: nextNameDirection,
-                                                                page: 1,
-                                                            },
-                                                        })}
-                                                        preserveScroll
-                                                        only={reloadProps}
-                                                    >
-                                                        Name
-                                                        <span className="flex flex-col" aria-hidden="true">
-                                                            <ChevronUp
-                                                                className={
-                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
-                                                                        ? 'size-3 text-primary'
-                                                                        : 'size-3 text-muted-foreground'
-                                                                }
-                                                            />
-                                                            <ChevronDown
-                                                                className={
-                                                                    queryString.sort === 'name' && queryString.direction === 'desc'
-                                                                        ? 'size-3 text-primary'
-                                                                        : 'size-3 text-muted-foreground'
-                                                                }
-                                                            />
-                                                        </span>
-                                                    </Link>
-                                                </Button>
+                                                <TableSortButton
+                                                    label="Name"
+                                                    href={index({
+                                                        query: {
+                                                            search: queryString.search ?? undefined,
+                                                            sort: 'name',
+                                                            direction:
+                                                                queryString.sort === 'name' &&
+                                                                queryString.direction === 'asc'
+                                                                    ? 'desc'
+                                                                    : 'asc',
+                                                            page: 1,
+                                                        },
+                                                    }).url}
+                                                    isActive={queryString.sort === 'name'}
+                                                    currentDirection={queryString.direction}
+                                                    only={reloadProps}
+                                                />
                                             </th>
                                             <th>Party Type</th>
                                             <th>Mobile</th>

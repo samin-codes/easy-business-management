@@ -180,7 +180,7 @@
     .table-bordered {
         @apply border border-border;
     }
-    .table-bordered th, 
+    .table-bordered th,
     .table-bordered td {
         @apply border border-border;
     }
@@ -188,7 +188,7 @@
     .table-borderless thead tr {
         @apply border-0;
     }
-    
+
     /* Sizing */
     .table-sm th {
         @apply h-8 px-2;

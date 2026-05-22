@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductUnitConversionController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\PurchasePaymentController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -44,6 +45,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['index', 'show'])
         ->scoped();
     Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
+    Route::post('purchases/{purchase}/payments', [PurchasePaymentController::class, 'store'])
+        ->name('purchases.payments.store');
+    Route::delete('purchases/{purchase}/payments/{purchasePayment}', [PurchasePaymentController::class, 'destroy'])
+        ->name('purchases.payments.destroy');
 });
 
 require __DIR__.'/settings.php';
