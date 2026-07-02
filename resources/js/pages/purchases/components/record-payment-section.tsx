@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { format as formatDate } from 'date-fns';
 import { Save } from 'lucide-react';
+import PurchasePaymentController from '@/actions/App/Http/Controllers/PurchasePaymentController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
-import PurchasePaymentController from '@/actions/App/Http/Controllers/PurchasePaymentController';
 import type { PaymentFormData, PaymentMethod, Purchase } from '../types';
 
 function createPaymentFormData(): PaymentFormData {
