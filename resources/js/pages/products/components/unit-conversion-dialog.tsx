@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Option } from '@/types';
 import type { Product, ProductUnitConversion, UnitOfMeasurement } from '../types';
@@ -34,7 +34,7 @@ export default function UnitConversionDialog({
     const [selectedUnitQuantity, setSelectedUnitQuantity] = useState(unitConversion?.conversion_unit_quantity ?? '');
     const [baseUnitQuantity, setBaseUnitQuantity] = useState(unitConversion?.base_unit_quantity ?? '');
 
-    const selectedUnitName = selectedUnit?.name ?? 'N/A';
+    const selectedUnitName = selectedUnit?.name ?? 'Unit';
     const baseUnitName = product.base_unit_of_measurement.name;
 
     const hasConversionQuantities =
@@ -53,7 +53,7 @@ export default function UnitConversionDialog({
             }}
         >
             <DialogContent
-                className="sm:max-w-2xl"
+                className="sm:max-w-xl"
                 onInteractOutside={(event) => {
                     if (event.target instanceof HTMLElement && event.target.closest('[data-slot="combobox-content"]')) {
                         event.preventDefault();
@@ -77,12 +77,12 @@ export default function UnitConversionDialog({
                     options={{ preserveScroll: true }}
                     onSuccess={onClose}
                     disableWhileProcessing
-                    className="space-y-6"
+                    className="space-y-5"
                 >
                     {({ errors, processing }) => (
                         <>
-                            <FieldGroup className="grid gap-5 md:grid-cols-2">
-                                <Field>
+                            <FieldGroup className="gap-5">
+                                <Field className="sm:w-1/2">
                                     <FieldLabel htmlFor="unit_of_measurement_id">
                                         Unit <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
@@ -119,18 +119,20 @@ export default function UnitConversionDialog({
                                     <FieldError errors={[{ message: errors.unit_of_measurement_id ?? errors.product_unit_conversion }]} />
                                 </Field>
 
-                                <Field className="md:col-span-2">
-                                    <FieldLabel htmlFor="selected_unit_quantity">
+                                <Field>
+                                    <FieldLabel>
                                         Conversion <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
                                     <input type="hidden" name="conversion_factor_to_base" value={conversionFactor} readOnly />
 
                                     <div className="flex flex-col gap-3">
-                                        <div className="flex items-end gap-3">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs text-muted-foreground">Selected unit quantity</span>
-                                                <div className="flex items-center gap-2">
-                                                    <Input
+                                        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                                            <div className="min-w-0">
+                                                <FieldLabel htmlFor="selected_unit_quantity" className="sr-only">
+                                                    Selected unit quantity
+                                                </FieldLabel>
+                                                <InputGroup data-disabled={isBaseConversion || undefined}>
+                                                    <InputGroupInput
                                                         id="selected_unit_quantity"
                                                         type="number"
                                                         step="0.001"
@@ -144,18 +146,24 @@ export default function UnitConversionDialog({
                                                         }}
                                                         disabled={isBaseConversion}
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
-                                                        className="no-number-spinner w-28 text-right"
+                                                        className="no-number-spinner min-w-16 text-right"
                                                     />
-                                                    <span className="text-sm text-muted-foreground">{selectedUnitName}</span>
-                                                </div>
+                                                    <InputGroupAddon align="inline-end" className="max-w-28">
+                                                        <InputGroupText className="truncate" title={selectedUnitName}>
+                                                            {selectedUnitName}
+                                                        </InputGroupText>
+                                                    </InputGroupAddon>
+                                                </InputGroup>
                                             </div>
 
-                                            <span className="pb-1.5 text-sm text-muted-foreground">=</span>
+                                            <span className="text-center text-sm font-medium text-muted-foreground">=</span>
 
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs text-muted-foreground">Base unit quantity</span>
-                                                <div className="flex items-center gap-2">
-                                                    <Input
+                                            <div className="min-w-0">
+                                                <FieldLabel htmlFor="base_unit_quantity" className="sr-only">
+                                                    Base unit quantity
+                                                </FieldLabel>
+                                                <InputGroup data-disabled={isBaseConversion || undefined}>
+                                                    <InputGroupInput
                                                         id="base_unit_quantity"
                                                         type="number"
                                                         step="0.001"
@@ -169,10 +177,14 @@ export default function UnitConversionDialog({
                                                         }}
                                                         disabled={isBaseConversion}
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
-                                                        className="no-number-spinner w-28 text-right"
+                                                        className="no-number-spinner min-w-16 text-right"
                                                     />
-                                                    <span className="text-sm text-muted-foreground">{baseUnitName}</span>
-                                                </div>
+                                                    <InputGroupAddon align="inline-end" className="max-w-28">
+                                                        <InputGroupText className="truncate" title={baseUnitName}>
+                                                            {baseUnitName}
+                                                        </InputGroupText>
+                                                    </InputGroupAddon>
+                                                </InputGroup>
                                             </div>
                                         </div>
 
@@ -188,56 +200,77 @@ export default function UnitConversionDialog({
                                     <FieldError errors={[{ message: errors.conversion_factor_to_base }]} />
                                 </Field>
 
-                                <Field orientation="horizontal" className="md:col-span-2">
-                                    <input type="hidden" name="is_default_purchase_unit" value="0" />
-                                    <Checkbox
-                                        id="is_default_purchase_unit"
-                                        name="is_default_purchase_unit"
-                                        value="1"
-                                        defaultChecked={unitConversion?.is_default_purchase_unit ?? false}
-                                        aria-invalid={Boolean(errors.is_default_purchase_unit)}
-                                    />
-                                    <FieldLabel htmlFor="is_default_purchase_unit">Use for purchases by default</FieldLabel>
-                                    <FieldError errors={[{ message: errors.is_default_purchase_unit }]} />
-                                </Field>
+                                <div className="grid gap-5 sm:grid-cols-2">
+                                    <Field className="gap-3">
+                                        <FieldLabel>Default for</FieldLabel>
+                                        <div className="grid gap-3">
+                                            <Field className="gap-1">
+                                                <input type="hidden" name="is_default_purchase_unit" value="0" />
+                                                <div className="flex items-start gap-3">
+                                                    <Checkbox
+                                                        id="is_default_purchase_unit"
+                                                        name="is_default_purchase_unit"
+                                                        value="1"
+                                                        defaultChecked={unitConversion?.is_default_purchase_unit ?? false}
+                                                        aria-invalid={Boolean(errors.is_default_purchase_unit)}
+                                                        className="mt-0.5"
+                                                    />
+                                                    <FieldContent className="gap-1">
+                                                        <FieldLabel htmlFor="is_default_purchase_unit">Purchases</FieldLabel>
+                                                        <FieldError errors={[{ message: errors.is_default_purchase_unit }]} />
+                                                    </FieldContent>
+                                                </div>
+                                            </Field>
 
-                                <Field orientation="horizontal" className="md:col-span-2">
-                                    <input type="hidden" name="is_default_sale_unit" value="0" />
-                                    <Checkbox
-                                        id="is_default_sale_unit"
-                                        name="is_default_sale_unit"
-                                        value="1"
-                                        defaultChecked={unitConversion?.is_default_sale_unit ?? false}
-                                        aria-invalid={Boolean(errors.is_default_sale_unit)}
-                                    />
-                                    <FieldLabel htmlFor="is_default_sale_unit">Use for sales by default</FieldLabel>
-                                    <FieldError errors={[{ message: errors.is_default_sale_unit }]} />
-                                </Field>
+                                            <Field className="gap-1">
+                                                <input type="hidden" name="is_default_sale_unit" value="0" />
+                                                <div className="flex items-start gap-3">
+                                                    <Checkbox
+                                                        id="is_default_sale_unit"
+                                                        name="is_default_sale_unit"
+                                                        value="1"
+                                                        defaultChecked={unitConversion?.is_default_sale_unit ?? false}
+                                                        aria-invalid={Boolean(errors.is_default_sale_unit)}
+                                                        className="mt-0.5"
+                                                    />
+                                                    <FieldContent className="gap-1">
+                                                        <FieldLabel htmlFor="is_default_sale_unit">Sales</FieldLabel>
+                                                        <FieldError errors={[{ message: errors.is_default_sale_unit }]} />
+                                                    </FieldContent>
+                                                </div>
+                                            </Field>
+                                        </div>
+                                    </Field>
 
-                                <Field className="md:col-span-2">
-                                    <FieldLabel htmlFor="status">
-                                        Status <span className="-ml-1 text-red-500">*</span>
-                                    </FieldLabel>
-                                    <RadioGroup
-                                        name="status"
-                                        defaultValue={unitConversion?.status ?? 'active'}
-                                        className="flex flex-row items-center gap-6 pt-2"
-                                    >
-                                        {statusOptions.map((option) => (
-                                            <div key={option.value} className="flex items-center space-x-2">
-                                                <RadioGroupItem
-                                                    value={option.value}
-                                                    id={`unit_conversion_status_${option.value}`}
-                                                    aria-invalid={Boolean(errors.status)}
-                                                />
-                                                <label htmlFor={`unit_conversion_status_${option.value}`} className="text-sm font-medium">
-                                                    {option.label}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </RadioGroup>
-                                    <FieldError errors={[{ message: errors.status }]} />
-                                </Field>
+                                    <Field>
+                                        <FieldLabel id="unit_conversion_status_label">
+                                            Status <span className="-ml-1 text-red-500">*</span>
+                                        </FieldLabel>
+                                        <RadioGroup
+                                            name="status"
+                                            defaultValue={unitConversion?.status ?? 'active'}
+                                            aria-labelledby="unit_conversion_status_label"
+                                            className="flex flex-row items-center gap-6 pt-2"
+                                        >
+                                            {statusOptions.map((option) => (
+                                                <div key={option.value} className="flex items-center space-x-2">
+                                                    <RadioGroupItem
+                                                        value={option.value}
+                                                        id={`unit_conversion_status_${option.value}`}
+                                                        aria-invalid={Boolean(errors.status)}
+                                                    />
+                                                    <label
+                                                        htmlFor={`unit_conversion_status_${option.value}`}
+                                                        className="text-sm font-medium"
+                                                    >
+                                                        {option.label}
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </RadioGroup>
+                                        <FieldError errors={[{ message: errors.status }]} />
+                                    </Field>
+                                </div>
                             </FieldGroup>
 
                             <DialogFooter>
