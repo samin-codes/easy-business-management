@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Enums\PartyType;
 use App\Enums\PaymentMethod;
+use App\Enums\ProductStockLedgerTransactionType;
 use App\Http\Requests\SavePurchaseRequest;
 use App\Models\Business;
 use App\Models\Outlet;
 use App\Models\Party;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\Purchase;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -116,7 +119,46 @@ class PurchaseController extends Controller
             $purchase = Purchase::create($purchase);
 
             foreach ($items as $item) {
-                $purchase->items()->create($item);
+                $purchaseItem = $purchase->items()->create($item);
+
+                $purchaseItem->productStockLedgers()->create([
+                    'business_id' => $purchase->business_id,
+                    'outlet_id' => $purchase->outlet_id,
+                    'product_variant_id' => $purchaseItem->product_variant_id,
+                    'transaction_type' => ProductStockLedgerTransactionType::Purchase,
+                    'quantity_in' => $purchaseItem->quantity,
+                    'quantity_out' => 0,
+                    'unit_of_measurement_id' => $purchaseItem->unit_of_measurement_id,
+                    'product_unit_conversion_id' => $purchaseItem->product_unit_conversion_id,
+                    'base_quantity' => $purchaseItem->base_quantity,
+                    'unit_cost' => $purchaseItem->unit_cost,
+                    'total_cost' => $purchaseItem->line_total,
+                    'transaction_date' => $purchase->purchase_date,
+                    'note' => $purchaseItem->note,
+                ]);
+
+                $stock = ProductStock::query()->firstOrCreate(
+                    [
+                        'outlet_id' => $purchase->outlet_id,
+                        'product_variant_id' => $purchaseItem->product_variant_id,
+                    ],
+                    [
+                        'business_id' => $purchase->business_id,
+                        'quantity' => 0,
+                        'average_cost' => 0,
+                        'stock_value' => 0,
+                    ],
+                );
+                $stock = ProductStock::query()->lockForUpdate()->findOrFail($stock->id);
+                $quantity = round((float) $stock->quantity + (float) $purchaseItem->base_quantity, 4);
+                $stockValue = round((float) $stock->stock_value + (float) $purchaseItem->line_total, 2);
+
+                $stock->update([
+                    'quantity' => $quantity,
+                    'average_cost' => $quantity > 0 ? round($stockValue / $quantity, 6) : 0,
+                    'stock_value' => $stockValue,
+                    'last_movement_at' => now(),
+                ]);
             }
 
             if ($payment !== null) {
@@ -134,7 +176,53 @@ class PurchaseController extends Controller
 
     public function destroy(Purchase $purchase): RedirectResponse
     {
-        $purchase->delete();
+        DB::transaction(function () use ($purchase): void {
+            $purchase->load([
+                'items.productStockLedgers' => fn ($query) => $query
+                    ->where('business_id', $purchase->business_id)
+                    ->where('outlet_id', $purchase->outlet_id)
+                    ->where('transaction_type', ProductStockLedgerTransactionType::Purchase->value),
+            ]);
+
+            $stockLedgers = $purchase->items
+                ->flatMap->productStockLedgers
+                ->sortBy('product_variant_id');
+
+            foreach ($stockLedgers as $stockLedger) {
+                $stock = ProductStock::query()
+                    ->where('outlet_id', $purchase->outlet_id)
+                    ->where('product_variant_id', $stockLedger->product_variant_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stock === null
+                    || (float) $stock->quantity + 0.00005 < (float) $stockLedger->base_quantity
+                    || (float) $stock->stock_value + 0.005 < (float) $stockLedger->total_cost
+                ) {
+                    throw ValidationException::withMessages([
+                        'purchase' => 'This purchase cannot be deleted because its inventory is no longer available to reverse.',
+                    ]);
+                }
+
+                $quantity = max(0, round((float) $stock->quantity - (float) $stockLedger->base_quantity, 4));
+                $stockValue = max(0, round((float) $stock->stock_value - (float) $stockLedger->total_cost, 2));
+
+                if ($quantity === 0.0) {
+                    $stockValue = 0;
+                }
+
+                $stock->update([
+                    'quantity' => $quantity,
+                    'average_cost' => $quantity > 0 ? round($stockValue / $quantity, 6) : 0,
+                    'stock_value' => $stockValue,
+                    'last_movement_at' => now(),
+                ]);
+
+                $stockLedger->delete();
+            }
+
+            $purchase->delete();
+        });
 
         return to_route('purchases.index')
             ->with('status', 'Purchase deleted successfully.');

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DemoTableController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\PartyContactPersonController;
 use App\Http\Controllers\PartyController;
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['index', 'show'])
         ->scoped();
     Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
+    Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('inventory/{productVariant}', [InventoryController::class, 'show'])->name('inventory.show');
     Route::post('purchases/{purchase}/payments', [PurchasePaymentController::class, 'store'])
         ->name('purchases.payments.store');
     Route::delete('purchases/{purchase}/payments/{purchasePayment}', [PurchasePaymentController::class, 'destroy'])

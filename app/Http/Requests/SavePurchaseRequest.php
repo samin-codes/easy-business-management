@@ -57,7 +57,7 @@ class SavePurchaseRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_variant_id' => ['required', 'exists:product_variants,id'],
             'items.*.unit_of_measurement_id' => ['required', 'exists:unit_of_measurements,id'],
-            'items.*.quantity' => ['required', 'numeric', 'min:0'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.unit_cost' => ['required', 'numeric', 'min:0'],
         ];
     }
@@ -80,7 +80,7 @@ class SavePurchaseRequest extends FormRequest
             'items.*.unit_of_measurement_id.required' => 'Select a unit.',
             'items.*.unit_cost.required' => 'Enter the unit cost for each item.',
             'items.*.quantity.required' => 'Enter the quantity for each item.',
-            'items.*.quantity.min' => 'Quantity must be more than 0.',
+            'items.*.quantity.gt' => 'Quantity must be more than 0.',
         ];
     }
 
@@ -212,13 +212,20 @@ class SavePurchaseRequest extends FormRequest
             $unitCost = (float) $item['unit_cost'];
             $conversionFactor = (float) $conversion->conversion_factor_to_base;
             $lineTotal = $quantity * $unitCost;
+            $baseQuantity = round($quantity * $conversionFactor, 4);
+
+            if ($baseQuantity <= 0) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.quantity" => 'Quantity is too small for this unit conversion.',
+                ]);
+            }
 
             $items[$index] = [
                 'product_variant_id' => $item['product_variant_id'],
                 'unit_of_measurement_id' => $item['unit_of_measurement_id'],
                 'product_unit_conversion_id' => $conversion->id,
                 'quantity' => round($quantity, 4),
-                'base_quantity' => round($quantity * $conversionFactor, 4),
+                'base_quantity' => $baseQuantity,
                 'unit_cost' => round($unitCost, 2),
                 'base_unit_cost' => $conversionFactor > 0
                     ? round($unitCost / $conversionFactor, 6)

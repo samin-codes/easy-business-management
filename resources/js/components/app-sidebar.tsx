@@ -1,12 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    BriefcaseBusiness,
-    LayoutGrid,
-    Package,
-    ShoppingCart,
-    Tags,
-    Users,
-} from 'lucide-react';
+import { BriefcaseBusiness, Boxes, LayoutGrid, Package, ShoppingCart, Tags, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -22,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { show as businessShow } from '@/routes/business';
+import { index as inventoryIndex } from '@/routes/inventory';
 import { index as partyIndex } from '@/routes/parties';
 import { index as productCategoryIndex } from '@/routes/product-categories';
 import { index as productIndex } from '@/routes/products';
@@ -58,6 +52,11 @@ const mainNavItems: NavItem[] = [
         title: 'Purchases',
         href: purchaseIndex(),
         icon: ShoppingCart,
+    },
+    {
+        title: 'Inventory',
+        href: inventoryIndex(),
+        icon: Boxes,
     },
 ];
 

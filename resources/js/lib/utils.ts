@@ -8,6 +8,11 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 2,
 });
 
+const quantityFormatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+});
+
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -16,6 +21,12 @@ export function formatCurrency(value: string | number): string {
     const numericValue = typeof value === 'string' ? parseFloat(value) : value;
 
     return currencyFormatter.format(numericValue);
+}
+
+export function formatQuantity(value: string | number): string {
+    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+
+    return Number.isNaN(numericValue) ? String(value) : quantityFormatter.format(numericValue);
 }
 
 export const formatDecimal = (value: string | number, places = 2): string => {
