@@ -12,6 +12,8 @@ use App\Http\Controllers\ProductUnitConversionController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchasePaymentController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SalePaymentController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -46,12 +48,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['index', 'show'])
         ->scoped();
     Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
+    Route::resource('sales', SaleController::class)->except(['edit', 'update']);
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::get('inventory/{productVariant}', [InventoryController::class, 'show'])->name('inventory.show');
     Route::post('purchases/{purchase}/payments', [PurchasePaymentController::class, 'store'])
         ->name('purchases.payments.store');
     Route::delete('purchases/{purchase}/payments/{purchasePayment}', [PurchasePaymentController::class, 'destroy'])
         ->name('purchases.payments.destroy');
+    Route::post('sales/{sale}/payments', [SalePaymentController::class, 'store'])
+        ->name('sales.payments.store');
+    Route::delete('sales/{sale}/payments/{salePayment}', [SalePaymentController::class, 'destroy'])
+        ->name('sales.payments.destroy');
 });
 
 require __DIR__.'/settings.php';

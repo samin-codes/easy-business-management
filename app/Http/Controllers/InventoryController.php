@@ -10,6 +10,7 @@ use App\Models\ProductStock;
 use App\Models\ProductStockLedger;
 use App\Models\ProductVariant;
 use App\Models\PurchaseItem;
+use App\Models\SaleItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
@@ -209,6 +210,7 @@ class InventoryController extends Controller
                 'source' => function (MorphTo $morphTo): void {
                     $morphTo->morphWith([
                         PurchaseItem::class => ['purchase:id,purchase_no'],
+                        SaleItem::class => ['sale:id,sale_no'],
                     ]);
                 },
             ])
@@ -232,6 +234,14 @@ class InventoryController extends Controller
                         'type' => 'purchase',
                         'label' => $ledger->source->purchase->purchase_no,
                         'href' => route('purchases.show', $ledger->source->purchase),
+                    ];
+                }
+
+                if ($ledger->source instanceof SaleItem && $ledger->source->sale !== null) {
+                    $source = [
+                        'type' => 'sale',
+                        'label' => $ledger->source->sale->sale_no,
+                        'href' => route('sales.show', $ledger->source->sale),
                     ];
                 }
 

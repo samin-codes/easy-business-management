@@ -96,13 +96,27 @@ class Product extends Model
 
     public function defaultSaleUnitConversion(): HasOne
     {
-        return $this->hasOne(ProductUnitConversion::class)->where('is_default_sale_unit', true);
+        return $this->hasOne(ProductUnitConversion::class)
+            ->where('is_default_sale_unit', true)
+            ->where('status', 'active');
     }
 
     public function purchaseItems(): HasManyThrough
     {
         return $this->hasManyThrough(
             PurchaseItem::class,
+            ProductVariant::class,
+            'product_id',
+            'product_variant_id',
+            'id',
+            'id',
+        );
+    }
+
+    public function saleItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            SaleItem::class,
             ProductVariant::class,
             'product_id',
             'product_variant_id',

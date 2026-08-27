@@ -128,6 +128,11 @@ class ProductVariant extends Model
         return $this->hasMany(PurchaseItem::class);
     }
 
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
     public function stockLedgers(): HasMany
     {
         return $this->hasMany(ProductStockLedger::class);

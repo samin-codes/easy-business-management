@@ -85,6 +85,11 @@ class Outlet extends Model
         return $this->hasMany(Purchase::class);
     }
 
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sale::class);
+    }
+
     public function productStockLedgers(): HasMany
     {
         return $this->hasMany(ProductStockLedger::class);

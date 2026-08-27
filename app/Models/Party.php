@@ -118,4 +118,9 @@ class Party extends Model
     {
         return $this->hasMany(Purchase::class, 'supplier_party_id');
     }
+
+    public function customerSales(): HasMany
+    {
+        return $this->hasMany(Sale::class, 'customer_party_id');
+    }
 }

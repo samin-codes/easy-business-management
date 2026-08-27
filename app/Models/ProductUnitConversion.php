@@ -114,6 +114,11 @@ class ProductUnitConversion extends Model
         return $this->hasMany(PurchaseItem::class);
     }
 
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
     public function productStockLedgers(): HasMany
     {
         return $this->hasMany(ProductStockLedger::class);
