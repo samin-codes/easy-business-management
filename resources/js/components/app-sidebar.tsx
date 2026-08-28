@@ -30,14 +30,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Business',
-        href: businessShow(),
-        icon: BriefcaseBusiness,
+        title: 'Sales',
+        href: saleIndex(),
+        icon: Receipt,
     },
     {
-        title: 'Product Categories',
-        href: productCategoryIndex(),
-        icon: Tags,
+        title: 'Purchases',
+        href: purchaseIndex(),
+        icon: ShoppingCart,
+    },
+    {
+        title: 'Inventory',
+        href: inventoryIndex(),
+        icon: Boxes,
     },
     {
         title: 'Products',
@@ -50,19 +55,14 @@ const mainNavItems: NavItem[] = [
         icon: Users,
     },
     {
-        title: 'Purchases',
-        href: purchaseIndex(),
-        icon: ShoppingCart,
+        title: 'Product Categories',
+        href: productCategoryIndex(),
+        icon: Tags,
     },
     {
-        title: 'Sales',
-        href: saleIndex(),
-        icon: Receipt,
-    },
-    {
-        title: 'Inventory',
-        href: inventoryIndex(),
-        icon: Boxes,
+        title: 'Business',
+        href: businessShow(),
+        icon: BriefcaseBusiness,
     },
 ];
 
