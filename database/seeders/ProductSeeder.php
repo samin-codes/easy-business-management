@@ -43,92 +43,7 @@ class ProductSeeder extends Seeder
             ->get()
             ->keyBy('code');
 
-        foreach ($this->products() as $productData) {
-            $product = Product::query()->updateOrCreate(
-                [
-                    'business_id' => $business->id,
-                    'product_category_id' => $categories->get($productData['category'])->id,
-                    'name' => $productData['name'],
-                ],
-                [
-                    'base_unit_of_measurement_id' => $units->get($productData['unit'])->id,
-                    'status' => $productData['status'],
-                ]
-            );
-
-            $variantSkus = [];
-
-            foreach ($productData['variants'] as $variantData) {
-                $variantSkus[] = $variantData['sku'];
-
-                $product->productVariants()->updateOrCreate(
-                    [
-                        'sku' => $variantData['sku'],
-                    ],
-                    [
-                        'variant_name' => $variantData['variant_name'],
-                        'brand_id' => $variantData['brand'] === null
-                            ? null
-                            : $brands->get($variantData['brand'])?->id,
-                        'grade_value' => $variantData['grade_value'],
-                        'grade_unit_id' => $variantData['grade_unit_code'] === null
-                            ? null
-                            : $gradeUnits->get($variantData['grade_unit_code'])?->id,
-                        'width' => $variantData['width'],
-                        'height' => $variantData['height'],
-                        'size_unit_id' => $variantData['size_unit_code'] === null
-                            ? null
-                            : $sizeUnits->get($variantData['size_unit_code'])?->id,
-                        'size_label' => $variantData['size_label'],
-                        'is_placeholder_variant' => $variantData['is_placeholder_variant'],
-                        'status' => $variantData['status'],
-                    ]
-                );
-            }
-
-            $product->productVariants()
-                ->whereNotIn('sku', $variantSkus)
-                ->delete();
-
-            $product->unitConversions()->updateOrCreate(
-                [
-                    'unit_of_measurement_id' => $product->base_unit_of_measurement_id,
-                ],
-                [
-                    'conversion_factor_to_base' => 1,
-                    'is_base_unit' => true,
-                    'is_default_purchase_unit' => true,
-                    'is_default_sale_unit' => true,
-                    'status' => RecordStatus::Active,
-                ]
-            );
-        }
-    }
-
-    /**
-     * @return list<array{
-     *     category: string,
-     *     name: string,
-     *     unit: string,
-     *     status: RecordStatus,
-     *     variants: list<array{
-     *         variant_name: string,
-     *         sku: string,
-     *         brand: string|null,
-     *         grade_value: int|float|null,
-     *         grade_unit_code: string|null,
-     *         width: int|null,
-     *         height: int|null,
-     *         size_unit_code: string|null,
-     *         size_label: string|null,
-     *         is_placeholder_variant: bool,
-     *         status: RecordStatus
-     *     }>
-     * }>
-     */
-    private function products(): array
-    {
-        return [
+        $products = [
             [
                 'category' => 'Offset Paper',
                 'name' => 'Offset Paper',
@@ -289,5 +204,58 @@ class ProductSeeder extends Seeder
                 ],
             ],
         ];
+
+        foreach ($products as $productData) {
+            $product = Product::query()->updateOrCreate(
+                [
+                    'business_id' => $business->id,
+                    'product_category_id' => $categories->get($productData['category'])->id,
+                    'name' => $productData['name'],
+                ],
+                [
+                    'base_unit_of_measurement_id' => $units->get($productData['unit'])->id,
+                    'status' => $productData['status'],
+                ]
+            );
+
+            foreach ($productData['variants'] as $variantData) {
+                $product->productVariants()->updateOrCreate(
+                    [
+                        'sku' => $variantData['sku'],
+                    ],
+                    [
+                        'variant_name' => $variantData['variant_name'],
+                        'brand_id' => $variantData['brand'] === null
+                            ? null
+                            : $brands->get($variantData['brand'])?->id,
+                        'grade_value' => $variantData['grade_value'],
+                        'grade_unit_id' => $variantData['grade_unit_code'] === null
+                            ? null
+                            : $gradeUnits->get($variantData['grade_unit_code'])?->id,
+                        'width' => $variantData['width'],
+                        'height' => $variantData['height'],
+                        'size_unit_id' => $variantData['size_unit_code'] === null
+                            ? null
+                            : $sizeUnits->get($variantData['size_unit_code'])?->id,
+                        'size_label' => $variantData['size_label'],
+                        'is_placeholder_variant' => $variantData['is_placeholder_variant'],
+                        'status' => $variantData['status'],
+                    ]
+                );
+            }
+
+            $product->unitConversions()->updateOrCreate(
+                [
+                    'unit_of_measurement_id' => $product->base_unit_of_measurement_id,
+                ],
+                [
+                    'conversion_factor_to_base' => 1,
+                    'is_base_unit' => true,
+                    'is_default_purchase_unit' => $product->name !== 'A4 Copy Paper',
+                    'is_default_sale_unit' => true,
+                    'status' => RecordStatus::Active,
+                ]
+            );
+        }
     }
 }
