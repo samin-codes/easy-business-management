@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Eye, Plus, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
+import { ViewAction } from '@/components/table-actions';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { create, index, show } from '@/routes/purchases';
-import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
-import type { Purchase } from './types';
+import type { BreadcrumbItem, LengthAwarePagination, Purchase } from '@/types';
 
 type QueryString = {
     search: string | null;
@@ -45,6 +45,7 @@ export default function PurchasesIndex({
                 <div className="mx-auto max-w-7xl space-y-8">
                     <div className="mb-8 flex items-center justify-between">
                         <Heading title="Purchases" />
+
                         <Button asChild>
                             <Link href={create()}>
                                 <Plus />
@@ -58,6 +59,7 @@ export default function PurchasesIndex({
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="relative w-full sm:max-w-sm">
                                     <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+
                                     <Input
                                         type="search"
                                         placeholder="Search purchase no..."
@@ -105,183 +107,180 @@ export default function PurchasesIndex({
                                             <th>
                                                 <TableSortButton
                                                     label="Purchase No"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'purchase_no',
-                                                            direction:
-                                                                queryString.sort === 'purchase_no' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'purchase_no',
+                                                                direction:
+                                                                    queryString.sort === 'purchase_no' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'purchase_no'}
                                                     currentDirection={queryString.direction}
                                                     only={reloadProps}
                                                 />
                                             </th>
+
                                             <th>
                                                 <TableSortButton
                                                     label="Date"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'purchase_date',
-                                                            direction:
-                                                                queryString.sort === 'purchase_date' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'purchase_date',
+                                                                direction:
+                                                                    queryString.sort === 'purchase_date' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'purchase_date'}
                                                     currentDirection={queryString.direction}
                                                     only={reloadProps}
                                                 />
                                             </th>
+
                                             <th>Supplier</th>
                                             <th>Outlet</th>
+
                                             <th className="text-right">
                                                 <TableSortButton
                                                     label="Total"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'total_amount',
-                                                            direction:
-                                                                queryString.sort === 'total_amount' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'total_amount',
+                                                                direction:
+                                                                    queryString.sort === 'total_amount' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'total_amount'}
                                                     currentDirection={queryString.direction}
                                                     align="right"
                                                     only={reloadProps}
                                                 />
                                             </th>
+
                                             <th className="text-right">
                                                 <TableSortButton
                                                     label="Paid"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'paid_amount',
-                                                            direction:
-                                                                queryString.sort === 'paid_amount' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'paid_amount',
+                                                                direction:
+                                                                    queryString.sort === 'paid_amount' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'paid_amount'}
                                                     currentDirection={queryString.direction}
                                                     align="right"
                                                     only={reloadProps}
                                                 />
                                             </th>
+
                                             <th className="text-right">
                                                 <TableSortButton
                                                     label="Due"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'due_amount',
-                                                            direction:
-                                                                queryString.sort === 'due_amount' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'due_amount',
+                                                                direction:
+                                                                    queryString.sort === 'due_amount' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'due_amount'}
                                                     currentDirection={queryString.direction}
                                                     align="right"
                                                     only={reloadProps}
                                                 />
                                             </th>
+
                                             <th className="text-center">Payment Status</th>
+
                                             <th>Created By</th>
+
                                             <th className="text-right">
                                                 <span className="sr-only">Actions</span>
                                             </th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {purchases.data.length > 0 ? (
                                             purchases.data.map((purchase) => (
                                                 <tr key={purchase.id}>
-                                                    <td className="font-medium">
-                                                        {purchase.purchase_no}
-                                                    </td>
+                                                    <td className="font-medium">{purchase.purchase_no}</td>
+
                                                     <td className="text-nowrap">
-                                                        {format(
-                                                            parseISO(purchase.purchase_date),
-                                                            'MMM d, yyyy',
-                                                        )}
+                                                        {format(parseISO(purchase.purchase_date), 'MMM d, yyyy')}
                                                     </td>
+
                                                     <td>{purchase.supplier?.name ?? '-'}</td>
+
                                                     <td>{purchase.outlet?.name ?? '-'}</td>
-                                                    <td className="text-right tabular-nums">
-                                                        {formatCurrency(purchase.total_amount)}
-                                                    </td>
-                                                    <td className="text-right tabular-nums">
-                                                        {formatCurrency(purchase.paid_amount)}
-                                                    </td>
-                                                    <td className="text-right tabular-nums">
-                                                        {formatCurrency(purchase.due_amount)}
-                                                    </td>
+
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.total_amount)}</td>
+
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.paid_amount)}</td>
+
+                                                    <td className="text-right tabular-nums">{formatCurrency(purchase.due_amount)}</td>
+
                                                     <td className="text-center">
                                                         <Badge
                                                             variant="outline"
                                                             className={
                                                                 purchase.payment_status === 'paid'
                                                                     ? 'border-transparent bg-emerald-100 text-emerald-800'
-                                                                    : purchase.payment_status ===
-                                                                        'partial'
+                                                                    : purchase.payment_status === 'partial'
                                                                       ? 'border-transparent bg-amber-100 text-amber-800'
                                                                       : 'border-transparent bg-red-100 text-red-800'
                                                             }
                                                         >
-                                                            {purchase.payment_status_label ??
-                                                                purchase.payment_status}
+                                                            {purchase.payment_status_label ?? purchase.payment_status}
                                                         </Badge>
                                                     </td>
+
                                                     <td>{purchase.createdBy?.name ?? '-'}</td>
+
                                                     <td className="text-right">
                                                         <div className="flex justify-end">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon-sm"
-                                                                asChild
-                                                            >
-                                                                <Link href={show(purchase.id)}>
-                                                                    <Eye className="size-4" />
-                                                                    <span className="sr-only">
-                                                                        View purchase
-                                                                    </span>
-                                                                </Link>
-                                                            </Button>
+                                                            <ViewAction
+                                                                url={show(purchase.id)}
+                                                                aria-label={`View purchase ${purchase.purchase_no}`}
+                                                            />
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td
-                                                    colSpan={10}
-                                                    className="h-24 text-center text-muted-foreground"
-                                                >
-                                                    {queryString.search
-                                                        ? 'No purchases found.'
-                                                        : 'No purchases yet.'}
+                                                <td colSpan={10} className="h-24 text-center text-muted-foreground">
+                                                    {queryString.search ? 'No purchases found.' : 'No purchases yet.'}
                                                 </td>
                                             </tr>
                                         )}

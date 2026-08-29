@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Eye, Plus, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
+import { ViewAction } from '@/components/table-actions';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { create, index, show } from '@/routes/sales';
-import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
+import type { LengthAwarePagination } from '@/types';
 import type { Sale } from './types';
 
 type QueryString = {
@@ -147,12 +148,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                                 </Badge>
                                             </td>
                                             <td className="text-right">
-                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                    <Link href={show(sale.id)}>
-                                                        <Eye className="size-4" />
-                                                        <span className="sr-only">View sale</span>
-                                                    </Link>
-                                                </Button>
+                                                <ViewAction url={show(sale.id)} aria-label={`View sale ${sale.sale_no}`} />
                                             </td>
                                         </tr>
                                     ))

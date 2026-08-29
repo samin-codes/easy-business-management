@@ -6,14 +6,42 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import {
+    Field,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Section,
+    SectionContent,
+    SectionHeader,
+    SectionTitle,
+} from '@/components/ui/section';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
-import type { PaymentFormData, PaymentMethod, Purchase } from '../types';
+import type {
+    Option,
+    PaymentMethod,
+    Purchase,
+} from '@/types';
+
+type PaymentFormData = {
+    payment_date: string;
+    amount: string;
+    payment_method: string;
+    reference_no: string;
+    note: string;
+};
 
 function createPaymentFormData(): PaymentFormData {
     return {
@@ -25,29 +53,57 @@ function createPaymentFormData(): PaymentFormData {
     };
 }
 
-type RecordPaymentSectionProps = {
-    purchase: Pick<Purchase, 'id' | 'total_amount' | 'paid_amount' | 'due_amount' | 'payment_status'>;
-    paymentMethods: PaymentMethod[];
-};
-
-export default function RecordPaymentSection({ purchase, paymentMethods }: RecordPaymentSectionProps) {
-    const form = useForm<PaymentFormData>(() => createPaymentFormData());
+export default function RecordPaymentSection({
+    purchase,
+    paymentMethods,
+}: {
+    purchase: Pick<
+        Purchase,
+        | 'id'
+        | 'total_amount'
+        | 'paid_amount'
+        | 'due_amount'
+        | 'payment_status'
+    >;
+    paymentMethods: Option<PaymentMethod>[];
+}) {
+    const form = useForm<PaymentFormData>(() =>
+        createPaymentFormData(),
+    );
 
     const totalAmount = Number(purchase.total_amount) || 0;
     const paidAmount = Number(purchase.paid_amount) || 0;
     const currentPaymentAmount = Number(form.data.amount) || 0;
-    const totalAfterPayment = paidAmount + currentPaymentAmount;
-    const dueAmount = Math.max(totalAmount - totalAfterPayment, 0);
-    const paymentStatus =
-        currentPaymentAmount <= 0 ? purchase.payment_status : totalAfterPayment >= totalAmount ? 'paid' : 'partial';
 
-    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    const totalAfterPayment =
+        paidAmount + currentPaymentAmount;
+
+    const dueAmount = Math.max(
+        totalAmount - totalAfterPayment,
+        0,
+    );
+
+    const paymentStatus =
+        currentPaymentAmount <= 0
+            ? purchase.payment_status
+            : totalAfterPayment >= totalAmount
+              ? 'paid'
+              : 'partial';
+
+    function handleSubmit(
+        event: React.SubmitEvent<HTMLFormElement>,
+    ) {
         event.preventDefault();
 
-        form.submit(PurchasePaymentController.store({ purchase: purchase.id }), {
-            preserveScroll: true,
-            onSuccess: () => form.reset(),
-        });
+        form.submit(
+            PurchasePaymentController.store({
+                purchase: purchase.id,
+            }),
+            {
+                preserveScroll: true,
+                onSuccess: () => form.reset(),
+            },
+        );
     }
 
     return (
@@ -62,92 +118,222 @@ export default function RecordPaymentSection({ purchase, paymentMethods }: Recor
                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                         <Field>
                             <FieldLabel htmlFor="payment_date">
-                                Payment Date <span className="-ml-1 text-red-500">*</span>
+                                Payment Date{' '}
+                                <span className="-ml-1 text-red-500">
+                                    *
+                                </span>
                             </FieldLabel>
+
                             <DatePicker
                                 id="payment_date"
-                                value={form.data.payment_date ? new Date(form.data.payment_date) : undefined}
+                                value={
+                                    form.data.payment_date
+                                        ? new Date(
+                                              form.data.payment_date,
+                                          )
+                                        : undefined
+                                }
                                 onChange={(date) =>
                                     form.setData((data) => ({
                                         ...data,
-                                        payment_date: date ? formatDate(date, 'yyyy-MM-dd') : '',
+                                        payment_date: date
+                                            ? formatDate(
+                                                  date,
+                                                  'yyyy-MM-dd',
+                                              )
+                                            : '',
                                     }))
                                 }
-                                aria-invalid={Boolean(form.errors.payment_date)}
+                                aria-invalid={Boolean(
+                                    form.errors.payment_date,
+                                )}
                             />
-                            <FieldError errors={[{ message: form.errors.payment_date }]} />
+
+                            <FieldError
+                                errors={[
+                                    {
+                                        message:
+                                            form.errors
+                                                .payment_date,
+                                    },
+                                ]}
+                            />
                         </Field>
 
                         <Field>
                             <FieldLabel htmlFor="payment_method">
-                                Method <span className="-ml-1 text-red-500">*</span>
+                                Method{' '}
+                                <span className="-ml-1 text-red-500">
+                                    *
+                                </span>
                             </FieldLabel>
+
                             <Select
-                                value={form.data.payment_method}
+                                value={
+                                    form.data.payment_method
+                                }
                                 onValueChange={(paymentMethod) =>
                                     form.setData((data) => ({
                                         ...data,
-                                        payment_method: paymentMethod,
+                                        payment_method:
+                                            paymentMethod,
                                     }))
                                 }
                             >
-                                <SelectTrigger id="payment_method" className="w-full" aria-invalid={Boolean(form.errors.payment_method)}>
+                                <SelectTrigger
+                                    id="payment_method"
+                                    className="w-full"
+                                    aria-invalid={Boolean(
+                                        form.errors
+                                            .payment_method,
+                                    )}
+                                >
                                     <SelectValue placeholder="Select method" />
                                 </SelectTrigger>
+
                                 <SelectContent>
-                                    {paymentMethods.map((method) => (
-                                        <SelectItem key={method.value} value={method.value}>
-                                            {method.label}
-                                        </SelectItem>
-                                    ))}
+                                    {paymentMethods.map(
+                                        (method) => (
+                                            <SelectItem
+                                                key={
+                                                    method.value
+                                                }
+                                                value={
+                                                    method.value
+                                                }
+                                            >
+                                                {
+                                                    method.label
+                                                }
+                                            </SelectItem>
+                                        ),
+                                    )}
                                 </SelectContent>
                             </Select>
-                            <FieldError errors={[{ message: form.errors.payment_method }]} />
+
+                            <FieldError
+                                errors={[
+                                    {
+                                        message:
+                                            form.errors
+                                                .payment_method,
+                                    },
+                                ]}
+                            />
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="payment_amount">Amount</FieldLabel>
+                            <FieldLabel htmlFor="payment_amount">
+                                Amount
+                            </FieldLabel>
+
                             <Input
                                 id="payment_amount"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 value={form.data.amount}
-                                onChange={(event) => form.setData('amount', event.target.value)}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'amount',
+                                        event.target.value,
+                                    )
+                                }
                                 onBlur={() => {
-                                    const clamped = Math.min(Number(form.data.amount) || 0, Number(purchase.due_amount) || 0);
+                                    const clamped = Math.min(
+                                        Number(
+                                            form.data.amount,
+                                        ) || 0,
+                                        Number(
+                                            purchase.due_amount,
+                                        ) || 0,
+                                    );
 
-                                    form.setData('amount', formatDecimal(clamped));
+                                    form.setData(
+                                        'amount',
+                                        formatDecimal(
+                                            clamped,
+                                        ),
+                                    );
                                 }}
                                 className="no-number-spinner text-right"
-                                aria-invalid={Boolean(form.errors.amount)}
+                                aria-invalid={Boolean(
+                                    form.errors.amount,
+                                )}
                             />
-                            <FieldError errors={[{ message: form.errors.amount }]} />
+
+                            <FieldError
+                                errors={[
+                                    {
+                                        message:
+                                            form.errors.amount,
+                                    },
+                                ]}
+                            />
                         </Field>
 
                         <Field className="md:col-span-3">
-                            <FieldLabel htmlFor="payment_reference_no">Reference No</FieldLabel>
+                            <FieldLabel htmlFor="payment_reference_no">
+                                Reference No
+                            </FieldLabel>
+
                             <Input
                                 id="payment_reference_no"
-                                value={form.data.reference_no}
-                                onChange={(event) => form.setData('reference_no', event.target.value)}
-                                aria-invalid={Boolean(form.errors.reference_no)}
+                                value={
+                                    form.data.reference_no
+                                }
+                                onChange={(event) =>
+                                    form.setData(
+                                        'reference_no',
+                                        event.target.value,
+                                    )
+                                }
+                                aria-invalid={Boolean(
+                                    form.errors.reference_no,
+                                )}
                                 placeholder="Optional reference no."
                             />
-                            <FieldError errors={[{ message: form.errors.reference_no }]} />
+
+                            <FieldError
+                                errors={[
+                                    {
+                                        message:
+                                            form.errors
+                                                .reference_no,
+                                    },
+                                ]}
+                            />
                         </Field>
 
                         <Field className="md:col-span-3">
-                            <FieldLabel htmlFor="payment_note">Payment Note</FieldLabel>
+                            <FieldLabel htmlFor="payment_note">
+                                Payment Note
+                            </FieldLabel>
+
                             <Textarea
                                 id="payment_note"
                                 value={form.data.note}
-                                onChange={(event) => form.setData('note', event.target.value)}
-                                aria-invalid={Boolean(form.errors.note)}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'note',
+                                        event.target.value,
+                                    )
+                                }
+                                aria-invalid={Boolean(
+                                    form.errors.note,
+                                )}
                                 placeholder="Optional payment note"
                                 className="min-h-20 resize-none"
                             />
-                            <FieldError errors={[{ message: form.errors.note }]} />
+
+                            <FieldError
+                                errors={[
+                                    {
+                                        message:
+                                            form.errors.note,
+                                    },
+                                ]}
+                            />
                         </Field>
                     </FieldGroup>
                 </form>
@@ -155,14 +341,20 @@ export default function RecordPaymentSection({ purchase, paymentMethods }: Recor
                 <Card className="overflow-hidden p-0">
                     <CardContent className="space-y-1 p-4">
                         <div className="flex items-center justify-between gap-4 py-2">
-                            <span className="text-sm font-medium">Total Amount</span>
-                            <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">{formatCurrency(totalAmount)}</span>
+                            <span className="text-sm font-medium">
+                                Total Amount
+                            </span>
+                            <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">
+                                {formatCurrency(totalAmount)}
+                            </span>
                         </div>
 
                         <div className="my-2 border-t border-border" />
 
                         <div className="flex items-center justify-between gap-4 py-1">
-                            <span className="text-sm text-muted-foreground">Paid to Date</span>
+                            <span className="text-sm text-muted-foreground">
+                                Paid to Date
+                            </span>
                             <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
                                 {formatCurrency(paidAmount)}
                             </span>
@@ -170,21 +362,29 @@ export default function RecordPaymentSection({ purchase, paymentMethods }: Recor
 
                         {currentPaymentAmount > 0 && (
                             <div className="flex items-center justify-between gap-4 py-1">
-                                <span className="text-sm text-muted-foreground">This Payment</span>
+                                <span className="text-sm text-muted-foreground">
+                                    This Payment
+                                </span>
                                 <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
-                                    {formatCurrency(currentPaymentAmount)}
+                                    {formatCurrency(
+                                        currentPaymentAmount,
+                                    )}
                                 </span>
                             </div>
                         )}
 
                         <div className="flex items-center justify-between gap-4 py-1">
-                            <span className="text-sm text-muted-foreground">Due Amount</span>
+                            <span className="text-sm text-muted-foreground">
+                                Due Amount
+                            </span>
+
                             <span
                                 className={
                                     'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
                                     (paymentStatus === 'paid'
                                         ? 'text-emerald-600'
-                                        : paymentStatus === 'partial'
+                                        : paymentStatus ===
+                                            'partial'
                                           ? 'text-amber-600'
                                           : 'text-red-600')
                                 }
@@ -194,19 +394,29 @@ export default function RecordPaymentSection({ purchase, paymentMethods }: Recor
                         </div>
 
                         <div className="flex items-center justify-between gap-4 py-1">
-                            <span className="text-sm text-muted-foreground">Payment Status</span>
+                            <span className="text-sm text-muted-foreground">
+                                Payment Status
+                            </span>
+
                             <span className="flex w-36 justify-end">
                                 <Badge
                                     variant="outline"
                                     className={
-                                        paymentStatus === 'paid'
+                                        paymentStatus ===
+                                        'paid'
                                             ? 'border-transparent bg-emerald-100 text-emerald-800'
-                                            : paymentStatus === 'partial'
+                                            : paymentStatus ===
+                                                'partial'
                                               ? 'border-transparent bg-amber-100 text-amber-800'
                                               : 'border-transparent bg-red-100 text-red-800'
                                     }
                                 >
-                                    {paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partial' ? 'Partial' : 'Unpaid'}
+                                    {paymentStatus === 'paid'
+                                        ? 'Paid'
+                                        : paymentStatus ===
+                                            'partial'
+                                          ? 'Partial'
+                                          : 'Unpaid'}
                                 </Badge>
                             </span>
                         </div>
@@ -215,9 +425,15 @@ export default function RecordPaymentSection({ purchase, paymentMethods }: Recor
             </SectionContent>
 
             <div className="flex justify-end">
-                <Button type="submit" form="paymentForm" disabled={form.processing}>
+                <Button
+                    type="submit"
+                    form="paymentForm"
+                    disabled={form.processing}
+                >
                     <Save className="size-4" />
-                    {form.processing ? 'Saving...' : 'Record Payment'}
+                    {form.processing
+                        ? 'Saving...'
+                        : 'Record Payment'}
                 </Button>
             </div>
         </Section>

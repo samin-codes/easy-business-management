@@ -1,9 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Boxes, CircleDollarSign, Eye, PackageCheck, PackageX, Search } from 'lucide-react';
+import { Boxes, CircleDollarSign, PackageCheck, PackageX, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
+import { ViewAction } from '@/components/table-actions';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -196,9 +197,7 @@ export default function InventoryIndex({ stocks, summary, outlets, categories, s
 
                                     <Select
                                         value={queryString.stock_status}
-                                        onValueChange={(value: QueryString['stock_status']) =>
-                                            visit({ stock_status: value, page: 1 })
-                                        }
+                                        onValueChange={(value: QueryString['stock_status']) => visit({ stock_status: value, page: 1 })}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue />
@@ -396,20 +395,14 @@ export default function InventoryIndex({ stocks, summary, outlets, categories, s
                                                                     : '-'}
                                                             </td>
                                                             <td className="text-right">
-                                                                <Button variant="ghost" size="icon-sm" asChild>
-                                                                    <Link
-                                                                        href={show(stock.id, {
-                                                                            query: {
-                                                                                outlet_id: selectedOutlet.id,
-                                                                            },
-                                                                        })}
-                                                                    >
-                                                                        <Eye className="size-4" />
-                                                                        <span className="sr-only">
-                                                                            View stock history for {stock.label}
-                                                                        </span>
-                                                                    </Link>
-                                                                </Button>
+                                                                <ViewAction
+                                                                    url={show(stock.id, {
+                                                                        query: {
+                                                                            outlet_id: selectedOutlet.id,
+                                                                        },
+                                                                    })}
+                                                                    aria-label={`View stock history for ${stock.label}`}
+                                                                />
                                                             </td>
                                                         </tr>
                                                     );

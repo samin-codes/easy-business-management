@@ -1,8 +1,7 @@
 import { router } from '@inertiajs/react';
-import { SquarePen, Trash2 } from 'lucide-react';
 import ProductVariantController from '@/actions/App/Http/Controllers/ProductVariantController';
+import { DeleteAction, EditAction } from '@/components/table-actions';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { Product, ProductVariant } from '../types';
 
 export default function ProductVariantTable({ product, onEdit }: { product: Product; onEdit: (productVariant: ProductVariant) => void }) {
@@ -83,14 +82,16 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                                 </td>
                                 <td className="text-right align-top">
                                     <div className="flex justify-end gap-1">
-                                        <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(productVariant)}>
-                                            <SquarePen className="size-4" />
-                                            <span className="sr-only">Edit</span>
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon-sm" onClick={() => handleDelete(productVariant)}>
-                                            <Trash2 className="size-4" />
-                                            <span className="sr-only">Delete</span>
-                                        </Button>
+                                        <EditAction
+                                            display="icon-button"
+                                            label={`Edit ${productVariant.variant_name}`}
+                                            onClick={() => onEdit(productVariant)}
+                                        />
+                                        <DeleteAction
+                                            display="icon-button"
+                                            label={`Delete ${productVariant.variant_name}`}
+                                            onClick={() => handleDelete(productVariant)}
+                                        />
                                     </div>
                                 </td>
                             </tr>

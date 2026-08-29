@@ -1,59 +1,79 @@
 import { Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Action } from '@/components/table-actions';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
 import { formatCurrency, formatDecimal, formatInteger } from '@/lib/utils';
-import type { Product, PurchaseItemFormData } from '../types';
+import type { Product } from '@/types';
+
+export type PurchaseItemFormData = {
+    uid: string;
+    product_variant_id: string;
+    unit_of_measurement_id: string;
+    quantity: string;
+    unit_cost: string;
+};
 
 export type PurchaseItemPatch = Partial<
     Pick<PurchaseItemFormData, 'product_variant_id' | 'unit_of_measurement_id' | 'quantity' | 'unit_cost'>
 >;
 
-type PurchaseItemsTableProps = {
+export default function PurchaseItemsTable({
+    items,
+    products,
+    errors,
+    onItemRemove,
+    onItemChange,
+}: {
     items: PurchaseItemFormData[];
     products: Product[];
     errors: Record<string, string>;
     onItemRemove: (uid: string) => void;
     onItemChange: (uid: string, patch: PurchaseItemPatch) => void;
-};
+}) {
+    const productVariants = products.flatMap((product) => product.product_variants ?? []);
 
-export default function PurchaseItemsTable({ items, products, errors, onItemRemove, onItemChange }: PurchaseItemsTableProps) {
-    const productVariants = products.flatMap((product) => product.product_variants);
     const subtotal = items.reduce((sum, item) => {
         return sum + (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0);
     }, 0);
 
     return (
         <div className="overflow-x-auto rounded-md border">
-            <table className="table table-hover min-w-240">
+            <table className="table-hover table min-w-240">
                 <thead>
                     <tr>
                         <th className="min-w-90">
                             Product / Variant <span className="text-red-500">*</span>
                         </th>
+
                         <th className="w-36">
                             Unit <span className="text-red-500">*</span>
                         </th>
+
                         <th className="w-32 text-right">
                             Qty <span className="text-red-500">*</span>
                         </th>
+
                         <th className="w-32 text-right">
                             Unit Price <span className="text-red-500">*</span>
                         </th>
+
                         <th className="w-32 text-right whitespace-nowrap">Line Total</th>
+
                         <th className="w-12 text-center">
                             <span className="sr-only">Actions</span>
                         </th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {items.map((purchaseItem, purchaseItemIndex) => {
                         const selectedProductVariant =
-                            productVariants.find((productVariant) => productVariant.id.toString() === purchaseItem.product_variant_id) ?? null;
+                            productVariants.find((productVariant) => productVariant.id.toString() === purchaseItem.product_variant_id) ??
+                            null;
 
                         const selectedProduct = products.find((product) => product.id === selectedProductVariant?.product_id);
 
-                        const availableConversions = selectedProduct ? selectedProduct.active_unit_conversions : [];
+                        const availableConversions = selectedProduct?.active_unit_conversions ?? [];
 
                         const selectedUnitConversion =
                             availableConversions.find(
@@ -69,7 +89,9 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                         items={productVariants}
                                         value={selectedProductVariant}
                                         onValueChange={(productVariant) => {
-                                            const product = products.find((currentProduct) => currentProduct.id === productVariant?.product_id);
+                                            const product = products.find(
+                                                (currentProduct) => currentProduct.id === productVariant?.product_id,
+                                            );
 
                                             onItemChange(purchaseItem.uid, {
                                                 product_variant_id: productVariant?.id.toString() ?? '',
@@ -89,15 +111,22 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                             showClear
                                             aria-invalid={Boolean(errors[`items.${purchaseItemIndex}.product_variant_id`])}
                                         />
+
                                         <ComboboxContent className="w-max min-w-(--anchor-width)">
                                             <ComboboxEmpty>No product variant found.</ComboboxEmpty>
+
                                             <ComboboxList>
                                                 {(productVariant) => (
                                                     <ComboboxItem key={productVariant.id} value={productVariant}>
                                                         <div className="flex min-w-0 flex-col">
-                                                            <span className="text-sm whitespace-nowrap">{productVariant.purchase_label}</span>
+                                                            <span className="text-sm whitespace-nowrap">
+                                                                {productVariant.purchase_label}
+                                                            </span>
+
                                                             {productVariant.sku && (
-                                                                <span className="text-xs text-muted-foreground">SKU: {productVariant.sku}</span>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    SKU: {productVariant.sku}
+                                                                </span>
                                                             )}
                                                         </div>
                                                     </ComboboxItem>
@@ -106,6 +135,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                         </ComboboxContent>
                                     </Combobox>
                                 </td>
+
                                 <td className="w-36">
                                     <Combobox
                                         items={availableConversions}
@@ -115,7 +145,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                                 unit_of_measurement_id: conversion?.unit_of_measurement_id.toString() ?? '',
                                             })
                                         }
-                                        itemToStringLabel={(conversion) => conversion.unit_of_measurement.name}
+                                        itemToStringLabel={(conversion) => conversion.unit_of_measurement?.name ?? ''}
                                         itemToStringValue={(conversion) => conversion.unit_of_measurement_id.toString()}
                                         disabled={purchaseItem.product_variant_id === ''}
                                     >
@@ -127,18 +157,21 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                             disabled={purchaseItem.product_variant_id === ''}
                                             aria-invalid={Boolean(errors[`items.${purchaseItemIndex}.unit_of_measurement_id`])}
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No unit found.</ComboboxEmpty>
+
                                             <ComboboxList>
                                                 {(conversion) => (
                                                     <ComboboxItem key={conversion.id} value={conversion}>
-                                                        {conversion.unit_of_measurement.name}
+                                                        {conversion.unit_of_measurement?.name ?? '-'}
                                                     </ComboboxItem>
                                                 )}
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
                                 </td>
+
                                 <td className="w-32">
                                     <Input
                                         type="number"
@@ -158,6 +191,7 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                         aria-invalid={Boolean(errors[`items.${purchaseItemIndex}.quantity`])}
                                     />
                                 </td>
+
                                 <td className="w-32 px-3 py-2">
                                     <Input
                                         type="number"
@@ -177,35 +211,38 @@ export default function PurchaseItemsTable({ items, products, errors, onItemRemo
                                         aria-invalid={Boolean(errors[`items.${purchaseItemIndex}.unit_cost`])}
                                     />
                                 </td>
+
                                 <td className="w-32 text-right">
                                     <span className="font-medium tabular-nums">{lineTotal > 0 ? formatCurrency(lineTotal) : '-'}</span>
                                 </td>
+
                                 <td className="w-12">
                                     {items.length > 1 && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-sm"
+                                        <Action
+                                            name="remove"
+                                            label="Remove purchase item"
+                                            icon={Trash2}
+                                            color="danger"
+                                            display="icon-button"
                                             onClick={() => onItemRemove(purchaseItem.uid)}
-                                            className="text-muted-foreground hover:text-destructive"
-                                        >
-                                            <Trash2 className="size-4" />
-                                            <span className="sr-only">Remove purchase item</span>
-                                        </Button>
+                                        />
                                     )}
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
+
                 <tfoot>
                     <tr className="table-light border-t">
                         <td colSpan={4} className="text-right font-medium text-muted-foreground">
                             Subtotal
                         </td>
+
                         <td className="w-32 text-right">
                             <span className="font-semibold tabular-nums">{formatCurrency(subtotal)}</span>
                         </td>
+
                         <td className="w-12" />
                     </tr>
                 </tfoot>

@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 import SaleController from '@/actions/App/Http/Controllers/SaleController';
 import SalePaymentController from '@/actions/App/Http/Controllers/SalePaymentController';
 import Heading from '@/components/heading';
+import { DeleteAction } from '@/components/table-actions';
 import { TextEntry } from '@/components/text-entry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -213,14 +214,11 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                                                             <td className="text-muted-foreground">{payment.reference_no || '-'}</td>
                                                             <td className="text-muted-foreground">{payment.note || '-'}</td>
                                                             <td className="text-right">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon-sm"
+                                                                <DeleteAction
+                                                                    display="icon-button"
+                                                                    label={`Delete payment from ${formatDate(new Date(payment.payment_date), 'MMMM d, yyyy')}`}
                                                                     onClick={() => deletePayment(payment.id)}
-                                                                >
-                                                                    <Trash2 className="size-4" />
-                                                                    <span className="sr-only">Delete payment</span>
-                                                                </Button>
+                                                                />
                                                             </td>
                                                         </tr>
                                                     ))}

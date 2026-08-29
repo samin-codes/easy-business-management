@@ -1,8 +1,7 @@
 import { router } from '@inertiajs/react';
-import { SquarePen, Trash2 } from 'lucide-react';
 import ProductUnitConversionController from '@/actions/App/Http/Controllers/ProductUnitConversionController';
+import { DeleteAction, EditAction } from '@/components/table-actions';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import type { Product, ProductUnitConversion } from '../types';
 
 export default function UnitConversionTable({
@@ -66,21 +65,11 @@ export default function UnitConversionTable({
                                     key={unitConversion.id}
                                     className={unitConversion.is_base_unit ? 'table-light font-semibold' : undefined}
                                 >
-                                    <td>
-                                        {unitConversion.unit_of_measurement.name}
-                                    </td>
-                                    <td>
-                                        {formatStockConversion(unitConversion, baseUnitName)}
-                                    </td>
-                                    <td className="text-center">
-                                        {unitConversion.is_base_unit ? 'Yes' : 'No'}
-                                    </td>
-                                    <td className="text-center">
-                                        {unitConversion.is_default_purchase_unit ? 'Yes' : 'No'}
-                                    </td>
-                                    <td className="text-center">
-                                        {unitConversion.is_default_sale_unit ? 'Yes' : 'No'}
-                                    </td>
+                                    <td>{unitConversion.unit_of_measurement.name}</td>
+                                    <td>{formatStockConversion(unitConversion, baseUnitName)}</td>
+                                    <td className="text-center">{unitConversion.is_base_unit ? 'Yes' : 'No'}</td>
+                                    <td className="text-center">{unitConversion.is_default_purchase_unit ? 'Yes' : 'No'}</td>
+                                    <td className="text-center">{unitConversion.is_default_sale_unit ? 'Yes' : 'No'}</td>
                                     <td>
                                         <Badge
                                             variant="outline"
@@ -95,20 +84,17 @@ export default function UnitConversionTable({
                                     </td>
                                     <td className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button type="button" variant="ghost" size="icon-sm" onClick={() => onEdit(unitConversion)}>
-                                                <SquarePen className="size-4" />
-                                                <span className="sr-only">Edit</span>
-                                            </Button>
+                                            <EditAction
+                                                display="icon-button"
+                                                label={`Edit ${unitConversion.unit_of_measurement.name}`}
+                                                onClick={() => onEdit(unitConversion)}
+                                            />
                                             {!unitConversion.is_base_unit && (
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon-sm"
+                                                <DeleteAction
+                                                    display="icon-button"
+                                                    label={`Delete ${unitConversion.unit_of_measurement.name}`}
                                                     onClick={() => handleDelete(unitConversion)}
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                    <span className="sr-only">Delete</span>
-                                                </Button>
+                                                />
                                             )}
                                         </div>
                                     </td>

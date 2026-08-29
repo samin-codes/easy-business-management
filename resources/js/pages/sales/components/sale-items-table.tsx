@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Action } from '@/components/table-actions';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
 import { formatCurrency, formatDecimal, formatInteger } from '@/lib/utils';
@@ -154,16 +154,14 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                 </td>
                                 <td className="w-12">
                                     {items.length > 1 && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-sm"
+                                        <Action
+                                            name="remove"
+                                            label="Remove sale item"
+                                            icon={Trash2}
+                                            color="danger"
+                                            display="icon-button"
                                             onClick={() => onItemRemove(item.uid)}
-                                            className="text-muted-foreground hover:text-destructive"
-                                        >
-                                            <Trash2 className="size-4" />
-                                            <span className="sr-only">Remove sale item</span>
-                                        </Button>
+                                        />
                                     )}
                                 </td>
                             </tr>

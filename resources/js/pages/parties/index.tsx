@@ -1,9 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, Plus, Search, SquarePen } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
+import { EditAction, ViewAction } from '@/components/table-actions';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -110,18 +111,19 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                             <th>
                                                 <TableSortButton
                                                     label="Name"
-                                                    href={index({
-                                                        query: {
-                                                            search: queryString.search ?? undefined,
-                                                            sort: 'name',
-                                                            direction:
-                                                                queryString.sort === 'name' &&
-                                                                queryString.direction === 'asc'
-                                                                    ? 'desc'
-                                                                    : 'asc',
-                                                            page: 1,
-                                                        },
-                                                    }).url}
+                                                    href={
+                                                        index({
+                                                            query: {
+                                                                search: queryString.search ?? undefined,
+                                                                sort: 'name',
+                                                                direction:
+                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                        ? 'desc'
+                                                                        : 'asc',
+                                                                page: 1,
+                                                            },
+                                                        }).url
+                                                    }
                                                     isActive={queryString.sort === 'name'}
                                                     currentDirection={queryString.direction}
                                                     only={reloadProps}
@@ -161,18 +163,8 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                                     </td>
                                                     <td className="text-right">
                                                         <div className="flex justify-end gap-3">
-                                                            <Button variant="ghost" size="icon-sm" asChild>
-                                                                <Link href={show(party.id)}>
-                                                                    <Eye className="size-4" />
-                                                                    <span className="sr-only">View party</span>
-                                                                </Link>
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon-sm" asChild>
-                                                                <Link href={edit(party.id)}>
-                                                                    <SquarePen className="size-4" />
-                                                                    <span className="sr-only">Edit party</span>
-                                                                </Link>
-                                                            </Button>
+                                                            <ViewAction url={show(party.id)} aria-label={`View ${party.name}`} />
+                                                            <EditAction url={edit(party.id)} aria-label={`Edit ${party.name}`} />
                                                         </div>
                                                     </td>
                                                 </tr>
