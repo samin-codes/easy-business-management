@@ -17,9 +17,27 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
 import { create, index } from '@/routes/sales';
-import type { BreadcrumbItem } from '@/types';
-import SaleItemsTable, { type SaleItemPatch } from './components/sale-items-table';
-import type { Customer, Outlet, PaymentFormData, PaymentMethod, Product, SaleFormData, SaleItemFormData } from './types';
+import type { BreadcrumbItem, Option, Outlet, Party, PaymentMethod, Product } from '@/types';
+import SaleItemsTable from './components/sale-items-table';
+import type { SaleItemFormData, SaleItemPatch } from './components/sale-items-table';
+
+type PaymentFormData = {
+    payment_date: string;
+    amount: string;
+    payment_method: string;
+    reference_no: string;
+    note: string;
+};
+
+type SaleFormData = {
+    sale_date: string;
+    outlet_id: string;
+    customer_party_id: string;
+    note: string;
+    discount_amount: string;
+    payment: PaymentFormData;
+    items: SaleItemFormData[];
+};
 
 const createSaleItemFormData = (): SaleItemFormData => ({
     uid: crypto.randomUUID(),
@@ -49,7 +67,9 @@ const createSaleFormData = (): SaleFormData => ({
 
 const dateValue = (value: string): Date | undefined => {
     if (!value) return undefined;
+
     const date = parseISO(value);
+
     return isValid(date) ? date : undefined;
 };
 
@@ -59,20 +79,25 @@ export default function SalesCreate({
     products,
     paymentMethods,
 }: {
-    outlets: Outlet[];
-    customers: Customer[];
+    outlets: Pick<Outlet, 'id' | 'name' | 'code'>[];
+    customers: Pick<Party, 'id' | 'name'>[];
     products: Product[];
-    paymentMethods: PaymentMethod[];
+    paymentMethods: Option<PaymentMethod>[];
 }) {
     const form = useForm<SaleFormData>(() => createSaleFormData());
 
     const selectedOutlet = outlets.find((outlet) => outlet.id.toString() === form.data.outlet_id) ?? null;
+
     const selectedCustomer = customers.find((customer) => customer.id.toString() === form.data.customer_party_id) ?? null;
+
     const saleDate = dateValue(form.data.sale_date);
 
     const subtotal = form.data.items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0), 0);
+
     const total = Math.max(subtotal - (Number(form.data.discount_amount) || 0), 0);
+
     const paid = Number(form.data.payment.amount) || 0;
+
     const paymentStatus = paid <= 0 ? 'unpaid' : paid >= total ? 'paid' : 'partial';
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -82,20 +107,44 @@ export default function SalesCreate({
 
     function submit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        form.transform((data) => ({ ...data, items: data.items.map(({ uid, ...item }) => item) }));
-        form.submit(SaleController.store(), { preserveScroll: true });
+
+        form.transform((data) => ({
+            ...data,
+            items: data.items.map(({ uid, ...item }) => {
+                void uid;
+
+                return item;
+            }),
+        }));
+
+        form.submit(SaleController.store(), {
+            preserveScroll: true,
+        });
     }
 
-    const patchItem = (uid: string, patch: SaleItemPatch) =>
-        form.setData((data) => ({ ...data, items: data.items.map((item) => (item.uid === uid ? { ...item, ...patch } : item)) }));
-
-    const removeItem = (uid: string) => form.setData((data) => ({ ...data, items: data.items.filter((item) => item.uid !== uid) }));
-
-    const clampPayment = () =>
+    const patchItem = (uid: string, patch: SaleItemPatch) => {
         form.setData((data) => ({
             ...data,
-            payment: { ...data.payment, amount: formatDecimal(Math.min(Number(data.payment.amount) || 0, total)) },
+            items: data.items.map((item) => (item.uid === uid ? { ...item, ...patch } : item)),
         }));
+    };
+
+    const removeItem = (uid: string) => {
+        form.setData((data) => ({
+            ...data,
+            items: data.items.filter((item) => item.uid !== uid),
+        }));
+    };
+
+    const clampPayment = () => {
+        form.setData((data) => ({
+            ...data,
+            payment: {
+                ...data.payment,
+                amount: formatDecimal(Math.min(Number(data.payment.amount) || 0, total)),
+            },
+        }));
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -112,19 +161,28 @@ export default function SalesCreate({
                                     <SectionTitle>Sale Information</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
+
                                 <SectionContent>
                                     <FieldGroup className="grid gap-4 md:grid-cols-2">
                                         <Field>
                                             <FieldLabel htmlFor="sale_date">
                                                 Sale Date <span className="-ml-1 text-red-500">*</span>
                                             </FieldLabel>
+
                                             <DatePicker
                                                 id="sale_date"
                                                 value={saleDate}
                                                 onChange={(date) => form.setData('sale_date', date ? formatDate(date, 'yyyy-MM-dd') : '')}
                                                 aria-invalid={Boolean(form.errors.sale_date)}
                                             />
-                                            <FieldError errors={[{ message: form.errors.sale_date }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors.sale_date,
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
 
                                         <div className="hidden md:block" />
@@ -133,6 +191,7 @@ export default function SalesCreate({
                                             <FieldLabel htmlFor="outlet_id">
                                                 Outlet <span className="-ml-1 text-red-500">*</span>
                                             </FieldLabel>
+
                                             <Combobox
                                                 items={outlets}
                                                 value={selectedOutlet}
@@ -147,8 +206,10 @@ export default function SalesCreate({
                                                     showClear
                                                     aria-invalid={Boolean(form.errors.outlet_id)}
                                                 />
+
                                                 <ComboboxContent>
                                                     <ComboboxEmpty>No outlet found.</ComboboxEmpty>
+
                                                     <ComboboxList>
                                                         {(outlet) => (
                                                             <ComboboxItem key={outlet.id} value={outlet}>
@@ -159,13 +220,21 @@ export default function SalesCreate({
                                                     </ComboboxList>
                                                 </ComboboxContent>
                                             </Combobox>
-                                            <FieldError errors={[{ message: form.errors.outlet_id }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors.outlet_id,
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
 
                                         <Field>
                                             <FieldLabel htmlFor="customer_party_id">
                                                 Customer <span className="-ml-1 text-red-500">*</span>
                                             </FieldLabel>
+
                                             <Combobox
                                                 items={customers}
                                                 value={selectedCustomer}
@@ -182,8 +251,10 @@ export default function SalesCreate({
                                                     showClear
                                                     aria-invalid={Boolean(form.errors.customer_party_id)}
                                                 />
+
                                                 <ComboboxContent>
                                                     <ComboboxEmpty>No customer found.</ComboboxEmpty>
+
                                                     <ComboboxList>
                                                         {(customer) => (
                                                             <ComboboxItem key={customer.id} value={customer}>
@@ -193,11 +264,19 @@ export default function SalesCreate({
                                                     </ComboboxList>
                                                 </ComboboxContent>
                                             </Combobox>
-                                            <FieldError errors={[{ message: form.errors.customer_party_id }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors.customer_party_id,
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
 
                                         <Field className="md:col-span-2">
                                             <FieldLabel htmlFor="note">Note</FieldLabel>
+
                                             <Textarea
                                                 id="note"
                                                 value={form.data.note}
@@ -206,7 +285,14 @@ export default function SalesCreate({
                                                 placeholder="Sale notes..."
                                                 className="min-h-20 resize-none"
                                             />
-                                            <FieldError errors={[{ message: form.errors.note }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors.note,
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
                                     </FieldGroup>
                                 </SectionContent>
@@ -217,6 +303,7 @@ export default function SalesCreate({
                                     <SectionTitle>Sale Items</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
+
                                 <SectionContent>
                                     <SaleItemsTable
                                         items={form.data.items}
@@ -226,13 +313,17 @@ export default function SalesCreate({
                                         onItemRemove={removeItem}
                                     />
                                 </SectionContent>
+
                                 <div className="flex justify-center">
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
                                         onClick={() =>
-                                            form.setData((data) => ({ ...data, items: [...data.items, createSaleItemFormData()] }))
+                                            form.setData((data) => ({
+                                                ...data,
+                                                items: [...data.items, createSaleItemFormData()],
+                                            }))
                                         }
                                     >
                                         <Plus className="size-4" />
@@ -246,10 +337,12 @@ export default function SalesCreate({
                                     <SectionTitle>Payment</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
+
                                 <SectionContent className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)]">
                                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                                         <Field>
                                             <FieldLabel htmlFor="payment_date">Payment Date</FieldLabel>
+
                                             <DatePicker
                                                 id="payment_date"
                                                 value={dateValue(form.data.payment.payment_date)}
@@ -264,16 +357,28 @@ export default function SalesCreate({
                                                 }
                                                 aria-invalid={Boolean(form.errors['payment.payment_date'])}
                                             />
-                                            <FieldError errors={[{ message: form.errors['payment.payment_date'] }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors['payment.payment_date'],
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
+
                                         <Field>
                                             <FieldLabel htmlFor="payment_method">Method</FieldLabel>
+
                                             <Select
                                                 value={form.data.payment.payment_method}
                                                 onValueChange={(value) =>
                                                     form.setData((data) => ({
                                                         ...data,
-                                                        payment: { ...data.payment, payment_method: value },
+                                                        payment: {
+                                                            ...data.payment,
+                                                            payment_method: value,
+                                                        },
                                                     }))
                                                 }
                                             >
@@ -284,6 +389,7 @@ export default function SalesCreate({
                                                 >
                                                     <SelectValue placeholder="Select method" />
                                                 </SelectTrigger>
+
                                                 <SelectContent>
                                                     {paymentMethods.map((method) => (
                                                         <SelectItem key={method.value} value={method.value}>
@@ -292,10 +398,19 @@ export default function SalesCreate({
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            <FieldError errors={[{ message: form.errors['payment.payment_method'] }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors['payment.payment_method'],
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
+
                                         <Field>
                                             <FieldLabel htmlFor="payment_amount">Initial Payment</FieldLabel>
+
                                             <Input
                                                 id="payment_amount"
                                                 type="number"
@@ -305,36 +420,60 @@ export default function SalesCreate({
                                                 onChange={(event) =>
                                                     form.setData((data) => ({
                                                         ...data,
-                                                        payment: { ...data.payment, amount: event.target.value },
+                                                        payment: {
+                                                            ...data.payment,
+                                                            amount: event.target.value,
+                                                        },
                                                     }))
                                                 }
                                                 onBlur={clampPayment}
                                                 className="no-number-spinner text-right"
                                                 aria-invalid={Boolean(form.errors['payment.amount'])}
                                             />
-                                            <FieldError errors={[{ message: form.errors['payment.amount'] }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors['payment.amount'],
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
+
                                         <Field className="md:col-span-3">
                                             <FieldLabel htmlFor="payment_reference_no">Reference No</FieldLabel>
+
                                             <Input
                                                 id="payment_reference_no"
                                                 value={form.data.payment.reference_no}
                                                 onChange={(event) =>
                                                     form.setData((data) => ({
                                                         ...data,
-                                                        payment: { ...data.payment, reference_no: event.target.value },
+                                                        payment: {
+                                                            ...data.payment,
+                                                            reference_no: event.target.value,
+                                                        },
                                                     }))
                                                 }
                                                 aria-invalid={Boolean(form.errors['payment.reference_no'])}
                                                 placeholder="Optional reference no."
                                             />
-                                            <FieldError errors={[{ message: form.errors['payment.reference_no'] }]} />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors['payment.reference_no'],
+                                                    },
+                                                ]}
+                                            />
                                         </Field>
                                     </FieldGroup>
+
                                     <Card className="overflow-hidden p-0">
                                         <CardContent className="space-y-1 p-4">
                                             <div className="flex items-center justify-between gap-4 py-2">
                                                 <span className="text-sm font-medium">Total Amount</span>
+
                                                 <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">
                                                     {formatCurrency(total)}
                                                 </span>
@@ -342,6 +481,7 @@ export default function SalesCreate({
 
                                             <div className="flex items-center justify-between gap-4 py-1">
                                                 <span className="text-sm text-muted-foreground">Paid Amount</span>
+
                                                 <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
                                                     {formatCurrency(paid)}
                                                 </span>
@@ -349,6 +489,7 @@ export default function SalesCreate({
 
                                             <div className="flex items-center justify-between gap-4 py-1">
                                                 <span className="text-sm text-muted-foreground">Due Amount</span>
+
                                                 <span
                                                     className={
                                                         'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
@@ -365,6 +506,7 @@ export default function SalesCreate({
 
                                             <div className="flex items-center justify-between gap-4 py-1">
                                                 <span className="text-sm text-muted-foreground">Payment Status</span>
+
                                                 <span className="flex w-36 justify-end">
                                                     <Badge
                                                         variant="outline"
@@ -396,6 +538,7 @@ export default function SalesCreate({
                                         Cancel
                                     </Link>
                                 </Button>
+
                                 <Button type="submit" disabled={form.processing}>
                                     <Save />
                                     {form.processing ? 'Saving...' : 'Create Sale'}

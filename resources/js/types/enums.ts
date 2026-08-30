@@ -41,6 +41,16 @@ export type PurchasePaymentStatus =
     | 'partial'
     | 'paid';
 
+export type SaleStatus =
+    | 'draft'
+    | 'confirmed'
+    | 'cancelled';
+
+export type SalePaymentStatus =
+    | 'unpaid'
+    | 'partial'
+    | 'paid';
+
 export type PaymentMethod =
     | 'cash'
     | 'bank_transfer'

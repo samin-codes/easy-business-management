@@ -7,6 +7,7 @@ export type * from './pagination';
 export type * from './party';
 export type * from './product';
 export type * from './purchase';
+export type * from './sale';
 export type * from './ui';
 
 export type Option<TValue extends string | number = string> = {

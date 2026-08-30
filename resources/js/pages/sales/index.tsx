@@ -12,8 +12,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { create, index, show } from '@/routes/sales';
-import type { LengthAwarePagination } from '@/types';
-import type { Sale } from './types';
+import type { LengthAwarePagination, Sale } from '@/types';
 
 type QueryString = {
     search: string | null;
@@ -48,6 +47,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                 <div className="mx-auto max-w-7xl space-y-6">
                     <div className="flex items-center justify-between">
                         <Heading title="Sales" />
+
                         <Button asChild>
                             <Link href={create()}>
                                 <Plus className="size-4" />
@@ -58,12 +58,14 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
 
                     <div className="relative max-w-sm">
                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+
                         <Input
                             className="pl-9"
                             placeholder="Search sale no..."
                             defaultValue={queryString.search ?? ''}
                             onChange={(event) => {
                                 window.clearTimeout(timer.current);
+
                                 timer.current = window.setTimeout(
                                     () =>
                                         router.get(
@@ -74,7 +76,12 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                                 direction: queryString.direction,
                                                 page: 1,
                                             },
-                                            { preserveState: true, preserveScroll: true, replace: true, only },
+                                            {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                                replace: true,
+                                                only,
+                                            },
                                         ),
                                     300,
                                 );
@@ -95,6 +102,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                             only={only}
                                         />
                                     </th>
+
                                     <th>
                                         <TableSortButton
                                             label="Date"
@@ -104,8 +112,10 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                             only={only}
                                         />
                                     </th>
+
                                     <th>Customer</th>
                                     <th>Outlet</th>
+
                                     <th className="text-right">
                                         <TableSortButton
                                             label="Total"
@@ -116,23 +126,32 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                             only={only}
                                         />
                                     </th>
+
                                     <th className="text-right">Paid</th>
                                     <th className="text-right">Due</th>
                                     <th className="text-center">Payment Status</th>
                                     <th />
                                 </tr>
                             </thead>
+
                             <tbody>
                                 {sales.data.length ? (
                                     sales.data.map((sale) => (
                                         <tr key={sale.id}>
                                             <td className="font-medium">{sale.sale_no}</td>
+
                                             <td>{format(parseISO(sale.sale_date), 'MMM d, yyyy')}</td>
+
                                             <td>{sale.customer?.name ?? '-'}</td>
+
                                             <td>{sale.outlet?.name ?? '-'}</td>
+
                                             <td className="text-right tabular-nums">{formatCurrency(sale.total_amount)}</td>
+
                                             <td className="text-right tabular-nums">{formatCurrency(sale.paid_amount)}</td>
+
                                             <td className="text-right tabular-nums">{formatCurrency(sale.due_amount)}</td>
+
                                             <td className="text-center">
                                                 <Badge
                                                     variant="outline"
@@ -147,6 +166,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                                     {sale.payment_status_label ?? sale.payment_status}
                                                 </Badge>
                                             </td>
+
                                             <td className="text-right">
                                                 <ViewAction url={show(sale.id)} aria-label={`View sale ${sale.sale_no}`} />
                                             </td>
@@ -168,6 +188,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                             <span className="text-sm text-muted-foreground">
                                 Showing {sales.from}-{sales.to} of {sales.total} sales
                             </span>
+
                             <PaginatorLinks links={sales.links} only={only} className="mx-0 w-auto" />
                         </div>
                     )}
