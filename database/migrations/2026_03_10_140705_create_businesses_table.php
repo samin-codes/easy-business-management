@@ -43,19 +43,9 @@ return new class extends Migration
 
         DB::table('businesses')->insert([
             [
-                'name' => 'Arambag Paper House',
-                'trade_name' => 'Arambag Paper House',
+                'name' => 'Pragati Enterprise',
                 'business_type' => 'sole_proprietorship',
-                'mobile' => '01711111111',
-                'email' => null,
-                'trade_license_no' => null,
-                'tin_no' => null,
-                'bin_no' => null,
-                'address_line' => null,
-                'district' => null,
-                'area_type' => null,
-                'area_name' => null,
-                'postal_code' => null,
+                'mobile' => '01711475908',
                 'status' => 'active',
                 'created_at' => $now,
                 'updated_at' => $now,

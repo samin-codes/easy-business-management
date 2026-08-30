@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -35,6 +36,23 @@ return new class extends Migration
             $table->index('code');
             $table->unique(['business_id', 'code']);
         });
+    }
+
+    private function seed(): void
+    {
+        $now = now();
+
+        DB::table('outlets')->insert([
+            [
+                'business_id' => 1,
+                'name' => 'Pragati Enterprise',
+                'mobile' => '01711475908',
+                'outlet_type' => 'shop',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
     }
 
     /**
