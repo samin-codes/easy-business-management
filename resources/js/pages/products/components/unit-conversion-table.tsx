@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import ProductUnitConversionController from '@/actions/App/Http/Controllers/ProductUnitConversionController';
 import { DeleteAction, EditAction } from '@/components/table-actions';
 import { Badge } from '@/components/ui/badge';
-import type { Product, ProductUnitConversion } from '../types';
+import type { Product, ProductUnitConversion } from '@/types';
 
 export default function UnitConversionTable({
     product,
@@ -12,7 +12,8 @@ export default function UnitConversionTable({
     onEdit: (unitConversion: ProductUnitConversion) => void;
 }) {
     const unitConversions = product.unit_conversions ?? [];
-    const baseUnitName = product.base_unit_of_measurement.name;
+    const baseUnitName = product.base_unit_of_measurement?.name ?? 'Base unit';
+
     const hasAlternateUnitConversions = unitConversions.some((unitConversion) => !unitConversion.is_base_unit);
 
     const handleDelete = (unitConversion: ProductUnitConversion) => {
@@ -52,6 +53,7 @@ export default function UnitConversionTable({
                             </th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {unitConversions.length === 0 ? (
                             <tr>
@@ -65,11 +67,16 @@ export default function UnitConversionTable({
                                     key={unitConversion.id}
                                     className={unitConversion.is_base_unit ? 'table-light font-semibold' : undefined}
                                 >
-                                    <td>{unitConversion.unit_of_measurement.name}</td>
+                                    <td>{getUnitName(unitConversion)}</td>
+
                                     <td>{formatStockConversion(unitConversion, baseUnitName)}</td>
+
                                     <td className="text-center">{unitConversion.is_base_unit ? 'Yes' : 'No'}</td>
+
                                     <td className="text-center">{unitConversion.is_default_purchase_unit ? 'Yes' : 'No'}</td>
+
                                     <td className="text-center">{unitConversion.is_default_sale_unit ? 'Yes' : 'No'}</td>
+
                                     <td>
                                         <Badge
                                             variant="outline"
@@ -82,17 +89,19 @@ export default function UnitConversionTable({
                                             {unitConversion.status_label}
                                         </Badge>
                                     </td>
+
                                     <td className="text-right">
                                         <div className="flex justify-end gap-1">
                                             <EditAction
                                                 appearance="icon-button"
-                                                label={`Edit ${unitConversion.unit_of_measurement.name}`}
+                                                label={`Edit ${getUnitName(unitConversion)}`}
                                                 onClick={() => onEdit(unitConversion)}
                                             />
+
                                             {!unitConversion.is_base_unit && (
                                                 <DeleteAction
                                                     appearance="icon-button"
-                                                    label={`Delete ${unitConversion.unit_of_measurement.name}`}
+                                                    label={`Delete ${getUnitName(unitConversion)}`}
                                                     onClick={() => handleDelete(unitConversion)}
                                                 />
                                             )}
@@ -114,6 +123,10 @@ export default function UnitConversionTable({
     );
 }
 
+function getUnitName(unitConversion: ProductUnitConversion): string {
+    return unitConversion.unit_of_measurement?.name ?? '-';
+}
+
 function formatStockConversion(unitConversion: ProductUnitConversion, baseUnitName: string): string {
-    return `${unitConversion.conversion_unit_quantity} ${unitConversion.unit_of_measurement.name} = ${unitConversion.base_unit_quantity} ${baseUnitName}`;
+    return `${unitConversion.conversion_unit_quantity} ${getUnitName(unitConversion)} = ${unitConversion.base_unit_quantity} ${baseUnitName}`;
 }

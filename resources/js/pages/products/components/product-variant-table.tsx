@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import ProductVariantController from '@/actions/App/Http/Controllers/ProductVariantController';
 import { DeleteAction, EditAction } from '@/components/table-actions';
 import { Badge } from '@/components/ui/badge';
-import type { Product, ProductVariant } from '../types';
+import type { Product, ProductVariant } from '@/types';
 
 export default function ProductVariantTable({ product, onEdit }: { product: Product; onEdit: (productVariant: ProductVariant) => void }) {
     const productVariants = product.product_variants ?? [];
@@ -41,6 +41,7 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                         </th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {productVariants.length === 0 ? (
                         <tr>
@@ -54,20 +55,25 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                                 <td className="align-top">
                                     <div className="space-y-1">
                                         <div className="font-medium">{productVariant.variant_name}</div>
+
                                         <div className="text-sm">
                                             <span className="text-muted-foreground">Brand: </span>
                                             <span className="font-medium text-foreground">{productVariant.brand?.name ?? '-'}</span>
                                         </div>
+
                                         <div className="text-xs text-muted-foreground">SKU: {productVariant.sku ?? '-'}</div>
                                     </div>
                                 </td>
+
                                 <td className="align-top">
                                     <div className="space-y-1 text-sm">
                                         <div>Grade: {formatGrade(productVariant)}</div>
                                         <div>Size: {formatSize(productVariant)}</div>
                                     </div>
                                 </td>
+
                                 <td className="text-center align-top">{productVariant.is_placeholder_variant ? 'Yes' : 'No'}</td>
+
                                 <td className="align-top">
                                     <Badge
                                         variant="outline"
@@ -80,6 +86,7 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                                         {productVariant.status_label}
                                     </Badge>
                                 </td>
+
                                 <td className="text-right align-top">
                                     <div className="flex justify-end gap-1">
                                         <EditAction
@@ -87,6 +94,7 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                                             label={`Edit ${productVariant.variant_name}`}
                                             onClick={() => onEdit(productVariant)}
                                         />
+
                                         <DeleteAction
                                             appearance="icon-button"
                                             label={`Delete ${productVariant.variant_name}`}

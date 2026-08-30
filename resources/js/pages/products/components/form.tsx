@@ -7,8 +7,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Section, SectionContent } from '@/components/ui/section';
-import type { Option } from '@/types';
-import type { Product, ProductCategory, UnitOfMeasurement } from '../types';
+import type { Option, Product, ProductCategory, UnitOfMeasurement } from '@/types';
 
 export default function ProductForm({
     product,
@@ -18,8 +17,8 @@ export default function ProductForm({
     cancelHref,
 }: {
     product?: Product;
-    productCategories: ProductCategory[];
-    unitOfMeasurements: UnitOfMeasurement[];
+    productCategories: Pick<ProductCategory, 'id' | 'name'>[];
+    unitOfMeasurements: Pick<UnitOfMeasurement, 'id' | 'name'>[];
     statusOptions: Option[];
     cancelHref: string;
 }) {
@@ -53,6 +52,7 @@ export default function ProductForm({
                                     <FieldLabel htmlFor="product_category_id">
                                         Product Category <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <Combobox
                                         name="product_category_id"
                                         items={categoryOptions}
@@ -65,6 +65,7 @@ export default function ProductForm({
                                             aria-invalid={Boolean(errors.product_category_id)}
                                             className="w-full"
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No category found.</ComboboxEmpty>
                                             <ComboboxList>
@@ -76,13 +77,21 @@ export default function ProductForm({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <FieldError errors={[{ message: errors.product_category_id }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.product_category_id,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel htmlFor="base_unit_of_measurement_id">
                                         Base Unit of Measurement <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <Combobox
                                         name="base_unit_of_measurement_id"
                                         items={unitOptions}
@@ -95,6 +104,7 @@ export default function ProductForm({
                                             aria-invalid={Boolean(errors.base_unit_of_measurement_id)}
                                             className="w-full"
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No unit found.</ComboboxEmpty>
                                             <ComboboxList>
@@ -106,13 +116,21 @@ export default function ProductForm({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <FieldError errors={[{ message: errors.base_unit_of_measurement_id }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.base_unit_of_measurement_id,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel htmlFor="name">
                                         Product name <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <Input
                                         id="name"
                                         name="name"
@@ -120,13 +138,21 @@ export default function ProductForm({
                                         aria-invalid={Boolean(errors.name)}
                                         placeholder="Cotton T-Shirt"
                                     />
-                                    <FieldError errors={[{ message: errors.name }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.name,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel htmlFor="status">
                                         Status <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <RadioGroup name="status" defaultValue={product?.status ?? 'active'} className="flex flex-row gap-6">
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
@@ -141,7 +167,14 @@ export default function ProductForm({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <FieldError errors={[{ message: errors.status }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.status,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
                             </FieldGroup>
                         </SectionContent>
@@ -154,6 +187,7 @@ export default function ProductForm({
                                 Cancel
                             </Link>
                         </Button>
+
                         <Button type="submit" disabled={processing}>
                             <Save />
                             {processing ? 'Saving...' : product ? 'Update Product' : 'Create Product'}

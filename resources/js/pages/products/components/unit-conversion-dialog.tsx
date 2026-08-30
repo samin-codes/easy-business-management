@@ -9,8 +9,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { Option } from '@/types';
-import type { Product, ProductUnitConversion, UnitOfMeasurement } from '../types';
+import type { Option, Product, ProductUnitConversion, UnitOfMeasurement } from '@/types';
 
 export default function UnitConversionDialog({
     product,
@@ -22,7 +21,7 @@ export default function UnitConversionDialog({
 }: {
     product: Product;
     unitConversion: ProductUnitConversion | null;
-    units: UnitOfMeasurement[];
+    units: Pick<UnitOfMeasurement, 'id' | 'name'>[];
     statusOptions: Option[];
     open: boolean;
     onClose: () => void;
@@ -30,12 +29,16 @@ export default function UnitConversionDialog({
     const isEditMode = Boolean(unitConversion);
     const isBaseConversion = unitConversion?.is_base_unit === true;
 
-    const [selectedUnit, setSelectedUnit] = useState<UnitOfMeasurement | null>(unitConversion?.unit_of_measurement ?? null);
+    const [selectedUnit, setSelectedUnit] = useState<Pick<UnitOfMeasurement, 'id' | 'name'> | null>(
+        unitConversion?.unit_of_measurement ?? null,
+    );
+
     const [selectedUnitQuantity, setSelectedUnitQuantity] = useState(unitConversion?.conversion_unit_quantity ?? '');
+
     const [baseUnitQuantity, setBaseUnitQuantity] = useState(unitConversion?.base_unit_quantity ?? '');
 
     const selectedUnitName = selectedUnit?.name ?? 'Unit';
-    const baseUnitName = product.base_unit_of_measurement.name;
+    const baseUnitName = product.base_unit_of_measurement?.name ?? 'Base unit';
 
     const hasConversionQuantities =
         selectedUnitQuantity !== '' && baseUnitQuantity !== '' && Number(selectedUnitQuantity) > 0 && Number(baseUnitQuantity) > 0;
@@ -72,7 +75,9 @@ export default function UnitConversionDialog({
                                   product,
                                   product_unit_conversion: unitConversion.id,
                               })
-                            : ProductUnitConversionController.store({ product })
+                            : ProductUnitConversionController.store({
+                                  product,
+                              })
                     }
                     options={{ preserveScroll: true }}
                     onSuccess={onClose}
@@ -104,6 +109,7 @@ export default function UnitConversionDialog({
                                             showClear={!isEditMode}
                                             className="w-full"
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No unit found.</ComboboxEmpty>
                                             <ComboboxList>
@@ -116,13 +122,20 @@ export default function UnitConversionDialog({
                                         </ComboboxContent>
                                     </Combobox>
 
-                                    <FieldError errors={[{ message: errors.unit_of_measurement_id ?? errors.product_unit_conversion }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.unit_of_measurement_id ?? errors.product_unit_conversion,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel>
                                         Conversion <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <input type="hidden" name="conversion_factor_to_base" value={conversionFactor} readOnly />
 
                                     <div className="flex flex-col gap-3">
@@ -131,6 +144,7 @@ export default function UnitConversionDialog({
                                                 <FieldLabel htmlFor="selected_unit_quantity" className="sr-only">
                                                     Selected unit quantity
                                                 </FieldLabel>
+
                                                 <InputGroup data-disabled={isBaseConversion || undefined}>
                                                     <InputGroupInput
                                                         id="selected_unit_quantity"
@@ -148,6 +162,7 @@ export default function UnitConversionDialog({
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
                                                         className="no-number-spinner min-w-16 text-right"
                                                     />
+
                                                     <InputGroupAddon align="inline-end" className="max-w-28">
                                                         <InputGroupText className="truncate" title={selectedUnitName}>
                                                             {selectedUnitName}
@@ -162,6 +177,7 @@ export default function UnitConversionDialog({
                                                 <FieldLabel htmlFor="base_unit_quantity" className="sr-only">
                                                     Base unit quantity
                                                 </FieldLabel>
+
                                                 <InputGroup data-disabled={isBaseConversion || undefined}>
                                                     <InputGroupInput
                                                         id="base_unit_quantity"
@@ -179,6 +195,7 @@ export default function UnitConversionDialog({
                                                         aria-invalid={Boolean(errors.conversion_factor_to_base)}
                                                         className="no-number-spinner min-w-16 text-right"
                                                     />
+
                                                     <InputGroupAddon align="inline-end" className="max-w-28">
                                                         <InputGroupText className="truncate" title={baseUnitName}>
                                                             {baseUnitName}
@@ -197,15 +214,23 @@ export default function UnitConversionDialog({
                                         </div>
                                     </div>
 
-                                    <FieldError errors={[{ message: errors.conversion_factor_to_base }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.conversion_factor_to_base,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     <Field className="gap-3">
                                         <FieldLabel>Default for</FieldLabel>
+
                                         <div className="grid gap-3">
                                             <Field className="gap-1">
                                                 <input type="hidden" name="is_default_purchase_unit" value="0" />
+
                                                 <div className="flex items-start gap-3">
                                                     <Checkbox
                                                         id="is_default_purchase_unit"
@@ -215,15 +240,23 @@ export default function UnitConversionDialog({
                                                         aria-invalid={Boolean(errors.is_default_purchase_unit)}
                                                         className="mt-0.5"
                                                     />
+
                                                     <FieldContent className="gap-1">
                                                         <FieldLabel htmlFor="is_default_purchase_unit">Purchases</FieldLabel>
-                                                        <FieldError errors={[{ message: errors.is_default_purchase_unit }]} />
+                                                        <FieldError
+                                                            errors={[
+                                                                {
+                                                                    message: errors.is_default_purchase_unit,
+                                                                },
+                                                            ]}
+                                                        />
                                                     </FieldContent>
                                                 </div>
                                             </Field>
 
                                             <Field className="gap-1">
                                                 <input type="hidden" name="is_default_sale_unit" value="0" />
+
                                                 <div className="flex items-start gap-3">
                                                     <Checkbox
                                                         id="is_default_sale_unit"
@@ -233,9 +266,16 @@ export default function UnitConversionDialog({
                                                         aria-invalid={Boolean(errors.is_default_sale_unit)}
                                                         className="mt-0.5"
                                                     />
+
                                                     <FieldContent className="gap-1">
                                                         <FieldLabel htmlFor="is_default_sale_unit">Sales</FieldLabel>
-                                                        <FieldError errors={[{ message: errors.is_default_sale_unit }]} />
+                                                        <FieldError
+                                                            errors={[
+                                                                {
+                                                                    message: errors.is_default_sale_unit,
+                                                                },
+                                                            ]}
+                                                        />
                                                     </FieldContent>
                                                 </div>
                                             </Field>
@@ -246,6 +286,7 @@ export default function UnitConversionDialog({
                                         <FieldLabel id="unit_conversion_status_label">
                                             Status <span className="-ml-1 text-red-500">*</span>
                                         </FieldLabel>
+
                                         <RadioGroup
                                             name="status"
                                             defaultValue={unitConversion?.status ?? 'active'}
@@ -268,7 +309,14 @@ export default function UnitConversionDialog({
                                                 </div>
                                             ))}
                                         </RadioGroup>
-                                        <FieldError errors={[{ message: errors.status }]} />
+
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: errors.status,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
                                 </div>
                             </FieldGroup>
@@ -280,6 +328,7 @@ export default function UnitConversionDialog({
                                         Cancel
                                     </Button>
                                 </DialogClose>
+
                                 <Button type="submit" disabled={processing}>
                                     <Save className="size-4" />
                                     {processing ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save Unit Conversion'}

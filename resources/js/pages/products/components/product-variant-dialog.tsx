@@ -8,8 +8,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { Option } from '@/types';
-import type { Brand, Product, ProductGradeUnit, ProductSizeUnit, ProductVariant } from '../types';
+import type { Brand, Option, Product, ProductGradeUnit, ProductSizeUnit, ProductVariant } from '@/types';
 
 export default function ProductVariantDialog({
     product,
@@ -23,9 +22,9 @@ export default function ProductVariantDialog({
 }: {
     product: Product;
     productVariant: ProductVariant | null;
-    brands: Brand[];
-    productGradeUnits: ProductGradeUnit[];
-    productSizeUnits: ProductSizeUnit[];
+    brands: Pick<Brand, 'id' | 'name'>[];
+    productGradeUnits: Pick<ProductGradeUnit, 'id' | 'code'>[];
+    productSizeUnits: Pick<ProductSizeUnit, 'id' | 'code'>[];
     statusOptions: Option[];
     open: boolean;
     onClose: () => void;
@@ -83,7 +82,13 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.variant_name)}
                                         placeholder="Local Mill / 80 GSM / 23x36"
                                     />
-                                    <FieldError errors={[{ message: errors.variant_name }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.variant_name,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
@@ -95,11 +100,18 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.sku)}
                                         placeholder="OFF-80-2336-001"
                                     />
-                                    <FieldError errors={[{ message: errors.sku }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.sku,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field className="gap-1 md:col-span-2">
                                     <input type="hidden" name="is_placeholder_variant" value="0" />
+
                                     <div className="flex items-start gap-3">
                                         <Checkbox
                                             id="is_placeholder_variant"
@@ -109,18 +121,26 @@ export default function ProductVariantDialog({
                                             aria-invalid={Boolean(errors.is_placeholder_variant)}
                                             className="mt-0.5"
                                         />
+
                                         <FieldContent className="gap-1">
                                             <FieldLabel htmlFor="is_placeholder_variant">Use as default variant</FieldLabel>
                                             <FieldDescription className="text-xs leading-5">
                                                 Use when this product does not need separate brand, grade, or size variants.
                                             </FieldDescription>
-                                            <FieldError errors={[{ message: errors.is_placeholder_variant }]} />
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: errors.is_placeholder_variant,
+                                                    },
+                                                ]}
+                                            />
                                         </FieldContent>
                                     </div>
                                 </Field>
 
                                 <Field>
                                     <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
+
                                     <Combobox
                                         name="brand_id"
                                         items={brands}
@@ -135,6 +155,7 @@ export default function ProductVariantDialog({
                                             showClear
                                             className="w-full"
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No brand found.</ComboboxEmpty>
                                             <ComboboxList>
@@ -146,7 +167,14 @@ export default function ProductVariantDialog({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <FieldError errors={[{ message: errors.brand_id }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.brand_id,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
@@ -161,11 +189,18 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.grade_value)}
                                         placeholder="80"
                                     />
-                                    <FieldError errors={[{ message: errors.grade_value }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.grade_value,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel htmlFor="grade_unit_id">Grade unit</FieldLabel>
+
                                     <Combobox
                                         name="grade_unit_id"
                                         items={productGradeUnits}
@@ -180,6 +215,7 @@ export default function ProductVariantDialog({
                                             showClear
                                             className="w-full"
                                         />
+
                                         <ComboboxContent>
                                             <ComboboxEmpty>No grade unit found.</ComboboxEmpty>
                                             <ComboboxList>
@@ -191,7 +227,14 @@ export default function ProductVariantDialog({
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
-                                    <FieldError errors={[{ message: errors.grade_unit_id }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.grade_unit_id,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <div className="grid gap-5 md:col-span-2 md:grid-cols-3">
@@ -206,7 +249,13 @@ export default function ProductVariantDialog({
                                             aria-invalid={Boolean(errors.width)}
                                             placeholder="23"
                                         />
-                                        <FieldError errors={[{ message: errors.width }]} />
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: errors.width,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
 
                                     <Field>
@@ -220,11 +269,18 @@ export default function ProductVariantDialog({
                                             aria-invalid={Boolean(errors.height)}
                                             placeholder="36"
                                         />
-                                        <FieldError errors={[{ message: errors.height }]} />
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: errors.height,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
 
                                     <Field>
                                         <FieldLabel htmlFor="size_unit_id">Size unit</FieldLabel>
+
                                         <Combobox
                                             name="size_unit_id"
                                             items={productSizeUnits}
@@ -239,6 +295,7 @@ export default function ProductVariantDialog({
                                                 showClear
                                                 className="w-full"
                                             />
+
                                             <ComboboxContent>
                                                 <ComboboxEmpty>No size unit found.</ComboboxEmpty>
                                                 <ComboboxList>
@@ -250,7 +307,14 @@ export default function ProductVariantDialog({
                                                 </ComboboxList>
                                             </ComboboxContent>
                                         </Combobox>
-                                        <FieldError errors={[{ message: errors.size_unit_id }]} />
+
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: errors.size_unit_id,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
                                 </div>
 
@@ -263,13 +327,20 @@ export default function ProductVariantDialog({
                                         aria-invalid={Boolean(errors.size_label)}
                                         placeholder="A4 or 23x36"
                                     />
-                                    <FieldError errors={[{ message: errors.size_label }]} />
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.size_label,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
 
                                 <Field className="md:col-span-2">
                                     <FieldLabel htmlFor="status">
                                         Status <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
+
                                     <RadioGroup
                                         name="status"
                                         defaultValue={productVariant?.status ?? 'active'}
@@ -288,7 +359,14 @@ export default function ProductVariantDialog({
                                             </div>
                                         ))}
                                     </RadioGroup>
-                                    <FieldError errors={[{ message: errors.status }]} />
+
+                                    <FieldError
+                                        errors={[
+                                            {
+                                                message: errors.status,
+                                            },
+                                        ]}
+                                    />
                                 </Field>
                             </FieldGroup>
 
@@ -299,6 +377,7 @@ export default function ProductVariantDialog({
                                         Cancel
                                     </Button>
                                 </DialogClose>
+
                                 <Button type="submit" disabled={processing}>
                                     <Save className="size-4" />
                                     {processing ? 'Saving...' : isEditMode ? 'Save Changes' : 'Save Variant'}

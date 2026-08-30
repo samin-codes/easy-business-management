@@ -11,8 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { create, edit, index } from '@/routes/products';
-import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
-import type { Product } from './types';
+import type {
+    BreadcrumbItem,
+    LengthAwarePagination,
+    Product,
+} from '@/types';
 
 type QueryString = {
     search: string | null;
@@ -20,7 +23,13 @@ type QueryString = {
     direction: 'asc' | 'desc';
 };
 
-export default function ProductsIndex({ products, queryString }: { products: LengthAwarePagination<Product>; queryString: QueryString }) {
+export default function ProductsIndex({
+    products,
+    queryString,
+}: {
+    products: LengthAwarePagination<Product>;
+    queryString: QueryString;
+}) {
     const searchTimeout = useRef<number | undefined>(undefined);
     const reloadProps = ['products', 'queryString'];
 
@@ -58,7 +67,12 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                         </div>
                     )}
 
-                    {errors.product && <AlertError errors={[errors.product]} title="Product deletion blocked." />}
+                    {errors.product && (
+                        <AlertError
+                            errors={[errors.product]}
+                            title="Product deletion blocked."
+                        />
+                    )}
 
                     <section className="space-y-4">
                         <div className="flex flex-col gap-4">
@@ -69,36 +83,49 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                                         type="search"
                                         placeholder="Search products..."
                                         className="pl-9"
-                                        defaultValue={queryString.search ?? ''}
+                                        defaultValue={
+                                            queryString.search ?? ''
+                                        }
                                         onChange={(event) => {
-                                            const search = event.currentTarget.value.trim();
+                                            const search =
+                                                event.currentTarget.value.trim();
 
-                                            window.clearTimeout(searchTimeout.current);
+                                            window.clearTimeout(
+                                                searchTimeout.current,
+                                            );
 
-                                            searchTimeout.current = window.setTimeout(() => {
-                                                router.get(
-                                                    index().url,
-                                                    {
-                                                        search: search || undefined,
-                                                        sort: queryString.sort,
-                                                        direction: queryString.direction,
-                                                        page: 1,
-                                                    },
-                                                    {
-                                                        preserveScroll: true,
-                                                        preserveState: true,
-                                                        replace: true,
-                                                        only: reloadProps,
-                                                    },
-                                                );
-                                            }, 300);
+                                            searchTimeout.current =
+                                                window.setTimeout(() => {
+                                                    router.get(
+                                                        index().url,
+                                                        {
+                                                            search:
+                                                                search ||
+                                                                undefined,
+                                                            sort: queryString.sort,
+                                                            direction:
+                                                                queryString.direction,
+                                                            page: 1,
+                                                        },
+                                                        {
+                                                            preserveScroll: true,
+                                                            preserveState: true,
+                                                            replace: true,
+                                                            only: reloadProps,
+                                                        },
+                                                    );
+                                                }, 300);
                                         }}
                                     />
                                 </div>
 
                                 {queryString.search && (
                                     <Button variant="outline" asChild>
-                                        <Link href={index()} preserveScroll only={reloadProps}>
+                                        <Link
+                                            href={index()}
+                                            preserveScroll
+                                            only={reloadProps}
+                                        >
                                             Clear
                                         </Link>
                                     </Button>
@@ -115,18 +142,28 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                                                     href={
                                                         index({
                                                             query: {
-                                                                search: queryString.search ?? undefined,
+                                                                search:
+                                                                    queryString.search ??
+                                                                    undefined,
                                                                 sort: 'name',
                                                                 direction:
-                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                    queryString.sort ===
+                                                                        'name' &&
+                                                                    queryString.direction ===
+                                                                        'asc'
                                                                         ? 'desc'
                                                                         : 'asc',
                                                                 page: 1,
                                                             },
                                                         }).url
                                                     }
-                                                    isActive={queryString.sort === 'name'}
-                                                    currentDirection={queryString.direction}
+                                                    isActive={
+                                                        queryString.sort ===
+                                                        'name'
+                                                    }
+                                                    currentDirection={
+                                                        queryString.direction
+                                                    }
                                                     only={reloadProps}
                                                 />
                                             </th>
@@ -135,43 +172,70 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                                             <th>Status</th>
                                             <th>Base Unit</th>
                                             <th className="text-right">
-                                                <span className="sr-only">Actions</span>
+                                                <span className="sr-only">
+                                                    Actions
+                                                </span>
                                             </th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {products.data.length > 0 ? (
                                             products.data.map((product) => (
                                                 <tr key={product.id}>
                                                     <td>
-                                                        <div className="font-medium">{product.name}</div>
+                                                        <div className="font-medium">
+                                                            {product.name}
+                                                        </div>
                                                     </td>
-                                                    <td>{product.category.name}</td>
-                                                    <td>{product.business.name}</td>
+                                                    <td>
+                                                        {product.category
+                                                            ?.name ?? '-'}
+                                                    </td>
+                                                    <td>
+                                                        {product.business
+                                                            ?.name ?? '-'}
+                                                    </td>
                                                     <td>
                                                         <Badge
                                                             variant="outline"
                                                             className={
-                                                                product.status === 'active'
+                                                                product.status ===
+                                                                'active'
                                                                     ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
                                                                     : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
                                                             }
                                                         >
-                                                            {product.status_label ?? '-'}
+                                                            {product.status_label ??
+                                                                '-'}
                                                         </Badge>
                                                     </td>
-                                                    <td>{product.base_unit_of_measurement?.name ?? '-'}</td>
+                                                    <td>
+                                                        {product
+                                                            .base_unit_of_measurement
+                                                            ?.name ?? '-'}
+                                                    </td>
                                                     <td className="text-right">
                                                         <div className="flex justify-end gap-3">
-                                                            <EditAction url={edit(product.id)} aria-label={`Edit ${product.name}`} />
+                                                            <EditAction
+                                                                url={edit(
+                                                                    product.id,
+                                                                )}
+                                                                aria-label={`Edit ${product.name}`}
+                                                            />
                                                         </div>
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={6} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search ? 'No products found.' : 'No products yet.'}
+                                                <td
+                                                    colSpan={6}
+                                                    className="h-24 text-center text-muted-foreground"
+                                                >
+                                                    {queryString.search
+                                                        ? 'No products found.'
+                                                        : 'No products yet.'}
                                                 </td>
                                             </tr>
                                         )}

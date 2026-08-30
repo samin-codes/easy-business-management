@@ -7,14 +7,10 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/products';
-import type { BreadcrumbItem, Option } from '@/types';
-import ProductForm from './components/form';
-import ProductVariantDialog from './components/product-variant-dialog';
-import ProductVariantTable from './components/product-variant-table';
-import UnitConversionDialog from './components/unit-conversion-dialog';
-import UnitConversionTable from './components/unit-conversion-table';
 import type {
     Brand,
+    BreadcrumbItem,
+    Option,
     Product,
     ProductCategory,
     ProductGradeUnit,
@@ -22,7 +18,12 @@ import type {
     ProductUnitConversion,
     ProductVariant,
     UnitOfMeasurement,
-} from './types';
+} from '@/types';
+import ProductForm from './components/form';
+import ProductVariantDialog from './components/product-variant-dialog';
+import ProductVariantTable from './components/product-variant-table';
+import UnitConversionDialog from './components/unit-conversion-dialog';
+import UnitConversionTable from './components/unit-conversion-table';
 
 export default function ProductsEdit({
     product,
@@ -34,11 +35,11 @@ export default function ProductsEdit({
     statusOptions,
 }: {
     product: Product;
-    brands: Brand[];
-    productGradeUnits: ProductGradeUnit[];
-    productSizeUnits: ProductSizeUnit[];
-    productCategories: ProductCategory[];
-    unitOfMeasurements: UnitOfMeasurement[];
+    brands: Pick<Brand, 'id' | 'name'>[];
+    productGradeUnits: Pick<ProductGradeUnit, 'id' | 'code'>[];
+    productSizeUnits: Pick<ProductSizeUnit, 'id' | 'code'>[];
+    productCategories: Pick<ProductCategory, 'id' | 'name'>[];
+    unitOfMeasurements: Pick<UnitOfMeasurement, 'id' | 'name'>[];
     statusOptions: Option[];
 }) {
     const [isProductVariantDialogOpen, setIsProductVariantDialogOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function ProductsEdit({
 
     const unitConversions = product.unit_conversions ?? [];
 
-    const getAvailableUnits = (currentUnitOfMeasurementId?: number): UnitOfMeasurement[] => {
+    const getAvailableUnits = (currentUnitOfMeasurementId?: number) => {
         const usedUnitIds = new Set(unitConversions.map((unitConversion) => unitConversion.unit_of_measurement_id));
 
         return unitOfMeasurements.filter(
@@ -98,7 +99,6 @@ export default function ProductsEdit({
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-4xl space-y-10">
                     <Heading title="Edit Product" className="mb-8" />
-
                     <ProductForm
                         product={product}
                         productCategories={productCategories}
@@ -120,6 +120,7 @@ export default function ProductsEdit({
                             </div>
                             <Separator />
                         </SectionHeader>
+
                         <SectionContent>
                             <ProductVariantTable product={product} onEdit={handleEditProductVariant} />
                         </SectionContent>
@@ -136,6 +137,7 @@ export default function ProductsEdit({
                             </div>
                             <Separator />
                         </SectionHeader>
+
                         <SectionContent>
                             <UnitConversionTable product={product} onEdit={handleEditUnitConversion} />
                         </SectionContent>
