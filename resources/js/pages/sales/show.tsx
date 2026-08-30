@@ -215,7 +215,7 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                                                             <td className="text-muted-foreground">{payment.note || '-'}</td>
                                                             <td className="text-right">
                                                                 <DeleteAction
-                                                                    display="icon-button"
+                                                                    appearance="icon-button"
                                                                     label={`Delete payment from ${formatDate(new Date(payment.payment_date), 'MMMM d, yyyy')}`}
                                                                     onClick={() => deletePayment(payment.id)}
                                                                 />

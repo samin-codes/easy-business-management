@@ -85,13 +85,13 @@ export default function UnitConversionTable({
                                     <td className="text-right">
                                         <div className="flex justify-end gap-1">
                                             <EditAction
-                                                display="icon-button"
+                                                appearance="icon-button"
                                                 label={`Edit ${unitConversion.unit_of_measurement.name}`}
                                                 onClick={() => onEdit(unitConversion)}
                                             />
                                             {!unitConversion.is_base_unit && (
                                                 <DeleteAction
-                                                    display="icon-button"
+                                                    appearance="icon-button"
                                                     label={`Delete ${unitConversion.unit_of_measurement.name}`}
                                                     onClick={() => handleDelete(unitConversion)}
                                                 />

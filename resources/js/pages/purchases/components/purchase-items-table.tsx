@@ -223,7 +223,7 @@ export default function PurchaseItemsTable({
                                             label="Remove purchase item"
                                             icon={Trash2}
                                             color="danger"
-                                            display="icon-button"
+                                            appearance="icon-button"
                                             onClick={() => onItemRemove(purchaseItem.uid)}
                                         />
                                     )}

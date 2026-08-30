@@ -159,7 +159,7 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                             label="Remove sale item"
                                             icon={Trash2}
                                             color="danger"
-                                            display="icon-button"
+                                            appearance="icon-button"
                                             onClick={() => onItemRemove(item.uid)}
                                         />
                                     )}

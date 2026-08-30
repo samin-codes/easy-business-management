@@ -83,12 +83,12 @@ export default function ProductVariantTable({ product, onEdit }: { product: Prod
                                 <td className="text-right align-top">
                                     <div className="flex justify-end gap-1">
                                         <EditAction
-                                            display="icon-button"
+                                            appearance="icon-button"
                                             label={`Edit ${productVariant.variant_name}`}
                                             onClick={() => onEdit(productVariant)}
                                         />
                                         <DeleteAction
-                                            display="icon-button"
+                                            appearance="icon-button"
                                             label={`Delete ${productVariant.variant_name}`}
                                             onClick={() => handleDelete(productVariant)}
                                         />
