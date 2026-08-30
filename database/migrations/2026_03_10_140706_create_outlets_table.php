@@ -36,6 +36,26 @@ return new class extends Migration
             $table->index('code');
             $table->unique(['business_id', 'code']);
         });
+
+        $this->seed();
+    }
+
+    private function seed(): void
+    {
+        $now = now();
+
+        DB::table('outlets')->insert([
+            [
+                'business_id' => 1,
+                'name' => 'Pragati Enterprise',
+                'code' => 'PE01',
+                'mobile' => '01711475908',
+                'outlet_type' => 'shop',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
     }
 
     private function seed(): void
