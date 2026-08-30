@@ -23,12 +23,15 @@ class InventoryController extends Controller
     public function index(Request $request): Response
     {
         $business = Business::current();
+
         $outlets = Outlet::query()
             ->whereBelongsTo($business)
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
+
         $selectedOutlet = $outlets->firstWhere('id', $request->integer('outlet_id')) ?? $outlets->first();
+
         $categories = ProductCategory::query()
             ->whereBelongsTo($business)
             ->where('status', 'active')
@@ -37,14 +40,23 @@ class InventoryController extends Controller
 
         $search = $request->string('search')->trim()->limit(255, '')->toString();
         $search = $search !== '' ? $search : null;
+
         $categoryId = is_array($request->query('category_id'))
             ? null
             : $categories->firstWhere('id', $request->integer('category_id'))?->id;
+
         $stockStatus = $request->query('stock_status', 'all');
-        $stockStatus = in_array($stockStatus, ['all', 'in_stock', 'out_of_stock'], true) ? $stockStatus : 'all';
+        $stockStatus = in_array($stockStatus, ['all', 'in_stock', 'out_of_stock'], true)
+            ? $stockStatus
+            : 'all';
+
         $sort = $request->query('sort', 'product');
-        $sort = in_array($sort, ['product', 'quantity', 'average_cost', 'stock_value', 'last_movement_at'], true) ? $sort : 'product';
+        $sort = in_array($sort, ['product', 'quantity', 'average_cost', 'stock_value', 'last_movement_at'], true)
+            ? $sort
+            : 'product';
+
         $direction = $request->query('direction', 'asc') === 'desc' ? 'desc' : 'asc';
+
         $stockQuantity = 'COALESCE(product_stocks.quantity, 0)';
         $stockAverageCost = 'COALESCE(product_stocks.average_cost, 0)';
         $stockValue = 'COALESCE(product_stocks.stock_value, 0)';
@@ -76,9 +88,21 @@ class InventoryController extends Controller
                         ->orWhere('brands.name', 'like', "%{$search}%");
                 });
             })
-            ->when($categoryId, fn ($query, int $categoryId) => $query->where('products.product_category_id', $categoryId))
-            ->when($stockStatus === 'in_stock', fn ($query) => $query->whereRaw("{$stockQuantity} > 0"))
-            ->when($stockStatus === 'out_of_stock', fn ($query) => $query->whereRaw("{$stockQuantity} <= 0"))
+            ->when(
+                $categoryId,
+                fn ($query, int $categoryId) => $query->where(
+                    'products.product_category_id',
+                    $categoryId,
+                ),
+            )
+            ->when(
+                $stockStatus === 'in_stock',
+                fn ($query) => $query->whereRaw("{$stockQuantity} > 0"),
+            )
+            ->when(
+                $stockStatus === 'out_of_stock',
+                fn ($query) => $query->whereRaw("{$stockQuantity} <= 0"),
+            )
             ->select([
                 'product_variants.id',
                 'product_variants.product_id',
@@ -138,23 +162,23 @@ class InventoryController extends Controller
                 'last_movement_at' => $variant->last_movement_at,
             ]);
 
-        $inventoryTotals = (clone $inventoryQuery)
+        $inventoryAggregates = (clone $inventoryQuery)
             ->selectRaw('COUNT(*) as total_variants')
             ->selectRaw("SUM(CASE WHEN {$stockQuantity} > 0 THEN 1 ELSE 0 END) as in_stock_variants")
             ->selectRaw("SUM(CASE WHEN {$stockQuantity} <= 0 THEN 1 ELSE 0 END) as out_of_stock_variants")
             ->selectRaw("COALESCE(SUM({$stockValue}), 0) as inventory_value")
             ->first();
 
-        $summary = [
-            'inventory_value' => (string) ($inventoryTotals->inventory_value ?? '0.00'),
-            'in_stock_variants' => (int) ($inventoryTotals->in_stock_variants ?? 0),
-            'out_of_stock_variants' => (int) ($inventoryTotals->out_of_stock_variants ?? 0),
-            'total_variants' => (int) $inventoryTotals->total_variants,
+        $inventoryStats = [
+            'stock_value' => (string) ($inventoryAggregates->inventory_value ?? '0.00'),
+            'in_stock_count' => (int) ($inventoryAggregates->in_stock_variants ?? 0),
+            'out_of_stock_count' => (int) ($inventoryAggregates->out_of_stock_variants ?? 0),
+            'variant_count' => (int) $inventoryAggregates->total_variants,
         ];
 
         return Inertia::render('inventory/index', [
             'stocks' => $stocks,
-            'summary' => $summary,
+            'inventoryStats' => $inventoryStats,
             'outlets' => $outlets,
             'categories' => $categories,
             'selectedOutlet' => $selectedOutlet,
@@ -172,12 +196,13 @@ class InventoryController extends Controller
     public function show(Request $request, ProductVariant $productVariant): Response
     {
         $business = Business::current();
+
         $productVariant->load([
-            'brand:id,name',
             'product:id,business_id,product_category_id,name,base_unit_of_measurement_id,status',
             'product.category:id,name',
-            'product.baseUnitOfMeasurement:id,name,code',
+            'product.baseUnitOfMeasurement:id,code',
         ]);
+
         abort_unless($productVariant->product->business_id === $business->id, 404);
 
         $outlets = Outlet::query()
@@ -185,11 +210,14 @@ class InventoryController extends Controller
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
+
         $selectedOutlet = $outlets->firstWhere('id', $request->integer('outlet_id')) ?? $outlets->first();
+
         $transactionType = $request->query('transaction_type');
         $transactionType = is_string($transactionType)
             ? ProductStockLedgerTransactionType::tryFrom($transactionType)?->value
             : null;
+
         $dateFrom = $request->date('date_from', '!Y-m-d')?->toDateString();
         $dateTo = $request->date('date_to', '!Y-m-d')?->toDateString();
 
@@ -206,7 +234,7 @@ class InventoryController extends Controller
 
         $movements = ProductStockLedger::query()
             ->with([
-                'unitOfMeasurement:id,name,code',
+                'unitOfMeasurement:id,code',
                 'source' => function (MorphTo $morphTo): void {
                     $morphTo->morphWith([
                         PurchaseItem::class => ['purchase:id,purchase_no'],
@@ -218,20 +246,40 @@ class InventoryController extends Controller
             ->where('outlet_id', $selectedOutlet?->id)
             ->whereBelongsTo($productVariant, 'productVariant')
             ->when($selectedOutlet === null, fn ($query) => $query->whereKey([]))
-            ->when($transactionType, fn ($query, string $transactionType) => $query->where('transaction_type', $transactionType))
-            ->when($dateFrom, fn ($query, string $dateFrom) => $query->whereDate('transaction_date', '>=', $dateFrom))
-            ->when($dateTo, fn ($query, string $dateTo) => $query->whereDate('transaction_date', '<=', $dateTo))
+            ->when(
+                $transactionType,
+                fn ($query, string $transactionType) => $query->where(
+                    'transaction_type',
+                    $transactionType,
+                ),
+            )
+            ->when(
+                $dateFrom,
+                fn ($query, string $dateFrom) => $query->whereDate(
+                    'transaction_date',
+                    '>=',
+                    $dateFrom,
+                ),
+            )
+            ->when(
+                $dateTo,
+                fn ($query, string $dateTo) => $query->whereDate(
+                    'transaction_date',
+                    '<=',
+                    $dateTo,
+                ),
+            )
             ->latest('transaction_date')
             ->latest('id')
             ->paginate(10)
             ->withQueryString()
-            ->through(function (ProductStockLedger $ledger) use ($selectedOutlet): array {
+            ->through(function (ProductStockLedger $ledger): array {
                 $isInbound = (float) $ledger->quantity_in > 0;
+
                 $source = null;
 
                 if ($ledger->source instanceof PurchaseItem && $ledger->source->purchase !== null) {
                     $source = [
-                        'type' => 'purchase',
                         'label' => $ledger->source->purchase->purchase_no,
                         'href' => route('purchases.show', $ledger->source->purchase),
                     ];
@@ -239,7 +287,6 @@ class InventoryController extends Controller
 
                 if ($ledger->source instanceof SaleItem && $ledger->source->sale !== null) {
                     $source = [
-                        'type' => 'sale',
                         'label' => $ledger->source->sale->sale_no,
                         'href' => route('sales.show', $ledger->source->sale),
                     ];
@@ -248,15 +295,19 @@ class InventoryController extends Controller
                 return [
                     'id' => $ledger->id,
                     'transaction_date' => $ledger->transaction_date->toDateString(),
-                    'transaction_type' => $ledger->transaction_type->value,
                     'transaction_type_label' => $ledger->transaction_type->label(),
                     'direction' => $isInbound ? 'in' : 'out',
-                    'entered_quantity' => $isInbound ? $ledger->quantity_in : $ledger->quantity_out,
-                    'base_quantity' => $isInbound ? $ledger->base_quantity : '-'.$ledger->base_quantity,
+                    'entered_quantity' => $isInbound
+                        ? $ledger->quantity_in
+                        : $ledger->quantity_out,
+                    'base_quantity' => $isInbound
+                        ? $ledger->base_quantity
+                        : '-'.$ledger->base_quantity,
                     'unit_cost' => $ledger->unit_cost,
                     'total_cost' => $ledger->total_cost,
-                    'unit' => $ledger->unitOfMeasurement,
-                    'outlet' => $selectedOutlet,
+                    'unit' => [
+                        'code' => $ledger->unitOfMeasurement->code,
+                    ],
                     'source' => $source,
                     'note' => $ledger->note,
                 ];
@@ -267,17 +318,22 @@ class InventoryController extends Controller
                 'id' => $productVariant->id,
                 'label' => $productVariant->is_placeholder_variant
                     ? $productVariant->product->name
-                    : sprintf('%s / %s', $productVariant->product->name, $productVariant->variant_name),
-                'product_name' => $productVariant->product->name,
-                'variant_name' => $productVariant->variant_name,
+                    : sprintf(
+                        '%s / %s',
+                        $productVariant->product->name,
+                        $productVariant->variant_name,
+                    ),
                 'sku' => $productVariant->sku,
-                'brand_name' => $productVariant->brand?->name,
-                'is_placeholder_variant' => $productVariant->is_placeholder_variant,
-                'status' => $productVariant->status->value === 'active' && $productVariant->product->status->value === 'active'
-                    ? 'active'
-                    : 'inactive',
-                'category' => $productVariant->product->category,
-                'base_unit' => $productVariant->product->baseUnitOfMeasurement,
+                'status' => $productVariant->status->value === 'active'
+                    && $productVariant->product->status->value === 'active'
+                        ? 'active'
+                        : 'inactive',
+                'category' => [
+                    'name' => $productVariant->product->category->name,
+                ],
+                'base_unit' => [
+                    'code' => $productVariant->product->baseUnitOfMeasurement->code,
+                ],
             ],
             'stock' => [
                 'quantity' => $stock?->quantity ?? '0.0000',

@@ -11,23 +11,64 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
 import { index, show } from '@/routes/inventory';
-import type { BreadcrumbItem, LengthAwarePagination, Option } from '@/types';
-import type { InventoryVariant, Outlet, StockBalance, StockMovement } from './types';
+import type {
+    BreadcrumbItem,
+    LengthAwarePagination,
+    Option,
+    Outlet,
+    ProductCategory,
+    ProductStockLedgerTransactionType,
+    RecordStatus,
+    UnitOfMeasurement,
+} from '@/types';
+
+type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
+
+type InventoryVariant = {
+    id: number;
+    label: string;
+    sku: string | null;
+    status: RecordStatus;
+    category: Pick<ProductCategory, 'name'>;
+    base_unit: Pick<UnitOfMeasurement, 'code'>;
+};
+
+type InventoryMovement = {
+    id: number;
+    transaction_date: string;
+    transaction_type_label: string;
+    direction: 'in' | 'out';
+    entered_quantity: string;
+    base_quantity: string;
+    unit_cost: string | null;
+    total_cost: string | null;
+    unit: Pick<UnitOfMeasurement, 'code'>;
+    source: {
+        label: string;
+        href: string;
+    } | null;
+    note: string | null;
+};
 
 type QueryString = {
     outlet_id: number | null;
-    transaction_type: string | null;
+    transaction_type: ProductStockLedgerTransactionType | null;
     date_from: string | null;
     date_to: string | null;
 };
 
 type InventoryShowProps = {
     variant: InventoryVariant;
-    stock: StockBalance;
-    movements: LengthAwarePagination<StockMovement>;
-    outlets: Outlet[];
-    selectedOutlet: Outlet | null;
-    transactionTypes: Option[];
+    stock: {
+        quantity: string;
+        average_cost: string;
+        stock_value: string;
+        last_movement_at: string | null;
+    };
+    movements: LengthAwarePagination<InventoryMovement>;
+    outlets: InventoryOutlet[];
+    selectedOutlet: InventoryOutlet | null;
+    transactionTypes: Option<ProductStockLedgerTransactionType>[];
     queryString: QueryString;
 };
 
@@ -42,11 +83,25 @@ export default function InventoryShow({
     transactionTypes,
     queryString,
 }: InventoryShowProps) {
-    const variantTitle = variant.label;
     const hasPages = movements.last_page > 1;
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Inventory', href: index({ query: { outlet_id: queryString.outlet_id ?? undefined } }).url },
-        { title: variantTitle, href: show(variant.id, { query: { outlet_id: queryString.outlet_id ?? undefined } }).url },
+        {
+            title: 'Inventory',
+            href: index({
+                query: {
+                    outlet_id: queryString.outlet_id ?? undefined,
+                },
+            }).url,
+        },
+        {
+            title: variant.label,
+            href: show(variant.id, {
+                query: {
+                    outlet_id: queryString.outlet_id ?? undefined,
+                },
+            }).url,
+        },
     ];
 
     const query = (overrides: Partial<QueryString> & { page?: number } = {}) => ({
@@ -60,7 +115,9 @@ export default function InventoryShow({
 
     const visit = (overrides: Partial<QueryString> & { page?: number } = {}) => {
         router.get(
-            show(variant.id, { query: query(overrides) }).url,
+            show(variant.id, {
+                query: query(overrides),
+            }).url,
             {},
             {
                 preserveScroll: true,
@@ -100,17 +157,21 @@ export default function InventoryShow({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={variantTitle} />
+            <Head title={variant.label} />
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-2">
-                            <Heading title={variantTitle} description="Stock balance and movement audit history." />
+                            <Heading title={variant.label} description="Stock balance and movement audit history." />
+
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                                 <span>SKU: {variant.sku || '-'}</span>
+
                                 <span aria-hidden="true">•</span>
+
                                 <span>{variant.category.name}</span>
+
                                 <Badge variant="outline" className="capitalize">
                                     {variant.status}
                                 </Badge>
@@ -120,11 +181,17 @@ export default function InventoryShow({
                         {outlets.length > 0 && (
                             <Select
                                 value={selectedOutlet?.id.toString()}
-                                onValueChange={(value) => visit({ outlet_id: Number(value), page: 1 })}
+                                onValueChange={(value) =>
+                                    visit({
+                                        outlet_id: Number(value),
+                                        page: 1,
+                                    })
+                                }
                             >
                                 <SelectTrigger className="w-full sm:w-64">
                                     <SelectValue placeholder="Select outlet" />
                                 </SelectTrigger>
+
                                 <SelectContent align="end">
                                     {outlets.map((outlet) => (
                                         <SelectItem key={outlet.id} value={outlet.id.toString()}>
@@ -142,8 +209,10 @@ export default function InventoryShow({
                                 <CardContent className="flex items-center justify-between gap-4 px-5">
                                     <div className="min-w-0">
                                         <p className="text-sm text-muted-foreground">{card.label}</p>
+
                                         <p className="mt-1 truncate text-xl font-semibold tabular-nums">{card.value}</p>
                                     </div>
+
                                     <div className={`rounded-lg p-2.5 ${card.iconClassName}`}>
                                         <card.icon className="size-5" />
                                     </div>
@@ -155,19 +224,27 @@ export default function InventoryShow({
                     <section className="space-y-4">
                         <div>
                             <h2 className="text-lg font-semibold">Movement History</h2>
+
                             <p className="text-sm text-muted-foreground">Entered quantities and their normalized base-unit movement.</p>
                         </div>
 
                         <div className="grid gap-3 md:grid-cols-[14rem_12rem_12rem_auto]">
                             <Select
                                 value={queryString.transaction_type ?? 'all'}
-                                onValueChange={(value) => visit({ transaction_type: value === 'all' ? null : value, page: 1 })}
+                                onValueChange={(value) =>
+                                    visit({
+                                        transaction_type: value === 'all' ? null : (value as ProductStockLedgerTransactionType),
+                                        page: 1,
+                                    })
+                                }
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="All movement types" />
                                 </SelectTrigger>
+
                                 <SelectContent>
                                     <SelectItem value="all">All movement types</SelectItem>
+
                                     {transactionTypes.map((type) => (
                                         <SelectItem key={type.value} value={type.value}>
                                             {type.label}
@@ -180,7 +257,12 @@ export default function InventoryShow({
                                 type="date"
                                 aria-label="Movement date from"
                                 value={queryString.date_from ?? ''}
-                                onChange={(event) => visit({ date_from: event.currentTarget.value || null, page: 1 })}
+                                onChange={(event) =>
+                                    visit({
+                                        date_from: event.currentTarget.value || null,
+                                        page: 1,
+                                    })
+                                }
                             />
 
                             <Input
@@ -188,7 +270,12 @@ export default function InventoryShow({
                                 aria-label="Movement date to"
                                 value={queryString.date_to ?? ''}
                                 min={queryString.date_from ?? undefined}
-                                onChange={(event) => visit({ date_to: event.currentTarget.value || null, page: 1 })}
+                                onChange={(event) =>
+                                    visit({
+                                        date_to: event.currentTarget.value || null,
+                                        page: 1,
+                                    })
+                                }
                             />
 
                             {(queryString.transaction_type || queryString.date_from || queryString.date_to) && (
@@ -222,6 +309,7 @@ export default function InventoryShow({
                                         <th>Note</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     {movements.data.length > 0 ? (
                                         movements.data.map((movement) => (
@@ -229,6 +317,7 @@ export default function InventoryShow({
                                                 <td className="text-nowrap">
                                                     {format(parseISO(movement.transaction_date), 'MMM d, yyyy')}
                                                 </td>
+
                                                 <td>
                                                     <Badge
                                                         variant="outline"
@@ -241,8 +330,9 @@ export default function InventoryShow({
                                                         {movement.transaction_type_label}
                                                     </Badge>
                                                 </td>
+
                                                 <td>
-                                                    {movement.source?.href ? (
+                                                    {movement.source ? (
                                                         <Link
                                                             href={movement.source.href}
                                                             className="font-medium text-primary underline-offset-4 hover:underline"
@@ -250,13 +340,15 @@ export default function InventoryShow({
                                                             {movement.source.label}
                                                         </Link>
                                                     ) : (
-                                                        <span className="text-muted-foreground">{movement.source?.label ?? '-'}</span>
+                                                        <span className="text-muted-foreground">-</span>
                                                     )}
                                                 </td>
+
                                                 <td className="text-right tabular-nums">
                                                     {movement.direction === 'in' ? '+' : '-'}
                                                     {formatQuantity(movement.entered_quantity)} {movement.unit.code}
                                                 </td>
+
                                                 <td
                                                     className={`text-right font-medium tabular-nums ${
                                                         movement.direction === 'in'
@@ -267,12 +359,15 @@ export default function InventoryShow({
                                                     {movement.direction === 'in' ? '+' : ''}
                                                     {formatQuantity(movement.base_quantity)} {variant.base_unit.code}
                                                 </td>
+
                                                 <td className="text-right tabular-nums">
                                                     {movement.unit_cost === null ? '-' : formatCurrency(movement.unit_cost)}
                                                 </td>
+
                                                 <td className="text-right font-medium tabular-nums">
                                                     {movement.total_cost === null ? '-' : formatCurrency(movement.total_cost)}
                                                 </td>
+
                                                 <td className="max-w-56 truncate text-muted-foreground">{movement.note || '-'}</td>
                                             </tr>
                                         ))
@@ -294,6 +389,7 @@ export default function InventoryShow({
                                 <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
                                     {`Showing ${movements.from}-${movements.to} of ${movements.total} movements`}
                                 </div>
+
                                 <PaginatorLinks
                                     links={movements.links}
                                     only={reloadProps}

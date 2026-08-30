@@ -1,6 +1,7 @@
 export type * from './auth';
 export type * from './business';
 export type * from './enums';
+export type * from './inventory';
 export type * from './navigation';
 export type * from './outlet';
 export type * from './pagination';

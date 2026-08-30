@@ -51,6 +51,15 @@ export type SalePaymentStatus =
     | 'partial'
     | 'paid';
 
+export type ProductStockLedgerTransactionType =
+    | 'purchase'
+    | 'sale'
+    | 'adjustment_in'
+    | 'adjustment_out'
+    | 'transfer_in'
+    | 'transfer_out'
+    | 'opening_stock';
+
 export type PaymentMethod =
     | 'cash'
     | 'bank_transfer'
