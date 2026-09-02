@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\DemoTableController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OpeningStockController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\PartyContactPersonController;
 use App\Http\Controllers\PartyController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PurchasePaymentController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SalePaymentController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockTransferController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -49,6 +52,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->scoped();
     Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
     Route::resource('sales', SaleController::class)->except(['edit', 'update']);
+    Route::resource('opening-stocks', OpeningStockController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    Route::resource('stock-adjustments', StockAdjustmentController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+    Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::get('inventory/{productVariant}', [InventoryController::class, 'show'])->name('inventory.show');
     Route::post('purchases/{purchase}/payments', [PurchasePaymentController::class, 'store'])

@@ -106,6 +106,21 @@ class Business extends Model
         return $this->hasMany(Sale::class);
     }
 
+    public function openingStocks(): HasMany
+    {
+        return $this->hasMany(OpeningStock::class);
+    }
+
+    public function stockAdjustments(): HasMany
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    public function stockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class);
+    }
+
     public function productStockLedgers(): HasMany
     {
         return $this->hasMany(ProductStockLedger::class);

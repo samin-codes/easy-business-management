@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProductStockLedgerTransactionType;
 use App\Models\Business;
+use App\Models\OpeningStockItem;
 use App\Models\Outlet;
 use App\Models\ProductCategory;
 use App\Models\ProductStock;
@@ -11,6 +12,8 @@ use App\Models\ProductStockLedger;
 use App\Models\ProductVariant;
 use App\Models\PurchaseItem;
 use App\Models\SaleItem;
+use App\Models\StockAdjustmentItem;
+use App\Models\StockTransferItem;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
@@ -207,7 +210,11 @@ class InventoryController extends Controller
 
         $outlets = Outlet::query()
             ->whereBelongsTo($business)
-            ->where('status', 'active')
+            ->where(function ($query) use ($productVariant): void {
+                $query->where('status', 'active')
+                    ->orWhereHas('productStockLedgers', fn ($ledgerQuery) => $ledgerQuery
+                        ->whereBelongsTo($productVariant, 'productVariant'));
+            })
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
@@ -239,6 +246,9 @@ class InventoryController extends Controller
                     $morphTo->morphWith([
                         PurchaseItem::class => ['purchase:id,purchase_no'],
                         SaleItem::class => ['sale:id,sale_no'],
+                        OpeningStockItem::class => ['openingStock:id,opening_stock_no'],
+                        StockAdjustmentItem::class => ['stockAdjustment:id,adjustment_no'],
+                        StockTransferItem::class => ['stockTransfer:id,transfer_no'],
                     ]);
                 },
             ])
@@ -289,6 +299,27 @@ class InventoryController extends Controller
                     $source = [
                         'label' => $ledger->source->sale->sale_no,
                         'href' => route('sales.show', $ledger->source->sale),
+                    ];
+                }
+
+                if ($ledger->source instanceof OpeningStockItem && $ledger->source->openingStock !== null) {
+                    $source = [
+                        'label' => $ledger->source->openingStock->opening_stock_no,
+                        'href' => route('opening-stocks.show', $ledger->source->openingStock),
+                    ];
+                }
+
+                if ($ledger->source instanceof StockAdjustmentItem && $ledger->source->stockAdjustment !== null) {
+                    $source = [
+                        'label' => $ledger->source->stockAdjustment->adjustment_no,
+                        'href' => route('stock-adjustments.show', $ledger->source->stockAdjustment),
+                    ];
+                }
+
+                if ($ledger->source instanceof StockTransferItem && $ledger->source->stockTransfer !== null) {
+                    $source = [
+                        'label' => $ledger->source->stockTransfer->transfer_no,
+                        'href' => route('stock-transfers.show', $ledger->source->stockTransfer),
                     ];
                 }
 

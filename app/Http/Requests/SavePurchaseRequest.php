@@ -38,7 +38,12 @@ class SavePurchaseRequest extends FormRequest
 
         return [
             'business_id' => ['required', 'exists:businesses,id'],
-            'outlet_id' => ['required', 'exists:outlets,id'],
+            'outlet_id' => [
+                'required',
+                Rule::exists('outlets', 'id')->where(fn ($query) => $query
+                    ->where('business_id', Business::current()->id)
+                    ->where('status', 'active')),
+            ],
             'supplier_party_id' => ['required', 'exists:parties,id'],
             'purchase_date' => ['required', 'date'],
             'discount_amount' => ['required', 'numeric', 'min:0'],

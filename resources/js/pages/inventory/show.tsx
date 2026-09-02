@@ -21,6 +21,7 @@ import type {
     RecordStatus,
     UnitOfMeasurement,
 } from '@/types';
+import InventoryNavigation from './components/inventory-navigation';
 
 type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
 
@@ -161,6 +162,8 @@ export default function InventoryShow({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
+                    <InventoryNavigation active="stock" />
+
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-2">
                             <Heading title={variant.label} description="Stock balance and movement audit history." />

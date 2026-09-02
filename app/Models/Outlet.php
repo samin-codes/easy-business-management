@@ -90,6 +90,26 @@ class Outlet extends Model
         return $this->hasMany(Sale::class);
     }
 
+    public function openingStocks(): HasMany
+    {
+        return $this->hasMany(OpeningStock::class);
+    }
+
+    public function stockAdjustments(): HasMany
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    public function outgoingStockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'source_outlet_id');
+    }
+
+    public function incomingStockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'destination_outlet_id');
+    }
+
     public function productStockLedgers(): HasMany
     {
         return $this->hasMany(ProductStockLedger::class);

@@ -85,6 +85,7 @@ class PurchaseController extends Controller
 
         $outlets = Outlet::query()
             ->whereBelongsTo($business)
+            ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
@@ -110,12 +111,16 @@ class PurchaseController extends Controller
         $payment = $purchaseData['payment'];
 
         $purchase['created_by_id'] = auth()->id();
-        $purchase['purchase_no'] = Purchase::generatePurchaseNumber(
-            (int) $purchase['outlet_id'],
-            Carbon::parse($purchase['purchase_date']),
-        );
-
         $purchase = DB::transaction(function () use ($purchase, $items, $payment): Purchase {
+            $outlet = Outlet::query()
+                ->where('business_id', $purchase['business_id'])
+                ->where('status', 'active')
+                ->lockForUpdate()
+                ->findOrFail($purchase['outlet_id']);
+            $purchase['purchase_no'] = Purchase::generatePurchaseNumber(
+                $outlet->id,
+                Carbon::parse($purchase['purchase_date']),
+            );
             $purchase = Purchase::create($purchase);
 
             foreach ($items as $item) {
