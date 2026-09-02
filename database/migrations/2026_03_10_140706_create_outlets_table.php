@@ -58,23 +58,6 @@ return new class extends Migration
         ]);
     }
 
-    private function seed(): void
-    {
-        $now = now();
-
-        DB::table('outlets')->insert([
-            [
-                'business_id' => 1,
-                'name' => 'Pragati Enterprise',
-                'mobile' => '01711475908',
-                'outlet_type' => 'shop',
-                'status' => 'active',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ]);
-    }
-
     /**
      * Reverse the migrations.
      */
