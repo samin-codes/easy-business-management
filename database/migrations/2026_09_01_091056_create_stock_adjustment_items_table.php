@@ -25,7 +25,10 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->timestamps();
 
-            $table->unique(['stock_adjustment_id', 'product_variant_id']);
+            $table->unique(
+                ['stock_adjustment_id', 'product_variant_id'],
+                'stock_adjustment_items_stock_adjustment_product_variant_unique'
+            );
             $table->index('unit_of_measurement_id');
             $table->index('product_unit_conversion_id');
         });

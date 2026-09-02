@@ -30,7 +30,7 @@ return new class extends Migration
 
             $table->unique(
                 ['product_id', 'unit_of_measurement_id'],
-                'product_unit_conversions_product_unit_unique'
+                'product_unit_conversions_product_unit_of_measurement_unique'
             );
             $table->index('product_id');
             $table->index('unit_of_measurement_id');
