@@ -1,15 +1,177 @@
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { format, parseISO } from 'date-fns';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import StockTransferController from '@/actions/App/Http/Controllers/StockTransferController';
-import OperationShowPage from '@/pages/inventory/components/operation-show-page';
-import type { OperationShowRecord } from '@/pages/inventory/components/operation-show-page';
-import { index } from '@/routes/stock-transfers';
+import AlertError from '@/components/alert-error';
+import Heading from '@/components/heading';
+import { TextEntry } from '@/components/text-entry';
+import { Button } from '@/components/ui/button';
+import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
+import { Separator } from '@/components/ui/separator';
+import AppLayout from '@/layouts/app-layout';
+import { formatCurrency, formatQuantity } from '@/lib/utils';
+import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
+import { index as inventoryIndex } from '@/routes/inventory';
+import { index, show } from '@/routes/stock-transfers';
+import type { BreadcrumbItem, StockTransfer } from '@/types';
 
-export default function TransfersShow({ transfer }: { transfer: OperationShowRecord }) {
+export default function TransfersShow({ transfer }: { transfer: StockTransfer }) {
+    const { flash, errors } = usePage<{
+        flash: { status?: string };
+        errors: Record<string, string>;
+    }>().props;
+
+    const items = transfer.items ?? [];
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Inventory', href: inventoryIndex().url },
+        { title: 'Stock Transfers', href: index().url },
+        {
+            title: transfer.transfer_no,
+            href: show(transfer.id).url,
+        },
+    ];
+
+    const handleDelete = () => {
+        if (!window.confirm(`Delete ${transfer.transfer_no}? Its inventory movement will be reversed only if it is safe.`)) {
+            return;
+        }
+
+        router.delete(StockTransferController.destroy(transfer.id).url, {
+            preserveScroll: true,
+        });
+    };
+
     return (
-        <OperationShowPage
-            kind="transfers"
-            record={transfer}
-            indexHref={index().url}
-            destroyHref={StockTransferController.destroy(transfer.id).url}
-        />
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={transfer.transfer_no} />
+
+            <div className="px-4 py-6">
+                <div className="mx-auto max-w-6xl space-y-8">
+                    <InventoryNavigation active="transfers" />
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <Heading title={transfer.transfer_no} description="Stock Transfer" />
+
+                        <div className="flex gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href={index()}>
+                                    <ArrowLeft />
+                                    Back
+                                </Link>
+                            </Button>
+
+                            {transfer.can_delete && (
+                                <Button variant="destructive" onClick={handleDelete}>
+                                    <Trash2 />
+                                    Delete
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    {flash.status && (
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+                            {flash.status}
+                        </div>
+                    )}
+
+                    {errors.transfer && <AlertError errors={[errors.transfer]} title="Stock transfer deletion blocked." />}
+
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Transfer Information</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+
+                        <SectionContent className="gap-4">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <TextEntry label="Transfer No" value={transfer.transfer_no} />
+
+                                <TextEntry label="Transfer Date" value={format(parseISO(transfer.transfer_date), 'MMMM d, yyyy')} />
+
+                                <TextEntry label="From Outlet" value={transfer.source_outlet?.name} />
+
+                                <TextEntry label="To Outlet" value={transfer.destination_outlet?.name} />
+
+                                <TextEntry label="Created By" value={transfer.createdBy?.name} />
+
+                                {transfer.note && <TextEntry label="Note" value={transfer.note} />}
+                            </div>
+                        </SectionContent>
+                    </Section>
+
+                    <Section>
+                        <SectionHeader>
+                            <SectionTitle>Items</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
+
+                        <SectionContent>
+                            <div className="overflow-x-auto rounded-md border">
+                                <table className="table-hover table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product / Variant</th>
+                                            <th>SKU</th>
+                                            <th className="text-right">Entered Qty</th>
+                                            <th className="text-right">Base Qty</th>
+                                            <th className="text-right">Inventory Cost</th>
+                                            <th className="text-right">Value</th>
+                                            <th>Note</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {items.map((item) => (
+                                            <tr key={item.id}>
+                                                <td className="font-medium">{item.product_variant?.purchase_label ?? '-'}</td>
+
+                                                <td>{item.product_variant?.sku ?? '-'}</td>
+
+                                                <td className="text-right tabular-nums">
+                                                    {formatQuantity(item.quantity)}{' '}
+                                                    {item.unit_of_measurement?.code ?? item.unit_of_measurement?.name}
+                                                </td>
+
+                                                <td className="text-right tabular-nums">{formatQuantity(item.base_quantity)}</td>
+
+                                                <td className="text-right tabular-nums">{formatCurrency(item.inventory_unit_cost)}</td>
+
+                                                <td className="text-right font-medium tabular-nums">
+                                                    {formatCurrency(item.inventory_total_cost)}
+                                                </td>
+
+                                                <td>{item.note ?? '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+
+                                    <tfoot>
+                                        <tr className="table-light border-t">
+                                            <td colSpan={5} className="text-right font-medium">
+                                                Total
+                                            </td>
+
+                                            <td className="text-right font-semibold tabular-nums">
+                                                {formatCurrency(transfer.total_value)}
+                                            </td>
+
+                                            <td />
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </SectionContent>
+                    </Section>
+
+                    {!transfer.can_delete && (
+                        <p className="text-sm text-muted-foreground">
+                            This transfer cannot be deleted because later inventory movements may depend on it.
+                        </p>
+                    )}
+                </div>
+            </div>
+        </AppLayout>
     );
 }

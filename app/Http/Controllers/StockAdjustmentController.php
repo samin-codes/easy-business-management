@@ -28,16 +28,36 @@ class StockAdjustmentController extends Controller
         $business = Business::current();
         $search = $request->string('search')->trim()->limit(255, '')->toString();
         $outletId = $request->integer('outlet_id') ?: null;
-        $adjustments = StockAdjustment::query()->with(['outlet:id,name', 'createdBy:id,name'])->withCount('items')
+
+        $adjustments = StockAdjustment::query()
+            ->with([
+                'outlet:id,name',
+                'createdBy:id,name',
+            ])
+            ->withCount('items')
             ->whereBelongsTo($business)
-            ->when($search, fn ($query, string $value) => $query->where('adjustment_no', 'like', "%{$value}%"))
-            ->when($outletId, fn ($query, int $value) => $query->where('outlet_id', $value))
-            ->latest('adjustment_date')->latest('id')->paginate(10)->withQueryString()
-            ->through(fn (StockAdjustment $adjustment): array => $this->listPayload($adjustment));
+            ->when(
+                $search,
+                fn ($query, string $value) => $query
+                    ->where('adjustment_no', 'like', "%{$value}%"),
+            )
+            ->when(
+                $outletId,
+                fn ($query, int $value) => $query
+                    ->where('outlet_id', $value),
+            )
+            ->latest('adjustment_date')
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('inventory/adjustments/index', [
-            'adjustments' => $adjustments, 'outlets' => $this->outlets($business, false),
-            'queryString' => ['search' => $search ?: null, 'outlet_id' => $outletId],
+            'adjustments' => $adjustments,
+            'outlets' => $this->outlets($business, false),
+            'queryString' => [
+                'search' => $search ?: null,
+                'outlet_id' => $outletId,
+            ],
         ]);
     }
 
@@ -139,12 +159,28 @@ class StockAdjustmentController extends Controller
     public function show(StockAdjustment $stockAdjustment): Response
     {
         $this->ensureOwnership($stockAdjustment);
-        $stockAdjustment->load(['outlet:id,name,code,status', 'createdBy:id,name',
-            'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
-            'items.productVariant.product:id,name', 'items.productVariant.brand:id,name', 'items.unitOfMeasurement:id,name,code', 'items.productStockLedgers']);
-        $stockAdjustment->loadCount('items');
 
-        return Inertia::render('inventory/adjustments/show', ['adjustment' => $this->showPayload($stockAdjustment)]);
+        $stockAdjustment->load([
+            'outlet:id,name,code,status',
+            'createdBy:id,name',
+            'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
+            'items.productVariant.product:id,name',
+            'items.productVariant.brand:id,name',
+            'items.unitOfMeasurement:id,name,code',
+            'items.productStockLedgers',
+        ]);
+
+        $canDelete = $this->canDelete($stockAdjustment);
+
+        $stockAdjustment->items->each(
+            fn ($item) => $item->unsetRelation('productStockLedgers'),
+        );
+
+        $stockAdjustment->setAttribute('can_delete', $canDelete);
+
+        return Inertia::render('inventory/adjustments/show', [
+            'adjustment' => $stockAdjustment,
+        ]);
     }
 
     public function destroy(StockAdjustment $stockAdjustment): RedirectResponse
@@ -197,23 +233,6 @@ class StockAdjustmentController extends Controller
     private function ensureOwnership(StockAdjustment $adjustment): void
     {
         abort_unless($adjustment->business_id === Business::current()->id, 404);
-    }
-
-    private function listPayload(StockAdjustment $adjustment): array
-    {
-        return ['id' => $adjustment->id, 'number' => $adjustment->adjustment_no, 'date' => $adjustment->adjustment_date->toDateString(),
-            'outlet' => $adjustment->outlet, 'type' => $adjustment->type->value, 'type_label' => $adjustment->type->label(),
-            'reason_label' => $adjustment->reason->label(), 'items_count' => $adjustment->items_count,
-            'total_value' => $adjustment->total_value, 'created_by' => $adjustment->createdBy];
-    }
-
-    private function showPayload(StockAdjustment $adjustment): array
-    {
-        return [...$this->listPayload($adjustment), 'note' => $adjustment->note, 'can_delete' => $this->canDelete($adjustment),
-            'items' => $adjustment->items->map(fn ($item): array => ['id' => $item->id, 'product_label' => $item->productVariant->purchase_label,
-                'sku' => $item->productVariant->sku, 'quantity' => $item->quantity, 'unit' => $item->unitOfMeasurement,
-                'base_quantity' => $item->base_quantity, 'unit_cost' => $item->inventory_unit_cost,
-                'total_cost' => $item->inventory_total_cost, 'note' => $item->note])->values()];
     }
 
     private function canDelete(StockAdjustment $adjustment): bool

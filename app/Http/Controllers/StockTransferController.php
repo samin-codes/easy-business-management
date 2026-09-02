@@ -28,17 +28,43 @@ class StockTransferController extends Controller
         $search = $request->string('search')->trim()->limit(255, '')->toString();
         $sourceId = $request->integer('source_outlet_id') ?: null;
         $destinationId = $request->integer('destination_outlet_id') ?: null;
-        $transfers = StockTransfer::query()->with(['sourceOutlet:id,name', 'destinationOutlet:id,name', 'createdBy:id,name'])->withCount('items')
+
+        $transfers = StockTransfer::query()
+            ->with([
+                'sourceOutlet:id,name',
+                'destinationOutlet:id,name',
+                'createdBy:id,name',
+            ])
+            ->withCount('items')
             ->whereBelongsTo($business)
-            ->when($search, fn ($query, string $value) => $query->where('transfer_no', 'like', "%{$value}%"))
-            ->when($sourceId, fn ($query, int $value) => $query->where('source_outlet_id', $value))
-            ->when($destinationId, fn ($query, int $value) => $query->where('destination_outlet_id', $value))
-            ->latest('transfer_date')->latest('id')->paginate(10)->withQueryString()
-            ->through(fn (StockTransfer $transfer): array => $this->listPayload($transfer));
+            ->when(
+                $search,
+                fn ($query, string $value) => $query
+                    ->where('transfer_no', 'like', "%{$value}%"),
+            )
+            ->when(
+                $sourceId,
+                fn ($query, int $value) => $query
+                    ->where('source_outlet_id', $value),
+            )
+            ->when(
+                $destinationId,
+                fn ($query, int $value) => $query
+                    ->where('destination_outlet_id', $value),
+            )
+            ->latest('transfer_date')
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('inventory/transfers/index', [
-            'transfers' => $transfers, 'outlets' => $this->outlets($business, false),
-            'queryString' => ['search' => $search ?: null, 'source_outlet_id' => $sourceId, 'destination_outlet_id' => $destinationId],
+            'transfers' => $transfers,
+            'outlets' => $this->outlets($business, false),
+            'queryString' => [
+                'search' => $search ?: null,
+                'source_outlet_id' => $sourceId,
+                'destination_outlet_id' => $destinationId,
+            ],
         ]);
     }
 
@@ -134,12 +160,29 @@ class StockTransferController extends Controller
     public function show(StockTransfer $stockTransfer): Response
     {
         $this->ensureOwnership($stockTransfer);
-        $stockTransfer->load(['sourceOutlet:id,name,code,status', 'destinationOutlet:id,name,code,status', 'createdBy:id,name',
-            'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
-            'items.productVariant.product:id,name', 'items.productVariant.brand:id,name', 'items.unitOfMeasurement:id,name,code', 'items.productStockLedgers']);
-        $stockTransfer->loadCount('items');
 
-        return Inertia::render('inventory/transfers/show', ['transfer' => $this->showPayload($stockTransfer)]);
+        $stockTransfer->load([
+            'sourceOutlet:id,name,code,status',
+            'destinationOutlet:id,name,code,status',
+            'createdBy:id,name',
+            'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
+            'items.productVariant.product:id,name',
+            'items.productVariant.brand:id,name',
+            'items.unitOfMeasurement:id,name,code',
+            'items.productStockLedgers',
+        ]);
+
+        $canDelete = $this->canDelete($stockTransfer);
+
+        $stockTransfer->items->each(
+            fn ($item) => $item->unsetRelation('productStockLedgers'),
+        );
+
+        $stockTransfer->setAttribute('can_delete', $canDelete);
+
+        return Inertia::render('inventory/transfers/show', [
+            'transfer' => $stockTransfer,
+        ]);
     }
 
     public function destroy(StockTransfer $stockTransfer): RedirectResponse
@@ -206,22 +249,6 @@ class StockTransferController extends Controller
         abort_unless($transfer->business_id === Business::current()->id, 404);
     }
 
-    private function listPayload(StockTransfer $transfer): array
-    {
-        return ['id' => $transfer->id, 'number' => $transfer->transfer_no, 'date' => $transfer->transfer_date->toDateString(),
-            'source_outlet' => $transfer->sourceOutlet, 'destination_outlet' => $transfer->destinationOutlet,
-            'items_count' => $transfer->items_count, 'total_value' => $transfer->total_value, 'created_by' => $transfer->createdBy];
-    }
-
-    private function showPayload(StockTransfer $transfer): array
-    {
-        return [...$this->listPayload($transfer), 'note' => $transfer->note, 'can_delete' => $this->canDelete($transfer),
-            'items' => $transfer->items->map(fn ($item): array => ['id' => $item->id, 'product_label' => $item->productVariant->purchase_label,
-                'sku' => $item->productVariant->sku, 'quantity' => $item->quantity, 'unit' => $item->unitOfMeasurement,
-                'base_quantity' => $item->base_quantity, 'unit_cost' => $item->inventory_unit_cost,
-                'total_cost' => $item->inventory_total_cost, 'note' => $item->note])->values()];
-    }
-
     private function canDelete(StockTransfer $transfer): bool
     {
         $variantIds = $transfer->items->pluck('product_variant_id');
@@ -257,13 +284,26 @@ class StockTransferController extends Controller
     /** @return Collection<int, Product> */
     private function products(Business $business, ?int $outletId): Collection
     {
-        $products = Product::query()->whereBelongsTo($business)->where('status', 'active')->with([
-            'productVariants' => fn ($query) => $query->where('status', 'active')->select(['id', 'product_id', 'variant_name', 'sku', 'brand_id', 'is_placeholder_variant', 'status']),
-            'productVariants.brand:id,name', 'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code', 'baseUnitConversion.unitOfMeasurement:id,name,code',
-            'activeUnitConversions.unitOfMeasurement:id,name,code',
-        ])->orderBy('name')->get(['id', 'name', 'base_unit_of_measurement_id']);
-        $stocks = ProductStock::query()->where('business_id', $business->id)->where('outlet_id', $outletId)
-            ->whereIn('product_variant_id', $products->flatMap->productVariants->pluck('id'))->get()->keyBy('product_variant_id');
+        $products = Product::query()
+            ->whereBelongsTo($business)
+            ->where('status', 'active')
+            ->with([
+                'productVariants' => fn ($query) => $query->where('status', 'active')->select(['id', 'product_id', 'variant_name', 'sku', 'brand_id', 'is_placeholder_variant', 'status']),
+                'productVariants.brand:id,name',
+                'defaultPurchaseUnitConversion.unitOfMeasurement:id,name,code',
+                'baseUnitConversion.unitOfMeasurement:id,name,code',
+                'activeUnitConversions.unitOfMeasurement:id,name,code',
+            ])
+            ->orderBy('name')
+            ->get(['id', 'name', 'base_unit_of_measurement_id']);
+
+        $stocks = ProductStock::query()
+            ->where('business_id', $business->id)
+            ->where('outlet_id', $outletId)
+            ->whereIn('product_variant_id', $products->flatMap->productVariants->pluck('id'))
+            ->get()
+            ->keyBy('product_variant_id');
+
         $products->each(fn (Product $product) => $product->productVariants->each(function (ProductVariant $variant) use ($stocks): void {
             $stock = $stocks->get($variant->id);
             $variant->setAttribute('available_quantity', $stock?->quantity ?? '0.0000');

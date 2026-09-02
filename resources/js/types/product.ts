@@ -82,6 +82,10 @@ export type ProductVariant = {
     purchase_label: string;
     status_label: string;
 
+    available_quantity?: string;
+    average_cost?: string;
+    has_inventory_history?: boolean;
+
     product?: Pick<Product, 'id' | 'name'>;
     brand?: Brand | null;
     grade_unit?: ProductGradeUnit | null;

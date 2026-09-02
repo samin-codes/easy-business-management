@@ -31,19 +31,46 @@ class OpeningStockController extends Controller
         $dateTo = $request->date('date_to', '!Y-m-d')?->toDateString();
 
         $openingStocks = OpeningStock::query()
-            ->with(['outlet:id,name,code', 'createdBy:id,name'])->withCount('items')
+            ->with([
+                'outlet:id,name,code',
+                'createdBy:id,name',
+            ])
+            ->withCount('items')
             ->whereBelongsTo($business)
-            ->when($search, fn ($query, string $value) => $query->where('opening_stock_no', 'like', "%{$value}%"))
-            ->when($outletId, fn ($query, int $value) => $query->where('outlet_id', $value))
-            ->when($dateFrom, fn ($query, string $value) => $query->whereDate('opening_date', '>=', $value))
-            ->when($dateTo, fn ($query, string $value) => $query->whereDate('opening_date', '<=', $value))
-            ->latest('opening_date')->latest('id')->paginate(10)->withQueryString()
-            ->through(fn (OpeningStock $openingStock): array => $this->listPayload($openingStock));
+            ->when(
+                $search,
+                fn ($query, string $value) => $query
+                    ->where('opening_stock_no', 'like', "%{$value}%"),
+            )
+            ->when(
+                $outletId,
+                fn ($query, int $value) => $query
+                    ->where('outlet_id', $value),
+            )
+            ->when(
+                $dateFrom,
+                fn ($query, string $value) => $query
+                    ->whereDate('opening_date', '>=', $value),
+            )
+            ->when(
+                $dateTo,
+                fn ($query, string $value) => $query
+                    ->whereDate('opening_date', '<=', $value),
+            )
+            ->latest('opening_date')
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('inventory/opening-stocks/index', [
             'openingStocks' => $openingStocks,
             'outlets' => $this->outlets($business, activeOnly: false),
-            'queryString' => ['search' => $search ?: null, 'outlet_id' => $outletId, 'date_from' => $dateFrom, 'date_to' => $dateTo],
+            'queryString' => [
+                'search' => $search ?: null,
+                'outlet_id' => $outletId,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+            ],
         ]);
     }
 
@@ -119,13 +146,27 @@ class OpeningStockController extends Controller
     public function show(OpeningStock $openingStock): Response
     {
         $this->ensureOwnership($openingStock);
+
         $openingStock->load([
-            'outlet:id,name,code,status', 'createdBy:id,name',
+            'outlet:id,name,code,status',
+            'createdBy:id,name',
             'items.productVariant:id,product_id,variant_name,sku,brand_id,is_placeholder_variant,status',
-            'items.productVariant.product:id,name', 'items.productVariant.brand:id,name', 'items.unitOfMeasurement:id,name,code',
+            'items.productVariant.product:id,name',
+            'items.productVariant.brand:id,name',
+            'items.unitOfMeasurement:id,name,code',
         ]);
 
-        return Inertia::render('inventory/opening-stocks/show', ['openingStock' => $this->showPayload($openingStock)]);
+        $canDelete = $this->canDelete($openingStock);
+
+        $openingStock->items->each(
+            fn ($item) => $item->unsetRelation('productStockLedgers'),
+        );
+
+        $openingStock->setAttribute('can_delete', $canDelete);
+
+        return Inertia::render('inventory/opening-stocks/show', [
+            'openingStock' => $openingStock,
+        ]);
     }
 
     public function destroy(OpeningStock $openingStock): RedirectResponse
@@ -194,44 +235,6 @@ class OpeningStockController extends Controller
 
             return (int) $latestLedgerIds->get($item->product_variant_id) === $ledger->id;
         });
-    }
-
-    private function listPayload(OpeningStock $openingStock): array
-    {
-        return [
-            'id' => $openingStock->id,
-            'number' => $openingStock->opening_stock_no,
-            'date' => $openingStock->opening_date->toDateString(),
-            'outlet' => $openingStock->outlet,
-            'items_count' => $openingStock->items_count,
-            'total_value' => $openingStock->total_value,
-            'created_by' => $openingStock->createdBy,
-        ];
-    }
-
-    private function showPayload(OpeningStock $openingStock): array
-    {
-        return [
-            'id' => $openingStock->id,
-            'number' => $openingStock->opening_stock_no,
-            'date' => $openingStock->opening_date->toDateString(),
-            'outlet' => $openingStock->outlet,
-            'created_by' => $openingStock->createdBy,
-            'total_value' => $openingStock->total_value,
-            'note' => $openingStock->note,
-            'can_delete' => $this->canDelete($openingStock),
-            'items' => $openingStock->items->map(fn ($item): array => [
-                'id' => $item->id,
-                'product_label' => $item->productVariant->purchase_label,
-                'sku' => $item->productVariant->sku,
-                'quantity' => $item->quantity,
-                'unit' => $item->unitOfMeasurement,
-                'base_quantity' => $item->base_quantity,
-                'unit_cost' => $item->base_unit_cost,
-                'total_cost' => $item->total_cost,
-                'note' => $item->note,
-            ])->values(),
-        ];
     }
 
     /** @return Collection<int, Outlet> */
