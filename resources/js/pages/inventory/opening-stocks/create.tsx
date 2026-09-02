@@ -66,7 +66,6 @@ export default function OpeningStocksCreate({
     const variants = products.flatMap((product) => product.product_variants ?? []);
 
     const selectedDate = parseISO(form.data.opening_date);
-    const submissionErrors = form.errors as Record<string, string>;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inventory', href: inventoryIndex().url },
@@ -281,9 +280,7 @@ export default function OpeningStocksCreate({
                                                                 <ComboboxInput
                                                                     placeholder="Select product / variant"
                                                                     showClear
-                                                                    aria-invalid={Boolean(
-                                                                        submissionErrors[`items.${index}.product_variant_id`],
-                                                                    )}
+                                                                    aria-invalid={Boolean(form.errors[`items.${index}.product_variant_id`])}
                                                                 />
 
                                                                 <ComboboxContent className="w-max min-w-(--anchor-width)">
@@ -311,7 +308,7 @@ export default function OpeningStocksCreate({
                                                                 </ComboboxContent>
                                                             </Combobox>
 
-                                                            <FieldError>{submissionErrors[`items.${index}.product_variant_id`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.product_variant_id`]}</FieldError>
 
                                                             {isIneligible && (
                                                                 <p className="mt-1 text-xs text-destructive">
@@ -339,7 +336,7 @@ export default function OpeningStocksCreate({
                                                                     disabled={!variant}
                                                                     showClear
                                                                     aria-invalid={Boolean(
-                                                                        submissionErrors[`items.${index}.unit_of_measurement_id`],
+                                                                        form.errors[`items.${index}.unit_of_measurement_id`],
                                                                     )}
                                                                 />
 
@@ -356,9 +353,7 @@ export default function OpeningStocksCreate({
                                                                 </ComboboxContent>
                                                             </Combobox>
 
-                                                            <FieldError>
-                                                                {submissionErrors[`items.${index}.unit_of_measurement_id`]}
-                                                            </FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.unit_of_measurement_id`]}</FieldError>
                                                         </td>
 
                                                         <td>
@@ -373,10 +368,10 @@ export default function OpeningStocksCreate({
                                                                     })
                                                                 }
                                                                 className="no-number-spinner text-right"
-                                                                aria-invalid={Boolean(submissionErrors[`items.${index}.quantity`])}
+                                                                aria-invalid={Boolean(form.errors[`items.${index}.quantity`])}
                                                             />
 
-                                                            <FieldError>{submissionErrors[`items.${index}.quantity`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.quantity`]}</FieldError>
                                                         </td>
 
                                                         <td>
@@ -396,10 +391,10 @@ export default function OpeningStocksCreate({
                                                                     })
                                                                 }
                                                                 className="no-number-spinner text-right"
-                                                                aria-invalid={Boolean(submissionErrors[`items.${index}.unit_cost`])}
+                                                                aria-invalid={Boolean(form.errors[`items.${index}.unit_cost`])}
                                                             />
 
-                                                            <FieldError>{submissionErrors[`items.${index}.unit_cost`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.unit_cost`]}</FieldError>
                                                         </td>
 
                                                         <td className="text-right tabular-nums">
@@ -422,7 +417,7 @@ export default function OpeningStocksCreate({
                                                                 placeholder="Optional"
                                                             />
 
-                                                            <FieldError>{submissionErrors[`items.${index}.note`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.note`]}</FieldError>
                                                         </td>
 
                                                         <td>

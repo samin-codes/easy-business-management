@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatDecimal, formatQuantity } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index } from '@/routes/stock-adjustments';
 import type { BreadcrumbItem, Option, Outlet, Product, StockAdjustmentReason, StockAdjustmentType } from '@/types';
@@ -76,7 +75,6 @@ export default function AdjustmentsCreate({
     });
 
     const selectedDate = parseISO(form.data.adjustment_date);
-    const submissionErrors = form.errors as Record<string, string>;
 
     const variants = products.flatMap((product) => product.product_variants ?? []);
 
@@ -174,9 +172,7 @@ export default function AdjustmentsCreate({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
-                    <InventoryNavigation active="adjustments" />
-
-                    <Heading title="New Stock Adjustment" description="Correct inventory by adding or removing stock." />
+                    <Heading title="New Stock Adjustment" />
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
@@ -370,9 +366,7 @@ export default function AdjustmentsCreate({
                                                                 <ComboboxInput
                                                                     placeholder="Select product / variant"
                                                                     showClear
-                                                                    aria-invalid={Boolean(
-                                                                        submissionErrors[`items.${index}.product_variant_id`],
-                                                                    )}
+                                                                    aria-invalid={Boolean(form.errors[`items.${index}.product_variant_id`])}
                                                                 />
 
                                                                 <ComboboxContent className="w-max min-w-(--anchor-width)">
@@ -402,7 +396,7 @@ export default function AdjustmentsCreate({
                                                                 </ComboboxContent>
                                                             </Combobox>
 
-                                                            <FieldError>{submissionErrors[`items.${index}.product_variant_id`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.product_variant_id`]}</FieldError>
 
                                                             {isIneligible && (
                                                                 <p className="mt-1 text-xs text-destructive">
@@ -430,7 +424,7 @@ export default function AdjustmentsCreate({
                                                                     disabled={!variant}
                                                                     showClear
                                                                     aria-invalid={Boolean(
-                                                                        submissionErrors[`items.${index}.unit_of_measurement_id`],
+                                                                        form.errors[`items.${index}.unit_of_measurement_id`],
                                                                     )}
                                                                 />
 
@@ -447,9 +441,7 @@ export default function AdjustmentsCreate({
                                                                 </ComboboxContent>
                                                             </Combobox>
 
-                                                            <FieldError>
-                                                                {submissionErrors[`items.${index}.unit_of_measurement_id`]}
-                                                            </FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.unit_of_measurement_id`]}</FieldError>
                                                         </td>
 
                                                         <td>
@@ -464,10 +456,10 @@ export default function AdjustmentsCreate({
                                                                     })
                                                                 }
                                                                 className="no-number-spinner text-right"
-                                                                aria-invalid={Boolean(submissionErrors[`items.${index}.quantity`])}
+                                                                aria-invalid={Boolean(form.errors[`items.${index}.quantity`])}
                                                             />
 
-                                                            <FieldError>{submissionErrors[`items.${index}.quantity`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.quantity`]}</FieldError>
                                                         </td>
 
                                                         <td>
@@ -488,7 +480,7 @@ export default function AdjustmentsCreate({
                                                                         })
                                                                     }
                                                                     className="no-number-spinner text-right"
-                                                                    aria-invalid={Boolean(submissionErrors[`items.${index}.unit_cost`])}
+                                                                    aria-invalid={Boolean(form.errors[`items.${index}.unit_cost`])}
                                                                 />
                                                             ) : (
                                                                 <div className="text-right tabular-nums">
@@ -496,7 +488,7 @@ export default function AdjustmentsCreate({
                                                                 </div>
                                                             )}
 
-                                                            <FieldError>{submissionErrors[`items.${index}.unit_cost`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.unit_cost`]}</FieldError>
                                                         </td>
 
                                                         <td className="text-right tabular-nums">
@@ -519,7 +511,7 @@ export default function AdjustmentsCreate({
                                                                 placeholder="Optional"
                                                             />
 
-                                                            <FieldError>{submissionErrors[`items.${index}.note`]}</FieldError>
+                                                            <FieldError>{form.errors[`items.${index}.note`]}</FieldError>
                                                         </td>
 
                                                         <td>
