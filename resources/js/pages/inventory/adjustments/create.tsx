@@ -279,19 +279,7 @@ export default function AdjustmentsCreate({
 
                         <Section>
                             <SectionHeader>
-                                <div className="flex items-center justify-between gap-3">
-                                    <SectionTitle>Items</SectionTitle>
-
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => form.setData('items', [...form.data.items, createAdjustmentItem()])}
-                                    >
-                                        <Plus />
-                                        Add Item
-                                    </Button>
-                                </div>
+                                <SectionTitle>Items</SectionTitle>
 
                                 <Separator />
                             </SectionHeader>
@@ -554,6 +542,18 @@ export default function AdjustmentsCreate({
 
                                 <FieldError>{form.errors.items}</FieldError>
                             </SectionContent>
+
+                            <div className="flex justify-center">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => form.setData('items', [...form.data.items, createAdjustmentItem()])}
+                                >
+                                    <Plus className="size-4" />
+                                    Add Item
+                                </Button>
+                            </div>
                         </Section>
 
                         <div className="flex justify-end gap-3">

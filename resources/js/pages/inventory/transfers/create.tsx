@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index } from '@/routes/stock-transfers';
 import type { BreadcrumbItem, Outlet, Product } from '@/types';
@@ -144,9 +143,8 @@ export default function TransfersCreate({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
-                    <InventoryNavigation active="transfers" />
 
-                    <Heading title="New Stock Transfer" description="Move inventory between outlets." />
+                    <Heading title="New Stock Transfer" />
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
@@ -232,19 +230,7 @@ export default function TransfersCreate({
 
                         <Section>
                             <SectionHeader>
-                                <div className="flex items-center justify-between gap-3">
-                                    <SectionTitle>Items</SectionTitle>
-
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => form.setData('items', [...form.data.items, createTransferItem()])}
-                                    >
-                                        <Plus />
-                                        Add Item
-                                    </Button>
-                                </div>
+                                <SectionTitle>Items</SectionTitle>
 
                                 <Separator />
                             </SectionHeader>
@@ -481,6 +467,18 @@ export default function TransfersCreate({
 
                                 <FieldError>{form.errors.items}</FieldError>
                             </SectionContent>
+
+                            <div className="flex justify-center">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => form.setData('items', [...form.data.items, createTransferItem()])}
+                                >
+                                    <Plus className="size-4" />
+                                    Add Item
+                                </Button>
+                            </div>
                         </Section>
 
                         <div className="flex justify-end gap-3">

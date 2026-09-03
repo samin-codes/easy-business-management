@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatDecimal, formatQuantity } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index } from '@/routes/opening-stocks';
 import type { BreadcrumbItem, Outlet, Product } from '@/types';
@@ -132,9 +131,8 @@ export default function OpeningStocksCreate({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
-                    <InventoryNavigation active="opening" />
 
-                    <Heading title="New Opening Stock" description="Record the initial inventory balance for products at an outlet." />
+                    <Heading title="New Opening Stock" />
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
@@ -195,20 +193,7 @@ export default function OpeningStocksCreate({
 
                         <Section>
                             <SectionHeader>
-                                <div className="flex items-center justify-between gap-3">
-                                    <SectionTitle>Items</SectionTitle>
-
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => form.setData('items', [...form.data.items, createOpeningStockItem()])}
-                                    >
-                                        <Plus />
-                                        Add Item
-                                    </Button>
-                                </div>
-
+                                <SectionTitle>Items</SectionTitle>
                                 <Separator />
                             </SectionHeader>
 
@@ -460,6 +445,18 @@ export default function OpeningStocksCreate({
 
                                 <FieldError>{form.errors.items}</FieldError>
                             </SectionContent>
+
+                            <div className="flex justify-center">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => form.setData('items', [...form.data.items, createOpeningStockItem()])}
+                                >
+                                    <Plus className="size-4" />
+                                    Add Item
+                                </Button>
+                            </div>
                         </Section>
 
                         <div className="flex justify-end gap-3">

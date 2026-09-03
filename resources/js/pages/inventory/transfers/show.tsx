@@ -10,7 +10,6 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { index, show } from '@/routes/stock-transfers';
 import type { BreadcrumbItem, StockTransfer } from '@/types';
@@ -48,10 +47,9 @@ export default function TransfersShow({ transfer }: { transfer: StockTransfer })
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-6xl space-y-8">
-                    <InventoryNavigation active="transfers" />
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <Heading title={transfer.transfer_no} description="Stock Transfer" />
+                        <Heading title={transfer.transfer_no} />
 
                         <div className="flex gap-2">
                             <Button variant="outline" asChild>

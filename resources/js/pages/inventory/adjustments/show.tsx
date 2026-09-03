@@ -49,10 +49,9 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-6xl space-y-8">
-                    <InventoryNavigation active="adjustments" />
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <Heading title={adjustment.adjustment_no} description="Stock Adjustment" />
+                        <Heading title={adjustment.adjustment_no} />
 
                         <div className="flex gap-2">
                             <Button variant="outline" asChild>
