@@ -13,6 +13,7 @@ import { formatCurrency } from '@/lib/utils';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index, show } from '@/routes/opening-stocks';
 import type { BreadcrumbItem, LengthAwarePagination, OpeningStock, Outlet } from '@/types';
+import InventoryNavigation from '../components/inventory-navigation';
 
 type QueryString = {
     search: string | null;
@@ -63,6 +64,7 @@ export default function OpeningStocksIndex({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
+                    <InventoryNavigation active="opening" />
 
                     <div className="flex items-center justify-between">
                         <Heading title="Opening Stock" />

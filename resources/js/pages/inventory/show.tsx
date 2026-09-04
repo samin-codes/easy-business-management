@@ -1,12 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { CalendarClock, CircleDollarSign, PackageOpen, ReceiptText } from 'lucide-react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
@@ -85,6 +84,8 @@ export default function InventoryShow({
     queryString,
 }: InventoryShowProps) {
     const hasPages = movements.last_page > 1;
+    const dateFrom = queryString.date_from ? parseISO(queryString.date_from) : undefined;
+    const dateTo = queryString.date_to ? parseISO(queryString.date_to) : undefined;
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -129,55 +130,31 @@ export default function InventoryShow({
         );
     };
 
-    const cards = [
-        {
-            label: 'On Hand',
-            value: `${formatQuantity(stock.quantity)} ${variant.base_unit.code}`,
-            icon: PackageOpen,
-            iconClassName: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-        },
-        {
-            label: 'Average Base Cost',
-            value: `${formatCurrency(stock.average_cost)} / ${variant.base_unit.code}`,
-            icon: ReceiptText,
-            iconClassName: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
-        },
-        {
-            label: 'Stock Value',
-            value: formatCurrency(stock.stock_value),
-            icon: CircleDollarSign,
-            iconClassName: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
-        },
-        {
-            label: 'Last Movement',
-            value: stock.last_movement_at ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement',
-            icon: CalendarClock,
-            iconClassName: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
-        },
-    ];
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={variant.label} />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-7xl space-y-8">
+                <div className="mx-auto max-w-7xl space-y-6">
                     <InventoryNavigation active="stock" />
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="space-y-2">
-                            <Heading title={variant.label} description="Stock balance and movement audit history." />
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Heading title={variant.label} />
+
+                                {variant.status === 'inactive' && <Badge variant="outline">Inactive</Badge>}
+                            </div>
 
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                <span>SKU: {variant.sku || '-'}</span>
-
-                                <span aria-hidden="true">•</span>
+                                {variant.sku && (
+                                    <>
+                                        <span>{variant.sku}</span>
+                                        <span aria-hidden="true">•</span>
+                                    </>
+                                )}
 
                                 <span>{variant.category.name}</span>
-
-                                <Badge variant="outline" className="capitalize">
-                                    {variant.status}
-                                </Badge>
                             </div>
                         </div>
 
@@ -206,30 +183,37 @@ export default function InventoryShow({
                         )}
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        {cards.map((card) => (
-                            <Card key={card.label} className="gap-0 py-5">
-                                <CardContent className="flex items-center justify-between gap-4 px-5">
-                                    <div className="min-w-0">
-                                        <p className="text-sm text-muted-foreground">{card.label}</p>
+                    <Card className="gap-0 py-0">
+                        <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
+                            <div className="min-w-0 p-4 sm:p-5">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">On Hand</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatQuantity(stock.quantity)} {variant.base_unit.code}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-l p-4 sm:p-5">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Avg. Cost</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatCurrency(stock.average_cost)} / {variant.base_unit.code}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Stock Value</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatCurrency(stock.stock_value)}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Last Movement</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {stock.last_movement_at ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement'}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums">{card.value}</p>
-                                    </div>
-
-                                    <div className={`rounded-lg p-2.5 ${card.iconClassName}`}>
-                                        <card.icon className="size-5" />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-
-                    <section className="space-y-4">
-                        <div>
-                            <h2 className="text-lg font-semibold">Movement History</h2>
-
-                            <p className="text-sm text-muted-foreground">Entered quantities and their normalized base-unit movement.</p>
-                        </div>
+                    <section className="space-y-3">
+                        <h2 className="text-lg font-semibold">Movement History</h2>
 
                         <div className="grid gap-3 md:grid-cols-[14rem_12rem_12rem_auto]">
                             <Select
@@ -256,26 +240,29 @@ export default function InventoryShow({
                                 </SelectContent>
                             </Select>
 
-                            <Input
-                                type="date"
+                            <DatePicker
+                                id="movement-date-from"
                                 aria-label="Movement date from"
-                                value={queryString.date_from ?? ''}
-                                onChange={(event) =>
+                                value={dateFrom}
+                                placeholder="From date"
+                                disabledDays={dateTo ? { after: dateTo } : undefined}
+                                onChange={(date) =>
                                     visit({
-                                        date_from: event.currentTarget.value || null,
+                                        date_from: date ? format(date, 'yyyy-MM-dd') : null,
                                         page: 1,
                                     })
                                 }
                             />
 
-                            <Input
-                                type="date"
+                            <DatePicker
+                                id="movement-date-to"
                                 aria-label="Movement date to"
-                                value={queryString.date_to ?? ''}
-                                min={queryString.date_from ?? undefined}
-                                onChange={(event) =>
+                                value={dateTo}
+                                placeholder="To date"
+                                disabledDays={dateFrom ? { before: dateFrom } : undefined}
+                                onChange={(date) =>
                                     visit({
-                                        date_to: event.currentTarget.value || null,
+                                        date_to: date ? format(date, 'yyyy-MM-dd') : null,
                                         page: 1,
                                     })
                                 }

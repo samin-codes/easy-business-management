@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Boxes, CircleDollarSign, PackageCheck, PackageOpen, PackageX, Plus, Repeat2, Search } from 'lucide-react';
+import { Boxes, PackageOpen, Plus, Repeat2, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import PaginatorLinks from '@/components/paginator-links';
@@ -102,88 +102,63 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
         );
     };
 
-    const summaryCards = [
-        {
-            label: 'Inventory Value',
-            value: formatCurrency(inventoryStats.stock_value),
-            icon: CircleDollarSign,
-            iconClassName: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-        },
-        {
-            label: 'In-stock Variants',
-            value: inventoryStats.in_stock_count.toLocaleString(),
-            icon: PackageCheck,
-            iconClassName: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
-        },
-        {
-            label: 'Out of Stock',
-            value: inventoryStats.out_of_stock_count.toLocaleString(),
-            icon: PackageX,
-            iconClassName: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
-        },
-        {
-            label: 'Total Variants',
-            value: inventoryStats.variant_count.toLocaleString(),
-            icon: Boxes,
-            iconClassName: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
-        },
-    ];
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Inventory" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-7xl space-y-8">
+                <div className="mx-auto max-w-7xl space-y-6">
                     <InventoryNavigation active="stock" />
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <Heading title="Inventory" description="Current stock is shown in each product's base unit." />
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <Heading title="Inventory" />
 
-                        {outlets.length > 0 && (
-                            <Select
-                                value={selectedOutlet?.id.toString()}
-                                onValueChange={(value) =>
-                                    visit({
-                                        outlet_id: Number(value),
-                                        page: 1,
-                                    })
-                                }
-                            >
-                                <SelectTrigger className="w-full sm:w-64">
-                                    <SelectValue placeholder="Select outlet" />
-                                </SelectTrigger>
+                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                            {outlets.length > 0 && (
+                                <Select
+                                    value={selectedOutlet?.id.toString()}
+                                    onValueChange={(value) =>
+                                        visit({
+                                            outlet_id: Number(value),
+                                            page: 1,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full sm:w-64">
+                                        <SelectValue placeholder="Select outlet" />
+                                    </SelectTrigger>
 
-                                <SelectContent align="end">
-                                    {outlets.map((outlet) => (
-                                        <SelectItem key={outlet.id} value={outlet.id.toString()}>
-                                            {outlet.name} ({outlet.code})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
+                                    <SelectContent align="end">
+                                        {outlets.map((outlet) => (
+                                            <SelectItem key={outlet.id} value={outlet.id.toString()}>
+                                                {outlet.name} ({outlet.code})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
 
-                    {selectedOutlet && (
-                        <div className="flex flex-wrap gap-2">
-                            <Button variant="outline" asChild>
-                                <Link href={createOpeningStock({ query: { outlet_id: selectedOutlet.id } })}>
-                                    <PackageOpen /> Opening Stock
-                                </Link>
-                            </Button>
-                            <Button variant="outline" asChild>
-                                <Link href={createAdjustment({ query: { outlet_id: selectedOutlet.id } })}>
-                                    <Plus /> New Adjustment
-                                </Link>
-                            </Button>
-                            <Button variant="outline" asChild>
-                                <Link href={createTransfer({ query: { outlet_id: selectedOutlet.id } })}>
-                                    <Repeat2 /> New Transfer
-                                </Link>
-                            </Button>
+                            {selectedOutlet && (
+                                <>
+                                    <Button variant="outline" asChild>
+                                        <Link href={createOpeningStock({ query: { outlet_id: selectedOutlet.id } })}>
+                                            <PackageOpen /> Opening Stock
+                                        </Link>
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                        <Link href={createAdjustment({ query: { outlet_id: selectedOutlet.id } })}>
+                                            <Plus /> Adjustment
+                                        </Link>
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                        <Link href={createTransfer({ query: { outlet_id: selectedOutlet.id } })}>
+                                            <Repeat2 /> Transfer
+                                        </Link>
+                                    </Button>
+                                </>
+                            )}
                         </div>
-                    )}
+                    </div>
 
                     {selectedOutlet === null ? (
                         <Card>
@@ -201,32 +176,43 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                         </Card>
                     ) : (
                         <>
-                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                                {summaryCards.map((card) => (
-                                    <Card key={card.label} className="gap-0 py-5">
-                                        <CardContent className="flex items-center justify-between gap-4 px-5">
-                                            <div className="min-w-0">
-                                                <p className="text-sm text-muted-foreground">{card.label}</p>
+                            <Card className="gap-0 py-0">
+                                <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
+                                    <div className="min-w-0 p-4 sm:p-5">
+                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Inventory Value</p>
+                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                            {formatCurrency(inventoryStats.stock_value)}
+                                        </p>
+                                    </div>
+                                    <div className="min-w-0 border-l p-4 sm:p-5">
+                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">In Stock</p>
+                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                            {inventoryStats.in_stock_count.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
+                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Out of Stock</p>
+                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                            {inventoryStats.out_of_stock_count.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
+                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Variants</p>
+                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                            {inventoryStats.variant_count.toLocaleString()}
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                                                <p className="mt-1 truncate text-2xl font-semibold tabular-nums">{card.value}</p>
-                                            </div>
-
-                                            <div className={`rounded-lg p-2.5 ${card.iconClassName}`}>
-                                                <card.icon className="size-5" />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-
-                            <section className="space-y-4">
+                            <section className="space-y-3">
                                 <div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_14rem_12rem_auto]">
                                     <div className="relative">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
                                         <Input
                                             type="search"
-                                            placeholder="Search product, variant, brand or SKU..."
+                                            placeholder="Search inventory..."
                                             className="pl-9"
                                             defaultValue={queryString.search ?? ''}
                                             onChange={(event) => {
@@ -313,7 +299,7 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                                             <tr>
                                                 <th>
                                                     <TableSortButton
-                                                        label="Product / Variant"
+                                                        label="Product"
                                                         href={
                                                             index({
                                                                 query: query({
@@ -331,7 +317,6 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                                                     />
                                                 </th>
 
-                                                <th>SKU</th>
                                                 <th>Category</th>
 
                                                 <th className="text-right">
@@ -435,23 +420,25 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
 
                                                     return (
                                                         <tr key={stock.id}>
-                                                            <td>
-                                                                <div className="flex items-center gap-2">
-                                                                    <div>
-                                                                        <div className="font-medium">{stock.label}</div>
+                                                            <td className="max-w-80 min-w-56">
+                                                                <div className="flex items-start gap-2">
+                                                                    <div className="min-w-0">
+                                                                        <div className="font-medium break-words">{stock.label}</div>
 
-                                                                        {stock.brand_name && (
-                                                                            <div className="text-xs text-muted-foreground">
-                                                                                {stock.brand_name}
+                                                                        {(stock.brand_name || stock.sku) && (
+                                                                            <div className="mt-0.5 text-xs text-muted-foreground">
+                                                                                {[stock.brand_name, stock.sku].filter(Boolean).join(' • ')}
                                                                             </div>
                                                                         )}
                                                                     </div>
 
-                                                                    {!isActive && <Badge variant="outline">Inactive</Badge>}
+                                                                    {!isActive && (
+                                                                        <Badge variant="outline" className="shrink-0">
+                                                                            Inactive
+                                                                        </Badge>
+                                                                    )}
                                                                 </div>
                                                             </td>
-
-                                                            <td className="text-muted-foreground">{stock.sku || '-'}</td>
 
                                                             <td>{stock.category.name}</td>
 
@@ -509,8 +496,10 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                                                 })
                                             ) : (
                                                 <tr>
-                                                    <td colSpan={8} className="h-28 text-center text-muted-foreground">
-                                                        No inventory items match the current filters.
+                                                    <td colSpan={7} className="h-28 text-center text-muted-foreground">
+                                                        {queryString.search || queryString.category_id || queryString.stock_status !== 'all'
+                                                            ? 'No inventory items match the current filters.'
+                                                            : 'No inventory records are available for this outlet.'}
                                                     </td>
                                                 </tr>
                                             )}

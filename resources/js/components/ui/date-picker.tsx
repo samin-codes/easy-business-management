@@ -1,8 +1,8 @@
-import * as React from "react"
 import { format as formatDate } from "date-fns"
 import { CalendarIcon } from "lucide-react"
+import * as React from "react"
+import type { Matcher } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 function DatePicker({
   className,
@@ -20,6 +21,7 @@ function DatePicker({
   format = "dd/MM/yyyy",
   placeholder = "Pick a date",
   disabled,
+  disabledDays,
   ...props
 }: Omit<
   React.ComponentProps<typeof Button>,
@@ -31,6 +33,7 @@ function DatePicker({
   onChange: (date: Date | undefined) => void
   format?: string
   placeholder?: string
+  disabledDays?: Matcher | Matcher[]
 }) {
   return (
     <>
@@ -66,6 +69,7 @@ function DatePicker({
             selected={value}
             onSelect={onChange}
             defaultMonth={value}
+            disabled={disabledDays}
           />
         </PopoverContent>
       </Popover>
