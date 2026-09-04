@@ -8,30 +8,60 @@ import { ViewAction } from '@/components/table-actions';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { create, index, show } from '@/routes/sales';
-import type { LengthAwarePagination, Sale } from '@/types';
+import type { LengthAwarePagination, Outlet, Sale } from '@/types';
+
+type SaleOutlet = Pick<Outlet, 'id' | 'name' | 'code' | 'status'>;
 
 type QueryString = {
+    outlet_id: number | null;
     search: string | null;
     sort: 'sale_no' | 'sale_date' | 'total_amount' | 'paid_amount' | 'due_amount';
     direction: 'asc' | 'desc';
 };
 
-export default function SalesIndex({ sales, queryString }: { sales: LengthAwarePagination<Sale>; queryString: QueryString }) {
+export default function SalesIndex({
+    sales,
+    saleStats,
+    outlets,
+    queryString,
+}: {
+    sales: LengthAwarePagination<Sale>;
+    saleStats: {
+        sale_count: number;
+        total_amount: string;
+        paid_amount: string;
+        due_amount: string;
+    };
+    outlets: SaleOutlet[];
+    queryString: QueryString;
+}) {
     const timer = useRef<number | undefined>(undefined);
-    const only = ['sales', 'queryString'];
+    const only = ['sales', 'saleStats', 'queryString'];
+
+    const query = (overrides: Partial<QueryString> & { page?: number } = {}) => ({
+        outlet_id: overrides.outlet_id === null ? undefined : (overrides.outlet_id ?? queryString.outlet_id ?? undefined),
+        search: overrides.search === null ? undefined : (overrides.search ?? queryString.search ?? undefined),
+        sort: overrides.sort ?? queryString.sort,
+        direction: overrides.direction ?? queryString.direction,
+        page: overrides.page ?? 1,
+    });
+
+    const visit = (overrides: Partial<QueryString> & { page?: number } = {}) => {
+        router.get(index({ query: query(overrides) }).url, {}, { preserveScroll: true, preserveState: true, replace: true, only });
+    };
 
     const sortUrl = (sort: QueryString['sort']) =>
         index({
-            query: {
-                search: queryString.search ?? undefined,
+            query: query({
                 sort,
                 direction: queryString.sort === sort && queryString.direction === 'asc' ? 'desc' : 'asc',
-                page: 1,
-            },
+            }),
         }).url;
 
     return (
@@ -45,48 +75,93 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <Heading title="Sales" />
 
-                        <Button asChild>
-                            <Link href={create()}>
-                                <Plus className="size-4" />
-                                New Sale
-                            </Link>
-                        </Button>
+                        <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                            <Select
+                                value={queryString.outlet_id?.toString() ?? 'all'}
+                                onValueChange={(value) => visit({ outlet_id: value === 'all' ? null : Number(value), page: 1 })}
+                            >
+                                <SelectTrigger className="w-full sm:w-64">
+                                    <SelectValue placeholder="All outlets" />
+                                </SelectTrigger>
+
+                                <SelectContent align="end">
+                                    <SelectItem value="all">All outlets</SelectItem>
+
+                                    {outlets.map((outlet) => (
+                                        <SelectItem key={outlet.id} value={outlet.id.toString()}>
+                                            {outlet.name}
+                                            {outlet.code ? ` (${outlet.code})` : ''}
+                                            {outlet.status === 'inactive' ? ' — Inactive' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <Button asChild>
+                                <Link href={create()}>
+                                    <Plus className="size-4" />
+                                    New Sale
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="relative max-w-sm">
-                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Card className="gap-0 py-0">
+                        <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
+                            <div className="min-w-0 p-4 sm:p-5">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Sales</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {saleStats.sale_count.toLocaleString()}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-l p-4 sm:p-5">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Total Amount</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatCurrency(saleStats.total_amount)}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Paid</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatCurrency(saleStats.paid_amount)}
+                                </p>
+                            </div>
+                            <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Due</p>
+                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
+                                    {formatCurrency(saleStats.due_amount)}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <Input
-                            className="pl-9"
-                            placeholder="Search sale no..."
-                            defaultValue={queryString.search ?? ''}
-                            onChange={(event) => {
-                                window.clearTimeout(timer.current);
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="relative w-full sm:max-w-sm">
+                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
-                                timer.current = window.setTimeout(
-                                    () =>
-                                        router.get(
-                                            index().url,
-                                            {
-                                                search: event.currentTarget.value.trim() || undefined,
-                                                sort: queryString.sort,
-                                                direction: queryString.direction,
-                                                page: 1,
-                                            },
-                                            {
-                                                preserveState: true,
-                                                preserveScroll: true,
-                                                replace: true,
-                                                only,
-                                            },
-                                        ),
-                                    300,
-                                );
-                            }}
-                        />
+                            <Input
+                                type="search"
+                                className="pl-9"
+                                placeholder="Search sale no..."
+                                defaultValue={queryString.search ?? ''}
+                                onChange={(event) => {
+                                    const search = event.currentTarget.value.trim();
+
+                                    window.clearTimeout(timer.current);
+
+                                    timer.current = window.setTimeout(() => visit({ search: search || null, page: 1 }), 300);
+                                }}
+                            />
+                        </div>
+
+                        {queryString.search && (
+                            <Button variant="outline" onClick={() => visit({ search: null, page: 1 })}>
+                                Clear
+                            </Button>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto rounded-md border">
@@ -175,7 +250,7 @@ export default function SalesIndex({ sales, queryString }: { sales: LengthAwareP
                                 ) : (
                                     <tr>
                                         <td colSpan={9} className="h-24 text-center text-muted-foreground">
-                                            {queryString.search ? 'No sales found.' : 'No sales yet.'}
+                                            {queryString.search || queryString.outlet_id ? 'No sales found.' : 'No sales yet.'}
                                         </td>
                                     </tr>
                                 )}

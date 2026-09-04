@@ -26,7 +26,13 @@ class PurchaseController extends Controller
     public function index(Request $request): Response
     {
         $business = Business::current();
-        $search = trim((string) $request->query('search', ''));
+        $outlets = Outlet::query()
+            ->whereBelongsTo($business)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'status']);
+
+        $outletId = $outlets->firstWhere('id', $request->integer('outlet_id'))?->id;
+        $search = $request->string('search')->trim()->limit(255, '')->toString();
         $sort = $request->query('sort', 'purchase_date');
         $direction = $request->query('direction', 'desc');
 
@@ -38,9 +44,12 @@ class PurchaseController extends Controller
             $direction = 'desc';
         }
 
-        $purchases = Purchase::query()
-            ->with(['supplier:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
+        $purchaseQuery = Purchase::query()
             ->whereBelongsTo($business)
+            ->when($outletId, fn ($query, int $outletId) => $query->where('outlet_id', $outletId));
+
+        $purchases = (clone $purchaseQuery)
+            ->with(['supplier:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
             ->when($search, function ($query, $search) {
                 $query->where('purchase_no', 'like', "%{$search}%");
             })
@@ -49,9 +58,24 @@ class PurchaseController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $purchaseAggregates = (clone $purchaseQuery)
+            ->selectRaw('COUNT(*) as purchase_count')
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_amount')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as paid_amount')
+            ->selectRaw('COALESCE(SUM(due_amount), 0) as due_amount')
+            ->first();
+
         return Inertia::render('purchases/index', [
             'purchases' => $purchases,
+            'purchaseStats' => [
+                'purchase_count' => (int) ($purchaseAggregates->purchase_count ?? 0),
+                'total_amount' => (string) ($purchaseAggregates->total_amount ?? '0.00'),
+                'paid_amount' => (string) ($purchaseAggregates->paid_amount ?? '0.00'),
+                'due_amount' => (string) ($purchaseAggregates->due_amount ?? '0.00'),
+            ],
+            'outlets' => $outlets,
             'queryString' => [
+                'outlet_id' => $outletId,
                 'search' => $search !== '' ? $search : null,
                 'sort' => $sort,
                 'direction' => $direction,

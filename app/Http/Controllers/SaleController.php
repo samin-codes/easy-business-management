@@ -26,19 +26,41 @@ class SaleController extends Controller
     public function index(Request $request): Response
     {
         $business = Business::current();
-        $search = trim((string) $request->query('search', ''));
+        $outlets = Outlet::query()->whereBelongsTo($business)->orderBy('name')->get(['id', 'name', 'code', 'status']);
+        $outletId = $outlets->firstWhere('id', $request->integer('outlet_id'))?->id;
+        $search = $request->string('search')->trim()->limit(255, '')->toString();
         $sort = in_array($request->query('sort'), ['sale_no', 'sale_date', 'total_amount', 'paid_amount', 'due_amount'], true)
             ? $request->query('sort') : 'sale_date';
         $direction = $request->query('direction') === 'asc' ? 'asc' : 'desc';
-        $sales = Sale::query()
-            ->with(['customer:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
+        $saleQuery = Sale::query()
             ->whereBelongsTo($business)
+            ->when($outletId, fn ($query, int $outletId) => $query->where('outlet_id', $outletId));
+        $sales = (clone $saleQuery)
+            ->with(['customer:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
             ->when($search, fn ($query, string $search) => $query->where('sale_no', 'like', "%{$search}%"))
             ->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate(10)->withQueryString();
+        $saleAggregates = (clone $saleQuery)
+            ->selectRaw('COUNT(*) as sale_count')
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_amount')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as paid_amount')
+            ->selectRaw('COALESCE(SUM(due_amount), 0) as due_amount')
+            ->first();
 
         return Inertia::render('sales/index', [
             'sales' => $sales,
-            'queryString' => ['search' => $search !== '' ? $search : null, 'sort' => $sort, 'direction' => $direction],
+            'saleStats' => [
+                'sale_count' => (int) ($saleAggregates->sale_count ?? 0),
+                'total_amount' => (string) ($saleAggregates->total_amount ?? '0.00'),
+                'paid_amount' => (string) ($saleAggregates->paid_amount ?? '0.00'),
+                'due_amount' => (string) ($saleAggregates->due_amount ?? '0.00'),
+            ],
+            'outlets' => $outlets,
+            'queryString' => [
+                'outlet_id' => $outletId,
+                'search' => $search !== '' ? $search : null,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
         ]);
     }
 
