@@ -77,20 +77,30 @@ export default function TransfersShow({ transfer }: { transfer: StockTransfer })
                     {errors.transfer && <AlertError errors={[errors.transfer]} title="Stock transfer deletion blocked." />}
 
                     <Section>
-                        <SectionContent className="gap-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <TextEntry label="Transfer No" value={transfer.transfer_no} />
+                        <SectionHeader>
+                            <SectionTitle>Transfer information</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
 
-                                <TextEntry label="Transfer Date" value={format(parseISO(transfer.transfer_date), 'MMMM d, yyyy')} />
+                        <SectionContent className="gap-3">
+                            <div className="grid gap-3 md:grid-cols-2">
+                                <TextEntry label="Transfer no" value={transfer.transfer_no} inlineLabel weight="medium" />
 
-                                <TextEntry label="From Outlet" value={transfer.source_outlet?.name} />
+                                <TextEntry
+                                    label="Transfer date"
+                                    value={format(parseISO(transfer.transfer_date), 'MMMM d, yyyy')}
+                                    inlineLabel
+                                    weight="medium"
+                                />
 
-                                <TextEntry label="To Outlet" value={transfer.destination_outlet?.name} />
+                                <TextEntry label="From outlet" value={transfer.source_outlet?.name} inlineLabel weight="medium" />
 
-                                <TextEntry label="Created By" value={transfer.createdBy?.name} />
+                                <TextEntry label="To outlet" value={transfer.destination_outlet?.name} inlineLabel weight="medium" />
 
-                                {transfer.note && <TextEntry label="Note" value={transfer.note} />}
+                                <TextEntry label="Created by" value={transfer.createdBy?.name} inlineLabel weight="medium" />
                             </div>
+
+                            {transfer.note && <TextEntry label="Note" value={transfer.note} inlineLabel weight="medium" />}
                         </SectionContent>
                     </Section>
 

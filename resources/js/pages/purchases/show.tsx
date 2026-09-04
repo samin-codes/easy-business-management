@@ -60,6 +60,13 @@ export default function PurchasesShow({
 
                     <div className="space-y-8">
                         <Section>
+                            <SectionHeader>
+                                <SectionTitle>
+                                    Purchase information
+                                </SectionTitle>
+                                <Separator />
+                            </SectionHeader>
+
                             <SectionContent className="gap-3">
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry

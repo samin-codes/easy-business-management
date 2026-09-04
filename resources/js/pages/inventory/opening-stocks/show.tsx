@@ -77,18 +77,33 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                     {errors.opening_stock && <AlertError errors={[errors.opening_stock]} title="Opening stock deletion blocked." />}
 
                     <Section>
-                        <SectionContent className="gap-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <TextEntry label="Opening Stock No" value={openingStock.opening_stock_no} />
+                        <SectionHeader>
+                            <SectionTitle>Opening stock information</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
 
-                                <TextEntry label="Opening Date" value={format(parseISO(openingStock.opening_date), 'MMMM d, yyyy')} />
+                        <SectionContent className="gap-3">
+                            <div className="grid gap-3 md:grid-cols-2">
+                                <TextEntry
+                                    label="Opening stock no"
+                                    value={openingStock.opening_stock_no}
+                                    inlineLabel
+                                    weight="medium"
+                                />
 
-                                <TextEntry label="Outlet" value={openingStock.outlet?.name} />
+                                <TextEntry
+                                    label="Opening date"
+                                    value={format(parseISO(openingStock.opening_date), 'MMMM d, yyyy')}
+                                    inlineLabel
+                                    weight="medium"
+                                />
 
-                                <TextEntry label="Created By" value={openingStock.createdBy?.name} />
+                                <TextEntry label="Outlet" value={openingStock.outlet?.name} inlineLabel weight="medium" />
 
-                                {openingStock.note && <TextEntry label="Note" value={openingStock.note} />}
+                                <TextEntry label="Created by" value={openingStock.createdBy?.name} inlineLabel weight="medium" />
                             </div>
+
+                            {openingStock.note && <TextEntry label="Note" value={openingStock.note} inlineLabel weight="medium" />}
                         </SectionContent>
                     </Section>
 

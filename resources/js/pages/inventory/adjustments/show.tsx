@@ -11,7 +11,6 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { index, show } from '@/routes/stock-adjustments';
 import type { BreadcrumbItem, StockAdjustment } from '@/types';
@@ -79,13 +78,23 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                     {errors.adjustment && <AlertError errors={[errors.adjustment]} title="Stock adjustment deletion blocked." />}
 
                     <Section>
-                        <SectionContent className="gap-4">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <TextEntry label="Adjustment No" value={adjustment.adjustment_no} />
+                        <SectionHeader>
+                            <SectionTitle>Adjustment information</SectionTitle>
+                            <Separator />
+                        </SectionHeader>
 
-                                <TextEntry label="Adjustment Date" value={format(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')} />
+                        <SectionContent className="gap-3">
+                            <div className="grid gap-3 md:grid-cols-2">
+                                <TextEntry label="Adjustment no" value={adjustment.adjustment_no} inlineLabel weight="medium" />
 
-                                <TextEntry label="Outlet" value={adjustment.outlet?.name} />
+                                <TextEntry
+                                    label="Adjustment date"
+                                    value={format(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')}
+                                    inlineLabel
+                                    weight="medium"
+                                />
+
+                                <TextEntry label="Outlet" value={adjustment.outlet?.name} inlineLabel weight="medium" />
 
                                 <TextEntry
                                     label="Type"
@@ -94,14 +103,16 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                                             {adjustment.type_label ?? adjustment.type}
                                         </Badge>
                                     }
+                                    inlineLabel
+                                    weight="medium"
                                 />
 
-                                <TextEntry label="Reason" value={adjustment.reason_label ?? adjustment.reason} />
+                                <TextEntry label="Reason" value={adjustment.reason_label ?? adjustment.reason} inlineLabel weight="medium" />
 
-                                <TextEntry label="Created By" value={adjustment.createdBy?.name} />
-
-                                {adjustment.note && <TextEntry label="Note" value={adjustment.note} />}
+                                <TextEntry label="Created by" value={adjustment.createdBy?.name} inlineLabel weight="medium" />
                             </div>
+
+                            {adjustment.note && <TextEntry label="Note" value={adjustment.note} inlineLabel weight="medium" />}
                         </SectionContent>
                     </Section>
 

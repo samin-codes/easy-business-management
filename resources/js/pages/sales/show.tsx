@@ -77,6 +77,11 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
 
                     <div className="space-y-8">
                         <Section>
+                            <SectionHeader>
+                                <SectionTitle>Sale information</SectionTitle>
+                                <Separator />
+                            </SectionHeader>
+
                             <SectionContent className="gap-3">
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry label="Sale No" value={sale.sale_no} />

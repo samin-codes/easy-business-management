@@ -20,7 +20,6 @@ import type {
     RecordStatus,
     UnitOfMeasurement,
 } from '@/types';
-import InventoryNavigation from './components/inventory-navigation';
 
 type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
 
@@ -136,7 +135,6 @@ export default function InventoryShow({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
-                    <InventoryNavigation active="stock" />
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-1">
