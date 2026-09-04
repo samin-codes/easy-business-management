@@ -148,11 +148,6 @@ export default function TransfersCreate({
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Transfer Information</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
-
                             <SectionContent>
                                 <FieldGroup className="grid gap-5 md:grid-cols-2">
                                     <Field>

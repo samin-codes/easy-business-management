@@ -35,10 +35,6 @@ export default function BusinessForm({
             {({ errors, processing }) => (
                 <div className="space-y-6">
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Business details</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
                         <SectionContent>
                             <Field>
                                 <FieldLabel htmlFor="name">

@@ -53,10 +53,6 @@ export default function PartiesShow({ party }: { party: Party }) {
 
                     <div className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Party details</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
                             <SectionContent className="gap-3">
                                 <TextEntry label="Party name" value={party.name} inlineLabel weight="medium" />
                                 <div className="grid gap-3 md:grid-cols-2">
@@ -89,7 +85,7 @@ export default function PartiesShow({ party }: { party: Party }) {
 
                         <Section>
                             <SectionHeader>
-                                <SectionTitle>Financials</SectionTitle>
+                                <SectionTitle>Financial information</SectionTitle>
                                 <Separator />
                             </SectionHeader>
                             <SectionContent className="gap-3">

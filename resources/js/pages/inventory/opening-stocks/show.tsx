@@ -77,11 +77,6 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                     {errors.opening_stock && <AlertError errors={[errors.opening_stock]} title="Opening stock deletion blocked." />}
 
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Opening Stock Information</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
-
                         <SectionContent className="gap-4">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 <TextEntry label="Opening Stock No" value={openingStock.opening_stock_no} />

@@ -42,10 +42,6 @@ export default function OutletForm({
             {({ errors, processing }) => (
                 <div className="space-y-6">
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Outlet details</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
                         <SectionContent>
                             <Field>
                                 <FieldLabel htmlFor="name">

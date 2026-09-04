@@ -157,11 +157,6 @@ export default function SalesCreate({
                     <form onSubmit={submit} className="space-y-6">
                         <div className="space-y-6">
                             <Section>
-                                <SectionHeader>
-                                    <SectionTitle>Sale Information</SectionTitle>
-                                    <Separator />
-                                </SectionHeader>
-
                                 <SectionContent>
                                     <FieldGroup className="grid gap-4 md:grid-cols-2">
                                         <Field>
@@ -300,7 +295,7 @@ export default function SalesCreate({
 
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Sale Items</SectionTitle>
+                                    <SectionTitle>Sale items</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
 

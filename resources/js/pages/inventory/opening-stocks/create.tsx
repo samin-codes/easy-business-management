@@ -136,11 +136,6 @@ export default function OpeningStocksCreate({
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Opening Stock Information</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
-
                             <SectionContent>
                                 <FieldGroup className="grid gap-5 md:grid-cols-2">
                                     <Field>

@@ -50,10 +50,6 @@ export default function BusinessesShow({ business }: { business: Business }) {
 
                     <div className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Business details</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
                             <SectionContent className="gap-3">
                                 <TextEntry label="Business name" value={business.name} inlineLabel weight="medium" />
                                 <div className="grid gap-3 md:grid-cols-2">

@@ -77,11 +77,6 @@ export default function TransfersShow({ transfer }: { transfer: StockTransfer })
                     {errors.transfer && <AlertError errors={[errors.transfer]} title="Stock transfer deletion blocked." />}
 
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Transfer Information</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
-
                         <SectionContent className="gap-4">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 <TextEntry label="Transfer No" value={transfer.transfer_no} />

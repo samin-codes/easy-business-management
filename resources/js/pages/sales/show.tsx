@@ -77,11 +77,6 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
 
                     <div className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Sale Information</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
-
                             <SectionContent className="gap-3">
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry label="Sale No" value={sale.sale_no} />
@@ -127,7 +122,7 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
 
                         <Section>
                             <SectionHeader>
-                                <SectionTitle>Sale Items</SectionTitle>
+                                <SectionTitle>Sale items</SectionTitle>
                                 <Separator />
                             </SectionHeader>
 
@@ -217,7 +212,7 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                         {payments.length > 0 && (
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Payment History</SectionTitle>
+                                    <SectionTitle>Payment history</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
 

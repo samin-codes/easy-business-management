@@ -176,11 +176,6 @@ export default function AdjustmentsCreate({
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>Adjustment Information</SectionTitle>
-                                <Separator />
-                            </SectionHeader>
-
                             <SectionContent>
                                 <FieldGroup className="grid gap-5 md:grid-cols-2">
                                     <Field>

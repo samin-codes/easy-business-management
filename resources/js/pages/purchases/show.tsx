@@ -60,13 +60,6 @@ export default function PurchasesShow({
 
                     <div className="space-y-8">
                         <Section>
-                            <SectionHeader>
-                                <SectionTitle>
-                                    Purchase Information
-                                </SectionTitle>
-                                <Separator />
-                            </SectionHeader>
-
                             <SectionContent className="gap-3">
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <TextEntry
@@ -156,7 +149,7 @@ export default function PurchasesShow({
                         <Section>
                             <SectionHeader>
                                 <SectionTitle>
-                                    Purchase Items
+                                    Purchase items
                                 </SectionTitle>
                                 <Separator />
                             </SectionHeader>
@@ -334,7 +327,7 @@ export default function PurchasesShow({
                             <Section>
                                 <SectionHeader>
                                     <SectionTitle>
-                                        Payment History
+                                        Payment history
                                     </SectionTitle>
                                     <Separator />
                                 </SectionHeader>

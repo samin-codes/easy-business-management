@@ -46,10 +46,6 @@ export default function PartyForm({
             {({ errors, processing }) => (
                 <div className="space-y-6">
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Party details</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
                         <SectionContent>
                             <FieldGroup className="grid gap-4 md:grid-cols-2">
                                 <Field>
@@ -162,7 +158,7 @@ export default function PartyForm({
 
                     <Section>
                         <SectionHeader>
-                            <SectionTitle>Financials</SectionTitle>
+                            <SectionTitle>Financial information</SectionTitle>
                             <Separator />
                         </SectionHeader>
                         <SectionContent>

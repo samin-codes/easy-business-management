@@ -112,7 +112,7 @@ export default function ProductsEdit({
                     <Section>
                         <SectionHeader>
                             <div className="flex items-center justify-between gap-4">
-                                <SectionTitle>Product Variants</SectionTitle>
+                                <SectionTitle>Product variants</SectionTitle>
                                 <Button type="button" size="sm" onClick={handleCreateProductVariant}>
                                     <Plus className="size-4" />
                                     Add Variant
@@ -129,7 +129,7 @@ export default function ProductsEdit({
                     <Section>
                         <SectionHeader>
                             <div className="flex items-center justify-between gap-4">
-                                <SectionTitle>Unit Conversions</SectionTitle>
+                                <SectionTitle>Unit conversions</SectionTitle>
                                 <Button type="button" size="sm" onClick={handleCreateUnitConversion}>
                                     <Plus className="size-4" />
                                     Add Unit Conversion

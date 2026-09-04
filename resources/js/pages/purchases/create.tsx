@@ -293,14 +293,6 @@ export default function PurchasesCreate({
                     >
                         <div className="space-y-6">
                             <Section>
-                                <SectionHeader>
-                                    <SectionTitle>
-                                        Purchase Information
-                                    </SectionTitle>
-
-                                    <Separator />
-                                </SectionHeader>
-
                                 <SectionContent>
                                     <FieldGroup className="grid gap-4 md:grid-cols-2">
                                         <Field>
@@ -552,7 +544,7 @@ export default function PurchasesCreate({
                             <Section>
                                 <SectionHeader>
                                     <SectionTitle>
-                                        Purchase Items
+                                        Purchase items
                                     </SectionTitle>
 
                                     <Separator />

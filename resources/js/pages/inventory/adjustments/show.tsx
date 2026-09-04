@@ -79,11 +79,6 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                     {errors.adjustment && <AlertError errors={[errors.adjustment]} title="Stock adjustment deletion blocked." />}
 
                     <Section>
-                        <SectionHeader>
-                            <SectionTitle>Adjustment Information</SectionTitle>
-                            <Separator />
-                        </SectionHeader>
-
                         <SectionContent className="gap-4">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 <TextEntry label="Adjustment No" value={adjustment.adjustment_no} />
