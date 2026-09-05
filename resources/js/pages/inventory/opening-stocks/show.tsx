@@ -81,23 +81,16 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                             <Separator />
                         </SectionHeader>
 
-                        <SectionContent className="gap-3">
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry label="Opening stock no" value={openingStock.opening_stock_no} inlineLabel weight="medium" />
+                        <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                            <TextEntry label="Opening stock no" value={openingStock.opening_stock_no} />
 
-                                <TextEntry
-                                    label="Opening date"
-                                    value={format(parseISO(openingStock.opening_date), 'MMMM d, yyyy')}
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                            <TextEntry label="Opening date" value={format(parseISO(openingStock.opening_date), 'MMMM d, yyyy')} />
 
-                                <TextEntry label="Outlet" value={openingStock.outlet?.name} inlineLabel weight="medium" />
+                            <TextEntry label="Outlet" value={openingStock.outlet?.name} />
 
-                                <TextEntry label="Created by" value={openingStock.createdBy?.name} inlineLabel weight="medium" />
-                            </div>
+                            <TextEntry label="Created by" value={openingStock.createdBy?.name} />
 
-                            {openingStock.note && <TextEntry label="Note" value={openingStock.note} inlineLabel weight="medium" />}
+                            {openingStock.note && <TextEntry label="Note" value={openingStock.note} className="md:col-span-2" />}
                         </SectionContent>
                     </Section>
 
@@ -187,7 +180,9 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
 
                                                     <td className="ui-table-cell text-right font-semibold tabular-nums">
                                                         <div className="ui-table-column">
-                                                            <div className="ui-table-text py-2">{formatCurrency(openingStock.total_value)}</div>
+                                                            <div className="ui-table-text py-2">
+                                                                {formatCurrency(openingStock.total_value)}
+                                                            </div>
                                                         </div>
                                                     </td>
 

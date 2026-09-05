@@ -49,50 +49,38 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
                                 <Separator />
                             </SectionHeader>
 
-                            <SectionContent className="gap-3">
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Purchase No" value={purchase.purchase_no} />
-                                    <TextEntry label="Purchase Date" value={formatDate(new Date(purchase.purchase_date), 'MMMM d, yyyy')} />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Purchase No" value={purchase.purchase_no} />
+                                <TextEntry label="Purchase Date" value={formatDate(new Date(purchase.purchase_date), 'MMMM d, yyyy')} />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Outlet" value={purchase.outlet?.name} />
-                                    <TextEntry label="Supplier" value={purchase.supplier?.name} />
-                                </div>
+                                <TextEntry label="Outlet" value={purchase.outlet?.name} />
+                                <TextEntry label="Supplier" value={purchase.supplier?.name} />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Created By" value={purchase.createdBy?.name} />
+                                <TextEntry
+                                    label="Status"
+                                    value={purchase.status_label}
+                                    badge
+                                    color={
+                                        purchase.status === 'confirmed' ? 'success' : purchase.status === 'cancelled' ? 'danger' : 'gray'
+                                    }
+                                />
 
-                                    {purchase.note && <TextEntry label="Note" value={purchase.note} />}
-                                </div>
+                                <TextEntry
+                                    label="Payment Status"
+                                    value={purchase.payment_status_label}
+                                    badge
+                                    color={
+                                        purchase.payment_status === 'paid'
+                                            ? 'success'
+                                            : purchase.payment_status === 'partial'
+                                              ? 'warning'
+                                              : 'danger'
+                                    }
+                                />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Status"
-                                        value={purchase.status_label}
-                                        badge
-                                        color={
-                                            purchase.status === 'confirmed'
-                                                ? 'success'
-                                                : purchase.status === 'cancelled'
-                                                  ? 'danger'
-                                                  : 'gray'
-                                        }
-                                    />
+                                <TextEntry label="Created By" value={purchase.createdBy?.name} />
 
-                                    <TextEntry
-                                        label="Payment Status"
-                                        value={purchase.payment_status_label}
-                                        badge
-                                        color={
-                                            purchase.payment_status === 'paid'
-                                                ? 'success'
-                                                : purchase.payment_status === 'partial'
-                                                  ? 'warning'
-                                                  : 'danger'
-                                        }
-                                    />
-                                </div>
+                                {purchase.note && <TextEntry label="Note" value={purchase.note} className="md:col-span-2" />}
                             </SectionContent>
                         </Section>
 

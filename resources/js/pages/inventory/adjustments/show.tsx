@@ -82,41 +82,27 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                             <Separator />
                         </SectionHeader>
 
-                        <SectionContent className="gap-3">
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry label="Adjustment no" value={adjustment.adjustment_no} inlineLabel weight="medium" />
+                        <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                            <TextEntry label="Adjustment no" value={adjustment.adjustment_no} />
 
-                                <TextEntry
-                                    label="Adjustment date"
-                                    value={format(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')}
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                            <TextEntry label="Adjustment date" value={format(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')} />
 
-                                <TextEntry label="Outlet" value={adjustment.outlet?.name} inlineLabel weight="medium" />
+                            <TextEntry label="Outlet" value={adjustment.outlet?.name} />
 
-                                <TextEntry
-                                    label="Type"
-                                    value={
-                                        <Badge variant={adjustment.type === 'in' ? 'default' : 'destructive'}>
-                                            {adjustment.type_label ?? adjustment.type}
-                                        </Badge>
-                                    }
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                            <TextEntry
+                                label="Type"
+                                value={
+                                    <Badge variant={adjustment.type === 'in' ? 'default' : 'destructive'}>
+                                        {adjustment.type_label ?? adjustment.type}
+                                    </Badge>
+                                }
+                            />
 
-                                <TextEntry
-                                    label="Reason"
-                                    value={adjustment.reason_label ?? adjustment.reason}
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                            <TextEntry label="Reason" value={adjustment.reason_label ?? adjustment.reason} />
 
-                                <TextEntry label="Created by" value={adjustment.createdBy?.name} inlineLabel weight="medium" />
-                            </div>
+                            <TextEntry label="Created by" value={adjustment.createdBy?.name} />
 
-                            {adjustment.note && <TextEntry label="Note" value={adjustment.note} inlineLabel weight="medium" />}
+                            {adjustment.note && <TextEntry label="Note" value={adjustment.note} className="md:col-span-2" />}
                         </SectionContent>
                     </Section>
 
@@ -210,7 +196,9 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
 
                                                     <td className="ui-table-cell text-right font-semibold tabular-nums">
                                                         <div className="ui-table-column">
-                                                            <div className="ui-table-text py-2">{formatCurrency(adjustment.total_value)}</div>
+                                                            <div className="ui-table-text py-2">
+                                                                {formatCurrency(adjustment.total_value)}
+                                                            </div>
                                                         </div>
                                                     </td>
 

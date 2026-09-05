@@ -82,46 +82,38 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                                 <Separator />
                             </SectionHeader>
 
-                            <SectionContent className="gap-3">
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Sale No" value={sale.sale_no} />
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Sale No" value={sale.sale_no} />
 
-                                    <TextEntry label="Sale Date" value={formatDate(new Date(sale.sale_date), 'MMMM d, yyyy')} />
-                                </div>
+                                <TextEntry label="Sale Date" value={formatDate(new Date(sale.sale_date), 'MMMM d, yyyy')} />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Outlet" value={sale.outlet?.name} />
+                                <TextEntry label="Outlet" value={sale.outlet?.name} />
 
-                                    <TextEntry label="Customer" value={sale.customer?.name} />
-                                </div>
+                                <TextEntry label="Customer" value={sale.customer?.name} />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Created By" value={sale.createdBy?.name} />
+                                <TextEntry
+                                    label="Status"
+                                    value={sale.status_label}
+                                    badge
+                                    color={sale.status === 'confirmed' ? 'success' : sale.status === 'cancelled' ? 'danger' : 'gray'}
+                                />
 
-                                    {sale.note && <TextEntry label="Note" value={sale.note} />}
-                                </div>
+                                <TextEntry
+                                    label="Payment Status"
+                                    value={sale.payment_status_label}
+                                    badge
+                                    color={
+                                        sale.payment_status === 'paid'
+                                            ? 'success'
+                                            : sale.payment_status === 'partial'
+                                              ? 'warning'
+                                              : 'danger'
+                                    }
+                                />
 
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry
-                                        label="Status"
-                                        value={sale.status_label}
-                                        badge
-                                        color={sale.status === 'confirmed' ? 'success' : sale.status === 'cancelled' ? 'danger' : 'gray'}
-                                    />
+                                <TextEntry label="Created By" value={sale.createdBy?.name} />
 
-                                    <TextEntry
-                                        label="Payment Status"
-                                        value={sale.payment_status_label}
-                                        badge
-                                        color={
-                                            sale.payment_status === 'paid'
-                                                ? 'success'
-                                                : sale.payment_status === 'partial'
-                                                  ? 'warning'
-                                                  : 'danger'
-                                        }
-                                    />
-                                </div>
+                                {sale.note && <TextEntry label="Note" value={sale.note} className="md:col-span-2" />}
                             </SectionContent>
                         </Section>
 

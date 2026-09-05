@@ -81,25 +81,18 @@ export default function TransfersShow({ transfer }: { transfer: StockTransfer })
                             <Separator />
                         </SectionHeader>
 
-                        <SectionContent className="gap-3">
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry label="Transfer no" value={transfer.transfer_no} inlineLabel weight="medium" />
+                        <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                            <TextEntry label="Transfer no" value={transfer.transfer_no} />
 
-                                <TextEntry
-                                    label="Transfer date"
-                                    value={format(parseISO(transfer.transfer_date), 'MMMM d, yyyy')}
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                            <TextEntry label="Transfer date" value={format(parseISO(transfer.transfer_date), 'MMMM d, yyyy')} />
 
-                                <TextEntry label="From outlet" value={transfer.source_outlet?.name} inlineLabel weight="medium" />
+                            <TextEntry label="From outlet" value={transfer.source_outlet?.name} />
 
-                                <TextEntry label="To outlet" value={transfer.destination_outlet?.name} inlineLabel weight="medium" />
+                            <TextEntry label="To outlet" value={transfer.destination_outlet?.name} />
 
-                                <TextEntry label="Created by" value={transfer.createdBy?.name} inlineLabel weight="medium" />
-                            </div>
+                            <TextEntry label="Created by" value={transfer.createdBy?.name} />
 
-                            {transfer.note && <TextEntry label="Note" value={transfer.note} inlineLabel weight="medium" />}
+                            {transfer.note && <TextEntry label="Note" value={transfer.note} className="md:col-span-2" />}
                         </SectionContent>
                     </Section>
 
