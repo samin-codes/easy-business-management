@@ -132,49 +132,86 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                             </SectionHeader>
 
                             <SectionContent className="gap-6">
-                                <div className="overflow-hidden rounded-md border">
-                                    <div className="overflow-x-auto">
-                                        <table className="table-hover table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Product / Variant</th>
-                                                    <th>Unit</th>
-                                                    <th className="text-right">Qty</th>
-                                                    <th className="text-right">Unit Price</th>
-                                                    <th className="text-right">Line Total</th>
-                                                </tr>
-                                            </thead>
+                                <div className="ui-table">
+                                    <div className="ui-table-main">
+                                        <div className="ui-table-content">
+                                            <table className="ui-table-element">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="ui-table-header-cell">Product / Variant</th>
+                                                        <th className="ui-table-header-cell">Unit</th>
+                                                        <th className="ui-table-header-cell text-right">Qty</th>
+                                                        <th className="ui-table-header-cell text-right">Unit Price</th>
+                                                        <th className="ui-table-header-cell text-right">Line Total</th>
+                                                    </tr>
+                                                </thead>
 
-                                            <tbody>
-                                                {items.map((item) => (
-                                                    <tr key={item.id}>
-                                                        <td className="font-medium">{item.product_variant?.purchase_label ?? '-'}</td>
+                                                <tbody>
+                                                    {items.map((item) => (
+                                                        <tr key={item.id} className="ui-table-row">
+                                                            <td className="ui-table-cell font-medium">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text">
+                                                                        {item.product_variant?.purchase_label ?? '-'}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
 
-                                                        <td className="text-muted-foreground">{item.unit_of_measurement?.name ?? '-'}</td>
+                                                            <td className="ui-table-cell text-muted-foreground">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text">
+                                                                        {item.unit_of_measurement?.name ?? '-'}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
 
-                                                        <td className="text-right tabular-nums">{formatInteger(item.quantity)}</td>
+                                                            <td className="ui-table-cell text-right tabular-nums">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text">{formatInteger(item.quantity)}</div>
+                                                                </div>
+                                                            </td>
 
-                                                        <td className="text-right tabular-nums">{formatCurrency(item.unit_price)}</td>
+                                                            <td className="ui-table-cell text-right tabular-nums">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text">{formatCurrency(item.unit_price)}</div>
+                                                                </div>
+                                                            </td>
 
-                                                        <td className="text-right font-medium tabular-nums">
-                                                            {formatCurrency(item.line_total ?? 0)}
+                                                            <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text">
+                                                                        {formatCurrency(item.line_total ?? 0)}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+
+                                                <tfoot>
+                                                    <tr className="ui-table-row bg-muted/50">
+                                                        <td
+                                                            colSpan={4}
+                                                            className="ui-table-cell text-right font-medium text-muted-foreground"
+                                                        >
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text py-2">Subtotal</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text py-2">
+                                                                    <span className="font-semibold tabular-nums">
+                                                                        {formatCurrency(sale.subtotal)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                         </td>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-
-                                            <tfoot>
-                                                <tr className="table-light border-t">
-                                                    <td colSpan={4} className="text-right font-medium text-muted-foreground">
-                                                        Subtotal
-                                                    </td>
-
-                                                    <td className="text-right">
-                                                        <span className="font-semibold tabular-nums">{formatCurrency(sale.subtotal)}</span>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                                                </tfoot>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -222,53 +259,79 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                                 </SectionHeader>
 
                                 <SectionContent>
-                                    <div className="overflow-hidden rounded-md border">
-                                        <div className="overflow-x-auto">
-                                            <table className="table-hover table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Date</th>
-                                                        <th>Method</th>
-                                                        <th className="text-right">Amount</th>
-                                                        <th>Reference</th>
-                                                        <th>Note</th>
-                                                        <th>
-                                                            <span className="sr-only">Actions</span>
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-                                                    {payments.map((payment) => (
-                                                        <tr key={payment.id}>
-                                                            <td>{formatDate(new Date(payment.payment_date), 'MMMM d, yyyy')}</td>
-
-                                                            <td className="text-muted-foreground capitalize">
-                                                                {payment.payment_method.replace('_', ' ')}
-                                                            </td>
-
-                                                            <td className="text-right font-medium tabular-nums">
-                                                                {formatCurrency(payment.amount)}
-                                                            </td>
-
-                                                            <td className="text-muted-foreground">{payment.reference_no || '-'}</td>
-
-                                                            <td className="text-muted-foreground">{payment.note || '-'}</td>
-
-                                                            <td className="text-right">
-                                                                <DeleteAction
-                                                                    appearance="icon-button"
-                                                                    label={`Delete payment from ${formatDate(
-                                                                        new Date(payment.payment_date),
-                                                                        'MMMM d, yyyy',
-                                                                    )}`}
-                                                                    onClick={() => deletePayment(payment.id)}
-                                                                />
-                                                            </td>
+                                    <div className="ui-table">
+                                        <div className="ui-table-main">
+                                            <div className="ui-table-content">
+                                                <table className="ui-table-element">
+                                                    <thead>
+                                                        <tr>
+                                                            <th className="ui-table-header-cell">Date</th>
+                                                            <th className="ui-table-header-cell">Method</th>
+                                                            <th className="ui-table-header-cell text-right">Amount</th>
+                                                            <th className="ui-table-header-cell">Reference</th>
+                                                            <th className="ui-table-header-cell">Note</th>
+                                                            <th className="ui-table-header-cell ui-table-empty-header-cell">
+                                                                <span className="sr-only">Actions</span>
+                                                            </th>
                                                         </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        {payments.map((payment) => (
+                                                            <tr key={payment.id} className="ui-table-row">
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {formatDate(new Date(payment.payment_date), 'MMMM d, yyyy')}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-muted-foreground capitalize">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {payment.payment_method.replace('_', ' ')}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {formatCurrency(payment.amount)}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-muted-foreground">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">{payment.reference_no || '-'}</div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-muted-foreground">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">{payment.note || '-'}</div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-right">
+                                                                    <div className="ui-table-actions">
+                                                                        <DeleteAction
+                                                                            appearance="icon-button"
+                                                                            label={`Delete payment from ${formatDate(
+                                                                                new Date(payment.payment_date),
+                                                                                'MMMM d, yyyy',
+                                                                            )}`}
+                                                                            onClick={() => deletePayment(payment.id)}
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </SectionContent>

@@ -3,8 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,8 +37,6 @@ export default function TransfersIndex({
         { title: 'Inventory', href: inventoryIndex().url },
         { title: 'Stock Transfers', href: index().url },
     ];
-
-    const hasPages = transfers.last_page > 1;
 
     const reload = (overrides: Partial<Pick<QueryString, 'search' | 'source_outlet_id' | 'destination_outlet_id'>>) => {
         router.get(
@@ -150,81 +148,99 @@ export default function TransfersIndex({
                                 </Select>
                             </div>
 
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>Transfer No</th>
-                                            <th>Date</th>
-                                            <th>From</th>
-                                            <th>To</th>
-                                            <th className="text-right">Items</th>
-                                            <th className="text-right">Value</th>
-                                            <th>Created By</th>
-                                            <th className="text-right">
-                                                <span className="sr-only">Actions</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {transfers.data.length > 0 ? (
-                                            transfers.data.map((transfer) => (
-                                                <tr key={transfer.id}>
-                                                    <td className="font-medium">{transfer.transfer_no}</td>
-
-                                                    <td className="text-nowrap">
-                                                        {format(parseISO(transfer.transfer_date), 'MMM d, yyyy')}
-                                                    </td>
-
-                                                    <td>{transfer.source_outlet?.name ?? '-'}</td>
-
-                                                    <td>{transfer.destination_outlet?.name ?? '-'}</td>
-
-                                                    <td className="text-right tabular-nums">{transfer.items_count ?? 0}</td>
-
-                                                    <td className="text-right font-medium tabular-nums">
-                                                        {formatCurrency(transfer.total_value)}
-                                                    </td>
-
-                                                    <td>{transfer.createdBy?.name ?? '-'}</td>
-
-                                                    <td className="text-right">
-                                                        <div className="flex justify-end">
-                                                            <ViewAction
-                                                                url={show(transfer.id)}
-                                                                aria-label={`View transfer ${transfer.transfer_no}`}
-                                                            />
-                                                        </div>
-                                                    </td>
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element ui-table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">Transfer No</th>
+                                                    <th className="ui-table-header-cell">Date</th>
+                                                    <th className="ui-table-header-cell">From</th>
+                                                    <th className="ui-table-header-cell">To</th>
+                                                    <th className="ui-table-header-cell text-right">Items</th>
+                                                    <th className="ui-table-header-cell text-right">Value</th>
+                                                    <th className="ui-table-header-cell">Created By</th>
+                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <span className="sr-only">Actions</span>
+                                                    </th>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={8} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search || queryString.source_outlet_id || queryString.destination_outlet_id
-                                                        ? 'No stock transfers found.'
-                                                        : 'No stock transfers yet.'}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </thead>
 
-                            {hasPages && (
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                        {`Showing ${transfers.from}-${transfers.to} of ${transfers.total} stock transfers`}
+                                            <tbody>
+                                                {transfers.data.map((transfer) => (
+                                                    <tr key={transfer.id} className="ui-table-row">
+                                                        <td className="ui-table-cell font-medium">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{transfer.transfer_no}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-nowrap">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {format(parseISO(transfer.transfer_date), 'MMM d, yyyy')}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{transfer.source_outlet?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {transfer.destination_outlet?.name ?? '-'}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{transfer.items_count ?? 0}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{formatCurrency(transfer.total_value)}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{transfer.createdBy?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-actions">
+                                                                <ViewAction
+                                                                    url={show(transfer.id)}
+                                                                    aria-label={`View transfer ${transfer.transfer_no}`}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <PaginatorLinks
-                                        links={transfers.links}
-                                        only={reloadProps}
-                                        className="mx-0 w-auto justify-start sm:justify-end"
-                                    />
+                                    {transfers.data.length === 0 && (
+                                        <div className="ui-table-empty-state">
+                                            <div className="ui-table-empty-state-content">
+                                                {queryString.search || queryString.source_outlet_id || queryString.destination_outlet_id
+                                                    ? 'No stock transfers found.'
+                                                    : 'No stock transfers yet.'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <TablePagination paginator={transfers} only={reloadProps} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </section>
                 </div>

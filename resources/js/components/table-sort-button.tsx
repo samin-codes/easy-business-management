@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface TableSortButtonProps {
@@ -22,34 +21,22 @@ export function TableSortButton({
     preserveScroll = true,
     only,
 }: TableSortButtonProps) {
+    const SortIcon = isActive && currentDirection === 'asc' ? ChevronUp : ChevronDown;
+
     return (
-        <Button
-            variant="ghost"
-            size="sm"
-            className={cn('px-2 -mx-1', align === 'right' && 'flex-row-reverse')}
-            asChild
+        <Link
+            href={href}
+            preserveScroll={preserveScroll}
+            only={only}
+            aria-label={label}
+            className={cn(
+                'ui-table-header-cell-sort-button',
+                isActive && 'ui-table-header-cell-sort-button-sorted',
+                align === 'right' && 'justify-end rtl:flex-row-reverse',
+            )}
         >
-            <Link href={href} preserveScroll={preserveScroll} only={only}>
-                {label}
-                <span className="flex flex-col" aria-hidden="true">
-                    <ChevronUp
-                        className={cn(
-                            'size-3',
-                            isActive && currentDirection === 'asc'
-                                ? 'text-primary'
-                                : 'text-muted-foreground',
-                        )}
-                    />
-                    <ChevronDown
-                        className={cn(
-                            'size-3',
-                            isActive && currentDirection === 'desc'
-                                ? 'text-primary'
-                                : 'text-muted-foreground',
-                        )}
-                    />
-                </span>
-            </Link>
-        </Button>
+            {label}
+            <SortIcon aria-hidden="true" className="ui-table-header-cell-sort-icon" />
+        </Link>
     );
 }

@@ -47,7 +47,6 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-6xl space-y-8">
-
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <Heading title={openingStock.opening_stock_no} />
 
@@ -84,12 +83,7 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
 
                         <SectionContent className="gap-3">
                             <div className="grid gap-3 md:grid-cols-2">
-                                <TextEntry
-                                    label="Opening stock no"
-                                    value={openingStock.opening_stock_no}
-                                    inlineLabel
-                                    weight="medium"
-                                />
+                                <TextEntry label="Opening stock no" value={openingStock.opening_stock_no} inlineLabel weight="medium" />
 
                                 <TextEntry
                                     label="Opening date"
@@ -114,57 +108,103 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                         </SectionHeader>
 
                         <SectionContent>
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product / Variant</th>
-                                            <th>SKU</th>
-                                            <th className="text-right">Entered Qty</th>
-                                            <th className="text-right">Base Qty</th>
-                                            <th className="text-right">Inventory Cost</th>
-                                            <th className="text-right">Value</th>
-                                            <th>Note</th>
-                                        </tr>
-                                    </thead>
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">Product / Variant</th>
+                                                    <th className="ui-table-header-cell">SKU</th>
+                                                    <th className="ui-table-header-cell text-right">Entered Qty</th>
+                                                    <th className="ui-table-header-cell text-right">Base Qty</th>
+                                                    <th className="ui-table-header-cell text-right">Inventory Cost</th>
+                                                    <th className="ui-table-header-cell text-right">Value</th>
+                                                    <th className="ui-table-header-cell">Note</th>
+                                                </tr>
+                                            </thead>
 
-                                    <tbody>
-                                        {items.map((item) => (
-                                            <tr key={item.id}>
-                                                <td className="font-medium">{item.product_variant?.purchase_label ?? '-'}</td>
+                                            <tbody>
+                                                {items.map((item) => (
+                                                    <tr key={item.id} className="ui-table-row">
+                                                        <td className="ui-table-cell font-medium">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {item.product_variant?.purchase_label ?? '-'}
+                                                                </div>
+                                                            </div>
+                                                        </td>
 
-                                                <td>{item.product_variant?.sku ?? '-'}</td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{item.product_variant?.sku ?? '-'}</div>
+                                                            </div>
+                                                        </td>
 
-                                                <td className="text-right tabular-nums">
-                                                    {formatQuantity(item.quantity)}{' '}
-                                                    {item.unit_of_measurement?.code ?? item.unit_of_measurement?.name}
-                                                </td>
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {formatQuantity(item.quantity)}{' '}
+                                                                    {item.unit_of_measurement?.code ?? item.unit_of_measurement?.name}
+                                                                </div>
+                                                            </div>
+                                                        </td>
 
-                                                <td className="text-right tabular-nums">{formatQuantity(item.base_quantity)}</td>
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{formatQuantity(item.base_quantity)}</div>
+                                                            </div>
+                                                        </td>
 
-                                                <td className="text-right tabular-nums">{formatCurrency(item.base_unit_cost)}</td>
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{formatCurrency(item.base_unit_cost)}</div>
+                                                            </div>
+                                                        </td>
 
-                                                <td className="text-right font-medium tabular-nums">{formatCurrency(item.total_cost)}</td>
+                                                        <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{formatCurrency(item.total_cost)}</div>
+                                                            </div>
+                                                        </td>
 
-                                                <td>{item.note ?? '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{item.note ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
 
-                                    <tfoot>
-                                        <tr className="table-light border-t">
-                                            <td colSpan={5} className="text-right font-medium">
-                                                Total
-                                            </td>
+                                            <tfoot>
+                                                <tr className="ui-table-row bg-muted/50">
+                                                    <td colSpan={5} className="ui-table-cell text-right font-medium">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text py-2">Total</div>
+                                                        </div>
+                                                    </td>
 
-                                            <td className="text-right font-semibold tabular-nums">
-                                                {formatCurrency(openingStock.total_value)}
-                                            </td>
+                                                    <td className="ui-table-cell text-right font-semibold tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text py-2">{formatCurrency(openingStock.total_value)}</div>
+                                                        </div>
+                                                    </td>
 
-                                            <td />
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                                    <td className="ui-table-cell ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text py-2">
+                                                                <div className="ui-table-column">
+                                                                    <div className="ui-table-text py-2" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </SectionContent>
                     </Section>

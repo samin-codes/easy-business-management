@@ -3,8 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -164,109 +164,139 @@ export default function SalesIndex({
                         )}
                     </div>
 
-                    <div className="overflow-x-auto rounded-md border">
-                        <table className="table-hover table">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <TableSortButton
-                                            label="Sale No"
-                                            href={sortUrl('sale_no')}
-                                            isActive={queryString.sort === 'sale_no'}
-                                            currentDirection={queryString.direction}
-                                            only={only}
-                                        />
-                                    </th>
+                    <div className="ui-table">
+                        <div className="ui-table-main">
+                            <div className="ui-table-content">
+                                <table className="ui-table-element ui-table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th className="ui-table-header-cell">
+                                                <TableSortButton
+                                                    label="Sale No"
+                                                    href={sortUrl('sale_no')}
+                                                    isActive={queryString.sort === 'sale_no'}
+                                                    currentDirection={queryString.direction}
+                                                    only={only}
+                                                />
+                                            </th>
 
-                                    <th>
-                                        <TableSortButton
-                                            label="Date"
-                                            href={sortUrl('sale_date')}
-                                            isActive={queryString.sort === 'sale_date'}
-                                            currentDirection={queryString.direction}
-                                            only={only}
-                                        />
-                                    </th>
+                                            <th className="ui-table-header-cell">
+                                                <TableSortButton
+                                                    label="Date"
+                                                    href={sortUrl('sale_date')}
+                                                    isActive={queryString.sort === 'sale_date'}
+                                                    currentDirection={queryString.direction}
+                                                    only={only}
+                                                />
+                                            </th>
 
-                                    <th>Customer</th>
-                                    <th>Outlet</th>
+                                            <th className="ui-table-header-cell">Customer</th>
+                                            <th className="ui-table-header-cell">Outlet</th>
 
-                                    <th className="text-right">
-                                        <TableSortButton
-                                            label="Total"
-                                            href={sortUrl('total_amount')}
-                                            isActive={queryString.sort === 'total_amount'}
-                                            currentDirection={queryString.direction}
-                                            align="right"
-                                            only={only}
-                                        />
-                                    </th>
+                                            <th className="ui-table-header-cell text-right">
+                                                <TableSortButton
+                                                    label="Total"
+                                                    href={sortUrl('total_amount')}
+                                                    isActive={queryString.sort === 'total_amount'}
+                                                    currentDirection={queryString.direction}
+                                                    align="right"
+                                                    only={only}
+                                                />
+                                            </th>
 
-                                    <th className="text-right">Paid</th>
-                                    <th className="text-right">Due</th>
-                                    <th className="text-center">Payment Status</th>
-                                    <th />
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {sales.data.length ? (
-                                    sales.data.map((sale) => (
-                                        <tr key={sale.id}>
-                                            <td className="font-medium">{sale.sale_no}</td>
-
-                                            <td>{format(parseISO(sale.sale_date), 'MMM d, yyyy')}</td>
-
-                                            <td>{sale.customer?.name ?? '-'}</td>
-
-                                            <td>{sale.outlet?.name ?? '-'}</td>
-
-                                            <td className="text-right tabular-nums">{formatCurrency(sale.total_amount)}</td>
-
-                                            <td className="text-right tabular-nums">{formatCurrency(sale.paid_amount)}</td>
-
-                                            <td className="text-right tabular-nums">{formatCurrency(sale.due_amount)}</td>
-
-                                            <td className="text-center">
-                                                <Badge
-                                                    variant="outline"
-                                                    className={
-                                                        sale.payment_status === 'paid'
-                                                            ? 'border-transparent bg-emerald-100 text-emerald-800'
-                                                            : sale.payment_status === 'partial'
-                                                              ? 'border-transparent bg-amber-100 text-amber-800'
-                                                              : 'border-transparent bg-red-100 text-red-800'
-                                                    }
-                                                >
-                                                    {sale.payment_status_label ?? sale.payment_status}
-                                                </Badge>
-                                            </td>
-
-                                            <td className="text-right">
-                                                <ViewAction url={show(sale.id)} aria-label={`View sale ${sale.sale_no}`} />
-                                            </td>
+                                            <th className="ui-table-header-cell text-right">Paid</th>
+                                            <th className="ui-table-header-cell text-right">Due</th>
+                                            <th className="ui-table-header-cell text-center">Payment Status</th>
+                                            <th className="ui-table-header-cell ui-table-empty-header-cell" />
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={9} className="h-24 text-center text-muted-foreground">
-                                            {queryString.search || queryString.outlet_id ? 'No sales found.' : 'No sales yet.'}
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
 
-                    {sales.last_page > 1 && (
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                                Showing {sales.from}-{sales.to} of {sales.total} sales
-                            </span>
+                                    <tbody>
+                                        {sales.data.map((sale) => (
+                                            <tr key={sale.id} className="ui-table-row">
+                                                <td className="ui-table-cell font-medium">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{sale.sale_no}</div>
+                                                    </div>
+                                                </td>
 
-                            <PaginatorLinks links={sales.links} only={only} className="mx-0 w-auto" />
+                                                <td className="ui-table-cell">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">
+                                                            {format(parseISO(sale.sale_date), 'MMM d, yyyy')}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{sale.customer?.name ?? '-'}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{sale.outlet?.name ?? '-'}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell text-right tabular-nums">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{formatCurrency(sale.total_amount)}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell text-right tabular-nums">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{formatCurrency(sale.paid_amount)}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell text-right tabular-nums">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">{formatCurrency(sale.due_amount)}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell text-center">
+                                                    <div className="ui-table-column">
+                                                        <div className="ui-table-text">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={
+                                                                    sale.payment_status === 'paid'
+                                                                        ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                                        : sale.payment_status === 'partial'
+                                                                          ? 'border-transparent bg-amber-100 text-amber-800'
+                                                                          : 'border-transparent bg-red-100 text-red-800'
+                                                                }
+                                                            >
+                                                                {sale.payment_status_label ?? sale.payment_status}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="ui-table-cell text-right">
+                                                    <div className="ui-table-actions">
+                                                        <ViewAction url={show(sale.id)} aria-label={`View sale ${sale.sale_no}`} />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {sales.data.length === 0 && (
+                                <div className="ui-table-empty-state">
+                                    <div className="ui-table-empty-state-content">
+                                        {queryString.search || queryString.outlet_id ? 'No sales found.' : 'No sales yet.'}
+                                    </div>
+                                </div>
+                            )}
+                            <TablePagination paginator={sales} only={only} />
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </AppLayout>

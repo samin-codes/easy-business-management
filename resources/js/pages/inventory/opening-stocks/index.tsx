@@ -3,8 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,8 +38,6 @@ export default function OpeningStocksIndex({
         { title: 'Inventory', href: inventoryIndex().url },
         { title: 'Opening Stock', href: index().url },
     ];
-
-    const hasPages = openingStocks.last_page > 1;
 
     const reload = (overrides: Partial<Pick<QueryString, 'search' | 'outlet_id'>>) => {
         router.get(
@@ -128,78 +126,92 @@ export default function OpeningStocksIndex({
                                 </Select>
                             </div>
 
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>Opening Stock No</th>
-                                            <th>Date</th>
-                                            <th>Outlet</th>
-                                            <th className="text-right">Items</th>
-                                            <th className="text-right">Value</th>
-                                            <th>Created By</th>
-                                            <th className="text-right">
-                                                <span className="sr-only">Actions</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {openingStocks.data.length > 0 ? (
-                                            openingStocks.data.map((openingStock) => (
-                                                <tr key={openingStock.id}>
-                                                    <td className="font-medium">{openingStock.opening_stock_no}</td>
-
-                                                    <td className="text-nowrap">
-                                                        {format(parseISO(openingStock.opening_date), 'MMM d, yyyy')}
-                                                    </td>
-
-                                                    <td>{openingStock.outlet?.name ?? '-'}</td>
-
-                                                    <td className="text-right tabular-nums">{openingStock.items_count ?? 0}</td>
-
-                                                    <td className="text-right font-medium tabular-nums">
-                                                        {formatCurrency(openingStock.total_value)}
-                                                    </td>
-
-                                                    <td>{openingStock.createdBy?.name ?? '-'}</td>
-
-                                                    <td className="text-right">
-                                                        <div className="flex justify-end">
-                                                            <ViewAction
-                                                                url={show(openingStock.id)}
-                                                                aria-label={`View opening stock ${openingStock.opening_stock_no}`}
-                                                            />
-                                                        </div>
-                                                    </td>
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element ui-table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">Opening Stock No</th>
+                                                    <th className="ui-table-header-cell">Date</th>
+                                                    <th className="ui-table-header-cell">Outlet</th>
+                                                    <th className="ui-table-header-cell text-right">Items</th>
+                                                    <th className="ui-table-header-cell text-right">Value</th>
+                                                    <th className="ui-table-header-cell">Created By</th>
+                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <span className="sr-only">Actions</span>
+                                                    </th>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={7} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search || queryString.outlet_id
-                                                        ? 'No opening stock records found.'
-                                                        : 'No opening stock records yet.'}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </thead>
 
-                            {hasPages && (
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                        {`Showing ${openingStocks.from}-${openingStocks.to} of ${openingStocks.total} opening stock records`}
+                                            <tbody>
+                                                {openingStocks.data.map((openingStock) => (
+                                                    <tr key={openingStock.id} className="ui-table-row">
+                                                        <td className="ui-table-cell font-medium">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{openingStock.opening_stock_no}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-nowrap">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {format(parseISO(openingStock.opening_date), 'MMM d, yyyy')}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{openingStock.outlet?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{openingStock.items_count ?? 0}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {formatCurrency(openingStock.total_value)}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{openingStock.createdBy?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-actions">
+                                                                <ViewAction
+                                                                    url={show(openingStock.id)}
+                                                                    aria-label={`View opening stock ${openingStock.opening_stock_no}`}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <PaginatorLinks
-                                        links={openingStocks.links}
-                                        only={reloadProps}
-                                        className="mx-0 w-auto justify-start sm:justify-end"
-                                    />
+                                    {openingStocks.data.length === 0 && (
+                                        <div className="ui-table-empty-state">
+                                            <div className="ui-table-empty-state-content">
+                                                {queryString.search || queryString.outlet_id
+                                                    ? 'No opening stock records found.'
+                                                    : 'No opening stock records yet.'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <TablePagination paginator={openingStocks} only={reloadProps} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </section>
                 </div>

@@ -3,8 +3,8 @@ import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { EditAction, ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,6 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
         flash: { status?: string };
         errors: Record<string, string>;
     }>().props;
-
-    const hasPages = parties.last_page > 1;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -104,95 +102,103 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                 )}
                             </div>
 
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                <TableSortButton
-                                                    label="Name"
-                                                    href={
-                                                        index({
-                                                            query: {
-                                                                search: queryString.search ?? undefined,
-                                                                sort: 'name',
-                                                                direction:
-                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
-                                                                        ? 'desc'
-                                                                        : 'asc',
-                                                                page: 1,
-                                                            },
-                                                        }).url
-                                                    }
-                                                    isActive={queryString.sort === 'name'}
-                                                    currentDirection={queryString.direction}
-                                                    only={reloadProps}
-                                                />
-                                            </th>
-                                            <th>Party Type</th>
-                                            <th>Mobile</th>
-                                            <th>Status</th>
-                                            <th className="text-right">
-                                                <span className="sr-only">Actions</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {parties.data.length > 0 ? (
-                                            parties.data.map((party) => (
-                                                <tr key={party.id}>
-                                                    <td>
-                                                        <div className="font-medium">{party.name}</div>
-                                                        {party.trade_name && (
-                                                            <div className="text-sm text-muted-foreground">{party.trade_name}</div>
-                                                        )}
-                                                    </td>
-                                                    <td>{party.party_type_label ?? '-'}</td>
-                                                    <td>{party.mobile ?? '-'}</td>
-                                                    <td>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={
-                                                                party.status === 'active'
-                                                                    ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                                                    : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element ui-table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">
+                                                        <TableSortButton
+                                                            label="Name"
+                                                            href={
+                                                                index({
+                                                                    query: {
+                                                                        search: queryString.search ?? undefined,
+                                                                        sort: 'name',
+                                                                        direction:
+                                                                            queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                                ? 'desc'
+                                                                                : 'asc',
+                                                                        page: 1,
+                                                                    },
+                                                                }).url
                                                             }
-                                                        >
-                                                            {party.status_label ?? '-'}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="text-right">
-                                                        <div className="flex justify-end gap-3">
-                                                            <ViewAction url={show(party.id)} aria-label={`View ${party.name}`} />
-                                                            <EditAction url={edit(party.id)} aria-label={`Edit ${party.name}`} />
-                                                        </div>
-                                                    </td>
+                                                            isActive={queryString.sort === 'name'}
+                                                            currentDirection={queryString.direction}
+                                                            only={reloadProps}
+                                                        />
+                                                    </th>
+                                                    <th className="ui-table-header-cell">Party Type</th>
+                                                    <th className="ui-table-header-cell">Mobile</th>
+                                                    <th className="ui-table-header-cell">Status</th>
+                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <span className="sr-only">Actions</span>
+                                                    </th>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={5} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search ? 'No parties found.' : 'No parties yet.'}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {hasPages && (
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                        {`Showing ${parties.from}-${parties.to} of ${parties.total} parties`}
+                                            </thead>
+                                            <tbody>
+                                                {parties.data.map((party) => (
+                                                    <tr key={party.id} className="ui-table-row">
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    <div className="font-medium">{party.name}</div>
+                                                                    {party.trade_name && (
+                                                                        <div className="text-sm text-muted-foreground">
+                                                                            {party.trade_name}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{party.party_type_label ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{party.mobile ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={
+                                                                            party.status === 'active'
+                                                                                ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                                                                : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                                                                        }
+                                                                    >
+                                                                        {party.status_label ?? '-'}
+                                                                    </Badge>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-actions">
+                                                                <ViewAction url={show(party.id)} aria-label={`View ${party.name}`} />
+                                                                <EditAction url={edit(party.id)} aria-label={`Edit ${party.name}`} />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <PaginatorLinks
-                                        links={parties.links}
-                                        only={reloadProps}
-                                        className="mx-0 w-auto justify-start sm:justify-end"
-                                    />
+                                    {parties.data.length === 0 && (
+                                        <div className="ui-table-empty-state">
+                                            <div className="ui-table-empty-state-content">
+                                                {queryString.search ? 'No parties found.' : 'No parties yet.'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <TablePagination paginator={parties} only={reloadProps} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </section>
                 </div>

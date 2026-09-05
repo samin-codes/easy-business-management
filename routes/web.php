@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BusinessController;
-use App\Http\Controllers\DemoTableController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OpeningStockController;
 use App\Http\Controllers\OutletController;
@@ -26,8 +25,6 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
-    Route::get('table', DemoTableController::class)->name('table');
-
     Route::singleton('business', BusinessController::class);
     Route::resource('businesses.outlets', OutletController::class)
         ->except(['index', 'show'])

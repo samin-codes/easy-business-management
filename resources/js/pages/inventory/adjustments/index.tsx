@@ -3,8 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,8 +37,6 @@ export default function AdjustmentsIndex({
         { title: 'Inventory', href: inventoryIndex().url },
         { title: 'Stock Adjustments', href: index().url },
     ];
-
-    const hasPages = adjustments.last_page > 1;
 
     const reload = (overrides: Partial<Pick<QueryString, 'search' | 'outlet_id'>>) => {
         router.get(
@@ -127,88 +125,112 @@ export default function AdjustmentsIndex({
                                 </Select>
                             </div>
 
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>Adjustment No</th>
-                                            <th>Date</th>
-                                            <th>Outlet</th>
-                                            <th>Type</th>
-                                            <th>Reason</th>
-                                            <th className="text-right">Items</th>
-                                            <th className="text-right">Value</th>
-                                            <th>Created By</th>
-                                            <th className="text-right">
-                                                <span className="sr-only">Actions</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {adjustments.data.length > 0 ? (
-                                            adjustments.data.map((adjustment) => (
-                                                <tr key={adjustment.id}>
-                                                    <td className="font-medium">{adjustment.adjustment_no}</td>
-
-                                                    <td className="text-nowrap">
-                                                        {format(parseISO(adjustment.adjustment_date), 'MMM d, yyyy')}
-                                                    </td>
-
-                                                    <td>{adjustment.outlet?.name ?? '-'}</td>
-
-                                                    <td>
-                                                        <Badge variant={adjustment.type === 'in' ? 'default' : 'destructive'}>
-                                                            {adjustment.type_label ?? adjustment.type}
-                                                        </Badge>
-                                                    </td>
-
-                                                    <td>{adjustment.reason_label ?? adjustment.reason}</td>
-
-                                                    <td className="text-right tabular-nums">{adjustment.items_count ?? 0}</td>
-
-                                                    <td className="text-right font-medium tabular-nums">
-                                                        {formatCurrency(adjustment.total_value)}
-                                                    </td>
-
-                                                    <td>{adjustment.createdBy?.name ?? '-'}</td>
-
-                                                    <td className="text-right">
-                                                        <div className="flex justify-end">
-                                                            <ViewAction
-                                                                url={show(adjustment.id)}
-                                                                aria-label={`View adjustment ${adjustment.adjustment_no}`}
-                                                            />
-                                                        </div>
-                                                    </td>
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element ui-table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">Adjustment No</th>
+                                                    <th className="ui-table-header-cell">Date</th>
+                                                    <th className="ui-table-header-cell">Outlet</th>
+                                                    <th className="ui-table-header-cell">Type</th>
+                                                    <th className="ui-table-header-cell">Reason</th>
+                                                    <th className="ui-table-header-cell text-right">Items</th>
+                                                    <th className="ui-table-header-cell text-right">Value</th>
+                                                    <th className="ui-table-header-cell">Created By</th>
+                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <span className="sr-only">Actions</span>
+                                                    </th>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={9} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search || queryString.outlet_id
-                                                        ? 'No stock adjustments found.'
-                                                        : 'No stock adjustments yet.'}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            </thead>
 
-                            {hasPages && (
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                        {`Showing ${adjustments.from}-${adjustments.to} of ${adjustments.total} stock adjustments`}
+                                            <tbody>
+                                                {adjustments.data.map((adjustment) => (
+                                                    <tr key={adjustment.id} className="ui-table-row">
+                                                        <td className="ui-table-cell font-medium">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{adjustment.adjustment_no}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-nowrap">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {format(parseISO(adjustment.adjustment_date), 'MMM d, yyyy')}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{adjustment.outlet?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    <Badge variant={adjustment.type === 'in' ? 'default' : 'destructive'}>
+                                                                        {adjustment.type_label ?? adjustment.type}
+                                                                    </Badge>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {adjustment.reason_label ?? adjustment.reason}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{adjustment.items_count ?? 0}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    {formatCurrency(adjustment.total_value)}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{adjustment.createdBy?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-actions">
+                                                                <ViewAction
+                                                                    url={show(adjustment.id)}
+                                                                    aria-label={`View adjustment ${adjustment.adjustment_no}`}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <PaginatorLinks
-                                        links={adjustments.links}
-                                        only={reloadProps}
-                                        className="mx-0 w-auto justify-start sm:justify-end"
-                                    />
+                                    {adjustments.data.length === 0 && (
+                                        <div className="ui-table-empty-state">
+                                            <div className="ui-table-empty-state-content">
+                                                {queryString.search || queryString.outlet_id
+                                                    ? 'No stock adjustments found.'
+                                                    : 'No stock adjustments yet.'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <TablePagination paginator={adjustments} only={reloadProps} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </section>
                 </div>

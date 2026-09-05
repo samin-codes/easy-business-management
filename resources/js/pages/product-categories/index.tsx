@@ -2,8 +2,8 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { EditAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,8 +37,6 @@ export default function ProductCategoriesIndex({
     const { flash } = usePage<{
         flash: { status?: string };
     }>().props;
-
-    const hasPages = productCategories.last_page > 1;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -107,92 +105,94 @@ export default function ProductCategoriesIndex({
                                 )}
                             </div>
 
-                            <div className="overflow-x-auto rounded-md border">
-                                <table className="table-hover table">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                <TableSortButton
-                                                    label="Name"
-                                                    href={
-                                                        index({
-                                                            query: {
-                                                                search: queryString.search ?? undefined,
-                                                                sort: 'name',
-                                                                direction:
-                                                                    queryString.sort === 'name' && queryString.direction === 'asc'
-                                                                        ? 'desc'
-                                                                        : 'asc',
-                                                                page: 1,
-                                                            },
-                                                        }).url
-                                                    }
-                                                    isActive={queryString.sort === 'name'}
-                                                    currentDirection={queryString.direction}
-                                                    only={reloadProps}
-                                                />
-                                            </th>
-                                            <th>Business</th>
-                                            <th>Status</th>
-                                            <th className="text-right">
-                                                <span className="sr-only">Actions</span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {productCategories.data.length > 0 ? (
-                                            productCategories.data.map((productCategory) => (
-                                                <tr key={productCategory.id}>
-                                                    <td>
-                                                        <div className="font-medium">{productCategory.name}</div>
-                                                    </td>
-                                                    <td>{productCategory.business?.name ?? '-'}</td>
-                                                    <td>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={
-                                                                productCategory.status === 'active'
-                                                                    ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                                                    : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                            <div className="ui-table">
+                                <div className="ui-table-main">
+                                    <div className="ui-table-content">
+                                        <table className="ui-table-element ui-table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th className="ui-table-header-cell">
+                                                        <TableSortButton
+                                                            label="Name"
+                                                            href={
+                                                                index({
+                                                                    query: {
+                                                                        search: queryString.search ?? undefined,
+                                                                        sort: 'name',
+                                                                        direction:
+                                                                            queryString.sort === 'name' && queryString.direction === 'asc'
+                                                                                ? 'desc'
+                                                                                : 'asc',
+                                                                        page: 1,
+                                                                    },
+                                                                }).url
                                                             }
-                                                        >
-                                                            {productCategory.status_label ?? '-'}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="text-right">
-                                                        <div className="flex justify-end gap-3">
-                                                            <EditAction
-                                                                url={edit(productCategory.id)}
-                                                                aria-label={`Edit ${productCategory.name}`}
-                                                            />
-                                                        </div>
-                                                    </td>
+                                                            isActive={queryString.sort === 'name'}
+                                                            currentDirection={queryString.direction}
+                                                            only={reloadProps}
+                                                        />
+                                                    </th>
+                                                    <th className="ui-table-header-cell">Business</th>
+                                                    <th className="ui-table-header-cell">Status</th>
+                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <span className="sr-only">Actions</span>
+                                                    </th>
                                                 </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={5} className="h-24 text-center text-muted-foreground">
-                                                    {queryString.search ? 'No product categories found.' : 'No product categories yet.'}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {hasPages && (
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                        {`Showing ${productCategories.from}-${productCategories.to} of ${productCategories.total} categories`}
+                                            </thead>
+                                            <tbody>
+                                                {productCategories.data.map((productCategory) => (
+                                                    <tr key={productCategory.id} className="ui-table-row">
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    <div className="font-medium">{productCategory.name}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">{productCategory.business?.name ?? '-'}</div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text">
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={
+                                                                            productCategory.status === 'active'
+                                                                                ? 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                                                                : 'border-transparent bg-gray-300 text-gray-800 hover:bg-gray-300'
+                                                                        }
+                                                                    >
+                                                                        {productCategory.status_label ?? '-'}
+                                                                    </Badge>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="ui-table-cell text-right">
+                                                            <div className="ui-table-actions">
+                                                                <EditAction
+                                                                    url={edit(productCategory.id)}
+                                                                    aria-label={`Edit ${productCategory.name}`}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-
-                                    <PaginatorLinks
-                                        links={productCategories.links}
-                                        only={reloadProps}
-                                        className="mx-0 w-auto justify-start sm:justify-end"
-                                    />
+                                    {productCategories.data.length === 0 && (
+                                        <div className="ui-table-empty-state">
+                                            <div className="ui-table-empty-state-content">
+                                                {queryString.search ? 'No product categories found.' : 'No product categories yet.'}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <TablePagination paginator={productCategories} only={reloadProps} />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </section>
                 </div>

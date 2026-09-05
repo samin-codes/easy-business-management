@@ -153,76 +153,218 @@
 }
 
 @layer components {
-    /* Base Table */
-    .table {
-        @apply w-full text-sm text-left caption-bottom;
-    }
-    .table thead tr {
-        @apply border-b border-border;
-    }
-    .table tbody tr {
-        @apply border-b border-border last:border-0;
-    }
-    .table th {
-        @apply h-10 px-3 font-medium text-foreground align-middle;
-    }
-    .table td {
-        @apply p-3 align-middle;
+    .ui-table {
+        @apply relative flex overflow-hidden rounded-md border border-border bg-background;
     }
 
-    /* Modifiers */
-    .table-striped tbody tr:nth-child(odd) {
-        @apply bg-muted/30;
-    }
-    .table-hover tbody tr:hover {
-        @apply bg-muted/50 transition-colors;
-    }
-    .table-bordered {
-        @apply border border-border;
-    }
-    .table-bordered th,
-    .table-bordered td {
-        @apply border border-border;
-    }
-    .table-borderless tbody tr,
-    .table-borderless thead tr {
-        @apply border-0;
+    .ui-table-main {
+        @apply min-w-0 flex-1;
     }
 
-    /* Sizing */
-    .table-sm th {
-        @apply h-8 px-2;
-    }
-    .table-sm td {
-        @apply p-2;
+    .ui-table-content {
+        @apply relative overflow-x-auto;
     }
 
-    /* Contextual Variants (Colors) */
-    .table-primary {
-        @apply bg-primary/10 text-primary-foreground;
+    .ui-table-element {
+        @apply w-full table-auto divide-y divide-border text-start text-sm;
     }
-    .table-secondary {
-        @apply bg-secondary text-secondary-foreground;
+
+    .ui-table-element > thead {
+        @apply divide-y divide-border;
     }
-    .table-success {
-        @apply bg-emerald-500/10 text-emerald-700 dark:text-emerald-400;
-    }
-    .table-info {
-        @apply bg-cyan-500/10 text-cyan-700 dark:text-cyan-400;
-    }
-    .table-warning {
-        @apply bg-amber-500/10 text-amber-700 dark:text-amber-400;
-    }
-    .table-danger {
-        @apply bg-destructive/10 text-destructive-foreground;
-    }
-    .table-light {
+
+    .ui-table-element > thead > tr {
         @apply bg-muted/50;
     }
-    .table-dark {
-        @apply bg-primary text-primary-foreground;
+
+    .ui-table-element > tbody {
+        @apply divide-y divide-border whitespace-nowrap;
     }
-    .table-active {
-        @apply bg-muted/80;
+
+    .ui-table-element > tfoot {
+        @apply divide-y divide-border border-t border-border bg-muted/30 whitespace-nowrap;
     }
+
+    .ui-table-header-cell {
+        @apply h-10 px-3 text-start align-middle font-semibold whitespace-nowrap text-foreground;
+    }
+
+    .ui-table-empty-header-cell {
+        @apply w-1;
+    }
+
+    .ui-table-header-cell-sort-button {
+        @apply flex w-full cursor-pointer items-center justify-start gap-1;
+    }
+
+    .ui-table-header-cell-sort-icon {
+        @apply size-5 shrink-0 text-muted-foreground transition-colors duration-75;
+    }
+
+    .ui-table-header-cell-sorted .ui-table-header-cell-sort-icon {
+        @apply text-foreground;
+    }
+
+    .ui-table-header-cell-sort-button-sorted .ui-table-header-cell-sort-icon {
+        @apply text-foreground;
+    }
+
+    .ui-table-header-cell:not(.ui-table-header-cell-sorted) .ui-table-header-cell-sort-button:hover .ui-table-header-cell-sort-icon,
+    .ui-table-header-cell:not(.ui-table-header-cell-sorted)
+        .ui-table-header-cell-sort-button:focus-visible
+        .ui-table-header-cell-sort-icon {
+        @apply text-foreground;
+    }
+
+    .ui-table-row {
+        @apply transition-colors duration-75;
+    }
+
+    .ui-table-element.ui-table-hover > tbody > .ui-table-row:hover,
+    .ui-table-row[data-state='selected'] {
+        @apply bg-muted/50;
+    }
+
+    .ui-table-element.ui-table-striped > tbody > .ui-table-row:nth-child(even) {
+        @apply bg-muted/50;
+    }
+
+    .ui-table-cell {
+        @apply p-0 text-foreground;
+    }
+
+    .ui-table-column {
+        @apply flex w-full justify-start;
+    }
+
+    .ui-table-text {
+        @apply w-full px-3 py-2.5 text-sm leading-6;
+    }
+
+    .ui-table-cell:has(.ui-table-actions) {
+        @apply w-1 p-3 whitespace-nowrap;
+    }
+
+    .ui-table-actions {
+        @apply flex max-w-full shrink-0 items-center justify-end gap-3;
+    }
+
+    .ui-table-empty-state {
+        @apply border-t border-border px-6 py-12;
+    }
+
+    .ui-table-empty-state-content {
+        @apply mx-auto grid max-w-lg justify-items-center text-center text-sm text-muted-foreground;
+    }
+
+    .ui-table .ui-pagination {
+        @apply border-t border-border px-3 py-2;
+    }
+
+    .ui-pagination {
+        @apply grid grid-cols-[1fr_auto_1fr] items-center gap-x-3;
+    }
+
+    .ui-pagination:empty {
+        @apply hidden;
+    }
+
+    .ui-pagination-overview {
+        @apply hidden text-sm font-medium text-gray-700 dark:text-gray-200;
+    }
+
+    .ui-pagination-direction-button {
+        @apply relative inline-grid grid-flow-col items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 align-middle text-sm font-medium text-foreground shadow-xs transition duration-75 outline-none hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+    }
+
+    .ui-pagination-previous-button {
+        @apply justify-self-start;
+    }
+
+    .ui-pagination-next-button {
+        @apply col-start-3 justify-self-end;
+    }
+
+    .ui-pagination-items {
+        @apply col-start-3 hidden justify-self-end rounded-md border border-border bg-background shadow-xs;
+    }
+
+    .ui-pagination-item {
+        @apply border-s border-border first:border-s-0;
+    }
+
+    .ui-pagination-item-button {
+        @apply relative flex size-8 items-center justify-center overflow-hidden p-0 transition duration-75 outline-none;
+    }
+
+    a.ui-pagination-item-button {
+        @apply hover:bg-accent focus-visible:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+    }
+
+    a.ui-pagination-item-button:hover .ui-pagination-item-icon {
+        @apply text-foreground;
+    }
+
+    .ui-pagination-item-label {
+        @apply text-sm font-semibold text-gray-700 dark:text-gray-200;
+    }
+
+    .ui-pagination-item-icon {
+        @apply size-4 text-gray-400 transition duration-75 dark:text-gray-500;
+    }
+
+    .ui-pagination-item-active .ui-pagination-item-button {
+        @apply bg-accent;
+    }
+
+    .ui-pagination-item-active .ui-pagination-item-label {
+        @apply text-primary;
+    }
+
+    .ui-pagination-item-disabled .ui-pagination-item-label {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    .ui-pagination-item:first-of-type .ui-pagination-item-button {
+        @apply rounded-s-md;
+    }
+
+    .ui-pagination-item:last-of-type .ui-pagination-item-button {
+        @apply rounded-e-md;
+    }
+
+    @supports (container-type: inline-size) {
+        .ui-pagination {
+            @apply @container;
+        }
+
+        .ui-pagination-previous-button,
+        .ui-pagination-next-button {
+            @apply @4xl:hidden;
+        }
+
+        .ui-pagination-overview {
+            @apply @4xl:inline;
+        }
+
+        .ui-pagination-items {
+            @apply @4xl:flex;
+        }
+    }
+
+    @supports not (container-type: inline-size) {
+        .ui-pagination-previous-button,
+        .ui-pagination-next-button {
+            @apply md:hidden;
+        }
+
+        .ui-pagination-overview {
+            @apply md:inline;
+        }
+
+        .ui-pagination-items {
+            @apply md:flex;
+        }
+    }
+
 }

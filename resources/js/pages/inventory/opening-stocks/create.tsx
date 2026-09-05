@@ -131,7 +131,6 @@ export default function OpeningStocksCreate({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
-
                     <Heading title="New Opening Stock" />
 
                     <form onSubmit={handleSubmit} className="space-y-8">
@@ -193,249 +192,316 @@ export default function OpeningStocksCreate({
                             </SectionHeader>
 
                             <SectionContent>
-                                <div className="overflow-x-auto rounded-md border">
-                                    <table className="table-hover table min-w-280">
-                                        <thead>
-                                            <tr>
-                                                <th className="min-w-80">Product / Variant *</th>
-                                                <th className="w-36">Unit *</th>
-                                                <th className="w-28 text-right">Qty *</th>
-                                                <th className="w-36 text-right">Unit Cost *</th>
-                                                <th className="w-36 text-right">Base Qty</th>
-                                                <th className="w-36 text-right">Value</th>
-                                                <th className="min-w-56">Item Note</th>
-                                                <th className="w-12">
-                                                    <span className="sr-only">Actions</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {form.data.items.map((item, index) => {
-                                                const variant =
-                                                    variants.find((candidate) => candidate.id.toString() === item.product_variant_id) ??
-                                                    null;
-
-                                                const product = products.find((candidate) => candidate.id === variant?.product_id);
-
-                                                const conversions = product?.active_unit_conversions ?? [];
-
-                                                const conversion =
-                                                    conversions.find(
-                                                        (candidate) =>
-                                                            candidate.unit_of_measurement_id.toString() === item.unit_of_measurement_id,
-                                                    ) ?? null;
-
-                                                const baseQuantity =
-                                                    (Number(item.quantity) || 0) * (Number(conversion?.conversion_factor_to_base) || 0);
-
-                                                const lineValue = (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0);
-
-                                                const isIneligible = variant?.has_inventory_history === true;
-
-                                                return (
-                                                    <tr key={item.uid}>
-                                                        <td>
-                                                            <Combobox
-                                                                items={variants}
-                                                                value={variant}
-                                                                onValueChange={(value) => {
-                                                                    const selectedProduct = products.find(
-                                                                        (candidate) => candidate.id === value?.product_id,
-                                                                    );
-
-                                                                    updateItem(item.uid, {
-                                                                        product_variant_id: value?.id.toString() ?? '',
-                                                                        unit_of_measurement_id:
-                                                                            selectedProduct?.default_purchase_unit_conversion?.unit_of_measurement_id.toString() ??
-                                                                            selectedProduct?.base_unit_conversion?.unit_of_measurement_id.toString() ??
-                                                                            '',
-                                                                        quantity: '',
-                                                                        unit_cost: '',
-                                                                    });
-                                                                }}
-                                                                itemToStringLabel={(value) => value.purchase_label}
-                                                                itemToStringValue={(value) => value.id.toString()}
-                                                            >
-                                                                <ComboboxInput
-                                                                    placeholder="Select product / variant"
-                                                                    showClear
-                                                                    aria-invalid={Boolean(form.errors[`items.${index}.product_variant_id`])}
-                                                                />
-
-                                                                <ComboboxContent className="w-max min-w-(--anchor-width)">
-                                                                    <ComboboxEmpty>No product variant found.</ComboboxEmpty>
-
-                                                                    <ComboboxList>
-                                                                        {(value) => (
-                                                                            <ComboboxItem
-                                                                                key={value.id}
-                                                                                value={value}
-                                                                                disabled={value.has_inventory_history}
-                                                                            >
-                                                                                <div className="flex flex-col">
-                                                                                    <span>{value.purchase_label}</span>
-
-                                                                                    <span className="text-xs text-muted-foreground">
-                                                                                        {value.has_inventory_history
-                                                                                            ? 'Inventory history already exists'
-                                                                                            : 'Eligible for opening stock'}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </ComboboxItem>
-                                                                        )}
-                                                                    </ComboboxList>
-                                                                </ComboboxContent>
-                                                            </Combobox>
-
-                                                            <FieldError>{form.errors[`items.${index}.product_variant_id`]}</FieldError>
-
-                                                            {isIneligible && (
-                                                                <p className="mt-1 text-xs text-destructive">
-                                                                    This variant already has inventory history at this outlet.
-                                                                </p>
-                                                            )}
-                                                        </td>
-
-                                                        <td>
-                                                            <Combobox
-                                                                items={conversions}
-                                                                value={conversion}
-                                                                onValueChange={(value) =>
-                                                                    updateItem(item.uid, {
-                                                                        unit_of_measurement_id:
-                                                                            value?.unit_of_measurement_id.toString() ?? '',
-                                                                    })
-                                                                }
-                                                                itemToStringLabel={(value) => value.unit_of_measurement?.name ?? ''}
-                                                                itemToStringValue={(value) => value.unit_of_measurement_id.toString()}
-                                                                disabled={!variant}
-                                                            >
-                                                                <ComboboxInput
-                                                                    placeholder="Unit"
-                                                                    disabled={!variant}
-                                                                    showClear
-                                                                    aria-invalid={Boolean(
-                                                                        form.errors[`items.${index}.unit_of_measurement_id`],
-                                                                    )}
-                                                                />
-
-                                                                <ComboboxContent>
-                                                                    <ComboboxEmpty>No unit found.</ComboboxEmpty>
-
-                                                                    <ComboboxList>
-                                                                        {(value) => (
-                                                                            <ComboboxItem key={value.id} value={value}>
-                                                                                {value.unit_of_measurement?.name}
-                                                                            </ComboboxItem>
-                                                                        )}
-                                                                    </ComboboxList>
-                                                                </ComboboxContent>
-                                                            </Combobox>
-
-                                                            <FieldError>{form.errors[`items.${index}.unit_of_measurement_id`]}</FieldError>
-                                                        </td>
-
-                                                        <td>
-                                                            <Input
-                                                                type="number"
-                                                                min="0"
-                                                                step="any"
-                                                                value={item.quantity}
-                                                                onChange={(event) =>
-                                                                    updateItem(item.uid, {
-                                                                        quantity: event.target.value,
-                                                                    })
-                                                                }
-                                                                className="no-number-spinner text-right"
-                                                                aria-invalid={Boolean(form.errors[`items.${index}.quantity`])}
-                                                            />
-
-                                                            <FieldError>{form.errors[`items.${index}.quantity`]}</FieldError>
-                                                        </td>
-
-                                                        <td>
-                                                            <Input
-                                                                type="number"
-                                                                min="0"
-                                                                step="any"
-                                                                value={item.unit_cost}
-                                                                onChange={(event) =>
-                                                                    updateItem(item.uid, {
-                                                                        unit_cost: event.target.value,
-                                                                    })
-                                                                }
-                                                                onBlur={() =>
-                                                                    updateItem(item.uid, {
-                                                                        unit_cost: formatDecimal(item.unit_cost),
-                                                                    })
-                                                                }
-                                                                className="no-number-spinner text-right"
-                                                                aria-invalid={Boolean(form.errors[`items.${index}.unit_cost`])}
-                                                            />
-
-                                                            <FieldError>{form.errors[`items.${index}.unit_cost`]}</FieldError>
-                                                        </td>
-
-                                                        <td className="text-right tabular-nums">
-                                                            {baseQuantity ? formatQuantity(baseQuantity) : '-'}
-                                                        </td>
-
-                                                        <td className="text-right font-medium tabular-nums">
-                                                            {lineValue ? formatCurrency(lineValue) : '-'}
-                                                        </td>
-
-                                                        <td>
-                                                            <Textarea
-                                                                value={item.note}
-                                                                onChange={(event) =>
-                                                                    updateItem(item.uid, {
-                                                                        note: event.target.value,
-                                                                    })
-                                                                }
-                                                                rows={1}
-                                                                placeholder="Optional"
-                                                            />
-
-                                                            <FieldError>{form.errors[`items.${index}.note`]}</FieldError>
-                                                        </td>
-
-                                                        <td>
-                                                            {form.data.items.length > 1 && (
-                                                                <Action
-                                                                    name="remove"
-                                                                    label="Remove item"
-                                                                    icon={Trash2}
-                                                                    color="danger"
-                                                                    appearance="icon-button"
-                                                                    onClick={() =>
-                                                                        form.setData(
-                                                                            'items',
-                                                                            form.data.items.filter(
-                                                                                (candidate) => candidate.uid !== item.uid,
-                                                                            ),
-                                                                        )
-                                                                    }
-                                                                />
-                                                            )}
-                                                        </td>
+                                <div className="ui-table">
+                                    <div className="ui-table-main">
+                                        <div className="ui-table-content">
+                                            <table className="ui-table-element min-w-280">
+                                                <thead>
+                                                    <tr className="ui-table-row">
+                                                        <th className="ui-table-header-cell min-w-80">Product / Variant *</th>
+                                                        <th className="ui-table-header-cell w-36">Unit *</th>
+                                                        <th className="ui-table-header-cell w-28 text-right">Qty *</th>
+                                                        <th className="ui-table-header-cell w-36 text-right">Unit Cost *</th>
+                                                        <th className="ui-table-header-cell w-36 text-right">Base Qty</th>
+                                                        <th className="ui-table-header-cell w-36 text-right">Value</th>
+                                                        <th className="ui-table-header-cell min-w-56">Item Note</th>
+                                                        <th className="ui-table-header-cell w-12">
+                                                            <span className="sr-only">Actions</span>
+                                                        </th>
                                                     </tr>
-                                                );
-                                            })}
-                                        </tbody>
+                                                </thead>
 
-                                        <tfoot>
-                                            <tr className="table-light border-t">
-                                                <td colSpan={5} className="text-right font-medium text-muted-foreground">
-                                                    Total inventory value
-                                                </td>
+                                                <tbody>
+                                                    {form.data.items.map((item, index) => {
+                                                        const variant =
+                                                            variants.find(
+                                                                (candidate) => candidate.id.toString() === item.product_variant_id,
+                                                            ) ?? null;
 
-                                                <td className="text-right font-semibold tabular-nums">{formatCurrency(total)}</td>
+                                                        const product = products.find((candidate) => candidate.id === variant?.product_id);
 
-                                                <td colSpan={2} />
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                                        const conversions = product?.active_unit_conversions ?? [];
+
+                                                        const conversion =
+                                                            conversions.find(
+                                                                (candidate) =>
+                                                                    candidate.unit_of_measurement_id.toString() ===
+                                                                    item.unit_of_measurement_id,
+                                                            ) ?? null;
+
+                                                        const baseQuantity =
+                                                            (Number(item.quantity) || 0) *
+                                                            (Number(conversion?.conversion_factor_to_base) || 0);
+
+                                                        const lineValue = (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0);
+
+                                                        const isIneligible = variant?.has_inventory_history === true;
+
+                                                        return (
+                                                            <tr key={item.uid} className="ui-table-row">
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <Combobox
+                                                                                items={variants}
+                                                                                value={variant}
+                                                                                onValueChange={(value) => {
+                                                                                    const selectedProduct = products.find(
+                                                                                        (candidate) => candidate.id === value?.product_id,
+                                                                                    );
+
+                                                                                    updateItem(item.uid, {
+                                                                                        product_variant_id: value?.id.toString() ?? '',
+                                                                                        unit_of_measurement_id:
+                                                                                            selectedProduct?.default_purchase_unit_conversion?.unit_of_measurement_id.toString() ??
+                                                                                            selectedProduct?.base_unit_conversion?.unit_of_measurement_id.toString() ??
+                                                                                            '',
+                                                                                        quantity: '',
+                                                                                        unit_cost: '',
+                                                                                    });
+                                                                                }}
+                                                                                itemToStringLabel={(value) => value.purchase_label}
+                                                                                itemToStringValue={(value) => value.id.toString()}
+                                                                            >
+                                                                                <ComboboxInput
+                                                                                    placeholder="Select product / variant"
+                                                                                    showClear
+                                                                                    aria-invalid={Boolean(
+                                                                                        form.errors[`items.${index}.product_variant_id`],
+                                                                                    )}
+                                                                                />
+
+                                                                                <ComboboxContent className="w-max min-w-(--anchor-width)">
+                                                                                    <ComboboxEmpty>No product variant found.</ComboboxEmpty>
+
+                                                                                    <ComboboxList>
+                                                                                        {(value) => (
+                                                                                            <ComboboxItem
+                                                                                                key={value.id}
+                                                                                                value={value}
+                                                                                                disabled={value.has_inventory_history}
+                                                                                            >
+                                                                                                <div className="flex flex-col">
+                                                                                                    <span>{value.purchase_label}</span>
+
+                                                                                                    <span className="text-xs text-muted-foreground">
+                                                                                                        {value.has_inventory_history
+                                                                                                            ? 'Inventory history already exists'
+                                                                                                            : 'Eligible for opening stock'}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            </ComboboxItem>
+                                                                                        )}
+                                                                                    </ComboboxList>
+                                                                                </ComboboxContent>
+                                                                            </Combobox>
+
+                                                                            <FieldError>
+                                                                                {form.errors[`items.${index}.product_variant_id`]}
+                                                                            </FieldError>
+
+                                                                            {isIneligible && (
+                                                                                <p className="mt-1 text-xs text-destructive">
+                                                                                    This variant already has inventory history at this
+                                                                                    outlet.
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <Combobox
+                                                                                items={conversions}
+                                                                                value={conversion}
+                                                                                onValueChange={(value) =>
+                                                                                    updateItem(item.uid, {
+                                                                                        unit_of_measurement_id:
+                                                                                            value?.unit_of_measurement_id.toString() ?? '',
+                                                                                    })
+                                                                                }
+                                                                                itemToStringLabel={(value) =>
+                                                                                    value.unit_of_measurement?.name ?? ''
+                                                                                }
+                                                                                itemToStringValue={(value) =>
+                                                                                    value.unit_of_measurement_id.toString()
+                                                                                }
+                                                                                disabled={!variant}
+                                                                            >
+                                                                                <ComboboxInput
+                                                                                    placeholder="Unit"
+                                                                                    disabled={!variant}
+                                                                                    showClear
+                                                                                    aria-invalid={Boolean(
+                                                                                        form.errors[
+                                                                                            `items.${index}.unit_of_measurement_id`
+                                                                                        ],
+                                                                                    )}
+                                                                                />
+
+                                                                                <ComboboxContent>
+                                                                                    <ComboboxEmpty>No unit found.</ComboboxEmpty>
+
+                                                                                    <ComboboxList>
+                                                                                        {(value) => (
+                                                                                            <ComboboxItem key={value.id} value={value}>
+                                                                                                {value.unit_of_measurement?.name}
+                                                                                            </ComboboxItem>
+                                                                                        )}
+                                                                                    </ComboboxList>
+                                                                                </ComboboxContent>
+                                                                            </Combobox>
+
+                                                                            <FieldError>
+                                                                                {form.errors[`items.${index}.unit_of_measurement_id`]}
+                                                                            </FieldError>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <Input
+                                                                                type="number"
+                                                                                min="0"
+                                                                                step="any"
+                                                                                value={item.quantity}
+                                                                                onChange={(event) =>
+                                                                                    updateItem(item.uid, {
+                                                                                        quantity: event.target.value,
+                                                                                    })
+                                                                                }
+                                                                                className="no-number-spinner text-right"
+                                                                                aria-invalid={Boolean(
+                                                                                    form.errors[`items.${index}.quantity`],
+                                                                                )}
+                                                                            />
+
+                                                                            <FieldError>
+                                                                                {form.errors[`items.${index}.quantity`]}
+                                                                            </FieldError>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <Input
+                                                                                type="number"
+                                                                                min="0"
+                                                                                step="any"
+                                                                                value={item.unit_cost}
+                                                                                onChange={(event) =>
+                                                                                    updateItem(item.uid, {
+                                                                                        unit_cost: event.target.value,
+                                                                                    })
+                                                                                }
+                                                                                onBlur={() =>
+                                                                                    updateItem(item.uid, {
+                                                                                        unit_cost: formatDecimal(item.unit_cost),
+                                                                                    })
+                                                                                }
+                                                                                className="no-number-spinner text-right"
+                                                                                aria-invalid={Boolean(
+                                                                                    form.errors[`items.${index}.unit_cost`],
+                                                                                )}
+                                                                            />
+
+                                                                            <FieldError>
+                                                                                {form.errors[`items.${index}.unit_cost`]}
+                                                                            </FieldError>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-right tabular-nums">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {baseQuantity ? formatQuantity(baseQuantity) : '-'}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {lineValue ? formatCurrency(lineValue) : '-'}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <Textarea
+                                                                                value={item.note}
+                                                                                onChange={(event) =>
+                                                                                    updateItem(item.uid, {
+                                                                                        note: event.target.value,
+                                                                                    })
+                                                                                }
+                                                                                rows={1}
+                                                                                placeholder="Optional"
+                                                                            />
+
+                                                                            <FieldError>{form.errors[`items.${index}.note`]}</FieldError>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                                <td className="ui-table-cell text-right">
+                                                                    <div className="ui-table-actions">
+                                                                        {form.data.items.length > 1 && (
+                                                                            <Action
+                                                                                name="remove"
+                                                                                label="Remove item"
+                                                                                icon={Trash2}
+                                                                                color="danger"
+                                                                                appearance="icon-button"
+                                                                                onClick={() =>
+                                                                                    form.setData(
+                                                                                        'items',
+                                                                                        form.data.items.filter(
+                                                                                            (candidate) => candidate.uid !== item.uid,
+                                                                                        ),
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+
+                                                <tfoot>
+                                                    <tr className="ui-table-row bg-muted/50">
+                                                        <td
+                                                            colSpan={5}
+                                                            className="ui-table-cell text-right font-medium text-muted-foreground"
+                                                        >
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text py-2">Total inventory value</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="ui-table-cell text-right font-semibold tabular-nums">
+                                                            <div className="ui-table-column">
+                                                                <div className="ui-table-text py-2">{formatCurrency(total)}</div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td colSpan={2} className="ui-table-cell" />
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <FieldError>{form.errors.items}</FieldError>

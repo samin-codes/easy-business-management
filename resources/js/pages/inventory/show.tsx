@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
+import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -82,7 +82,6 @@ export default function InventoryShow({
     transactionTypes,
     queryString,
 }: InventoryShowProps) {
-    const hasPages = movements.last_page > 1;
     const dateFrom = queryString.date_from ? parseISO(queryString.date_from) : undefined;
     const dateTo = queryString.date_to ? parseISO(queryString.date_to) : undefined;
 
@@ -135,7 +134,6 @@ export default function InventoryShow({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
-
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
@@ -283,108 +281,130 @@ export default function InventoryShow({
                             )}
                         </div>
 
-                        <div className="overflow-x-auto rounded-md border">
-                            <table className="table-hover table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Type</th>
-                                        <th>Reference</th>
-                                        <th className="text-right">Entered Quantity</th>
-                                        <th className="text-right">Base Movement</th>
-                                        <th className="text-right">Unit Cost</th>
-                                        <th className="text-right">Total Cost</th>
-                                        <th>Note</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {movements.data.length > 0 ? (
-                                        movements.data.map((movement) => (
-                                            <tr key={movement.id}>
-                                                <td className="text-nowrap">
-                                                    {format(parseISO(movement.transaction_date), 'MMM d, yyyy')}
-                                                </td>
-
-                                                <td>
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={
-                                                            movement.direction === 'in'
-                                                                ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
-                                                                : 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
-                                                        }
-                                                    >
-                                                        {movement.transaction_type_label}
-                                                    </Badge>
-                                                </td>
-
-                                                <td>
-                                                    {movement.source ? (
-                                                        <Link
-                                                            href={movement.source.href}
-                                                            className="font-medium text-primary underline-offset-4 hover:underline"
-                                                        >
-                                                            {movement.source.label}
-                                                        </Link>
-                                                    ) : (
-                                                        <span className="text-muted-foreground">-</span>
-                                                    )}
-                                                </td>
-
-                                                <td className="text-right tabular-nums">
-                                                    {movement.direction === 'in' ? '+' : '-'}
-                                                    {formatQuantity(movement.entered_quantity)} {movement.unit.code}
-                                                </td>
-
-                                                <td
-                                                    className={`text-right font-medium tabular-nums ${
-                                                        movement.direction === 'in'
-                                                            ? 'text-emerald-700 dark:text-emerald-300'
-                                                            : 'text-red-700 dark:text-red-300'
-                                                    }`}
-                                                >
-                                                    {movement.direction === 'in' ? '+' : ''}
-                                                    {formatQuantity(movement.base_quantity)} {variant.base_unit.code}
-                                                </td>
-
-                                                <td className="text-right tabular-nums">
-                                                    {movement.unit_cost === null ? '-' : formatCurrency(movement.unit_cost)}
-                                                </td>
-
-                                                <td className="text-right font-medium tabular-nums">
-                                                    {movement.total_cost === null ? '-' : formatCurrency(movement.total_cost)}
-                                                </td>
-
-                                                <td className="max-w-56 truncate text-muted-foreground">{movement.note || '-'}</td>
+                        <div className="ui-table">
+                            <div className="ui-table-main">
+                                <div className="ui-table-content">
+                                    <table className="ui-table-element">
+                                        <thead>
+                                            <tr>
+                                                <th className="ui-table-header-cell">Date</th>
+                                                <th className="ui-table-header-cell">Type</th>
+                                                <th className="ui-table-header-cell">Reference</th>
+                                                <th className="ui-table-header-cell text-right">Entered Quantity</th>
+                                                <th className="ui-table-header-cell text-right">Base Movement</th>
+                                                <th className="ui-table-header-cell text-right">Unit Cost</th>
+                                                <th className="ui-table-header-cell text-right">Total Cost</th>
+                                                <th className="ui-table-header-cell">Note</th>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={8} className="h-28 text-center text-muted-foreground">
-                                                {queryString.transaction_type || queryString.date_from || queryString.date_to
-                                                    ? 'No movements match the current filters.'
-                                                    : 'No stock movements recorded for this outlet.'}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                        </thead>
 
-                        {hasPages && (
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                    {`Showing ${movements.from}-${movements.to} of ${movements.total} movements`}
+                                        <tbody>
+                                            {movements.data.map((movement) => (
+                                                <tr key={movement.id} className="ui-table-row">
+                                                    <td className="ui-table-cell text-nowrap">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {format(parseISO(movement.transaction_date), 'MMM d, yyyy')}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={
+                                                                        movement.direction === 'in'
+                                                                            ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+                                                                            : 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
+                                                                    }
+                                                                >
+                                                                    {movement.transaction_type_label}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {movement.source ? (
+                                                                    <Link
+                                                                        href={movement.source.href}
+                                                                        className="font-medium text-primary underline-offset-4 hover:underline"
+                                                                    >
+                                                                        {movement.source.label}
+                                                                    </Link>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground">-</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {movement.direction === 'in' ? '+' : '-'}
+                                                                {formatQuantity(movement.entered_quantity)} {movement.unit.code}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td
+                                                        className={`ui-table-cell text-right font-medium tabular-nums ${
+                                                            movement.direction === 'in'
+                                                                ? 'text-emerald-700 dark:text-emerald-300'
+                                                                : 'text-red-700 dark:text-red-300'
+                                                        }`}
+                                                    >
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {movement.direction === 'in' ? '+' : ''}
+                                                                {formatQuantity(movement.base_quantity)} {variant.base_unit.code}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {movement.unit_cost === null ? '-' : formatCurrency(movement.unit_cost)}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {movement.total_cost === null ? '-' : formatCurrency(movement.total_cost)}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell max-w-56 truncate text-muted-foreground">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">{movement.note || '-'}</div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-
-                                <PaginatorLinks
-                                    links={movements.links}
-                                    only={reloadProps}
-                                    className="mx-0 w-auto justify-start sm:justify-end"
-                                />
+                                {movements.data.length === 0 && (
+                                    <div className="ui-table-empty-state">
+                                        <div className="ui-table-empty-state-content">
+                                            {queryString.transaction_type || queryString.date_from || queryString.date_to
+                                                ? 'No movements match the current filters.'
+                                                : 'No stock movements recorded for this outlet.'}
+                                        </div>
+                                    </div>
+                                )}
+                                <TablePagination paginator={movements} only={reloadProps} />
                             </div>
-                        )}
+                        </div>
                     </section>
                 </div>
             </div>

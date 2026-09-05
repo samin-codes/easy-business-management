@@ -3,8 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { Boxes, PackageOpen, Plus, Repeat2, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
-import PaginatorLinks from '@/components/paginator-links';
 import { ViewAction } from '@/components/table-actions';
+import { TablePagination } from '@/components/table-pagination';
 import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -72,8 +72,6 @@ const reloadProps = ['stocks', 'inventoryStats', 'selectedOutlet', 'queryString'
 
 export default function InventoryIndex({ stocks, inventoryStats, outlets, categories, selectedOutlet, queryString }: InventoryIndexProps) {
     const searchTimeout = useRef<number | undefined>(undefined);
-    const hasPages = stocks.last_page > 1;
-
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inventory', href: index().url },
         { title: 'Current Stock', href: index().url },
@@ -293,233 +291,259 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                                     )}
                                 </div>
 
-                                <div className="overflow-x-auto rounded-md border">
-                                    <table className="table-hover table">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    <TableSortButton
-                                                        label="Product"
-                                                        href={
-                                                            index({
-                                                                query: query({
-                                                                    sort: 'product',
-                                                                    direction:
-                                                                        queryString.sort === 'product' && queryString.direction === 'asc'
-                                                                            ? 'desc'
-                                                                            : 'asc',
-                                                                }),
-                                                            }).url
-                                                        }
-                                                        isActive={queryString.sort === 'product'}
-                                                        currentDirection={queryString.direction}
-                                                        only={reloadProps}
-                                                    />
-                                                </th>
+                                <div className="ui-table">
+                                    <div className="ui-table-main">
+                                        <div className="ui-table-content">
+                                            <table className="ui-table-element ui-table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="ui-table-header-cell">
+                                                            <TableSortButton
+                                                                label="Product"
+                                                                href={
+                                                                    index({
+                                                                        query: query({
+                                                                            sort: 'product',
+                                                                            direction:
+                                                                                queryString.sort === 'product' &&
+                                                                                queryString.direction === 'asc'
+                                                                                    ? 'desc'
+                                                                                    : 'asc',
+                                                                        }),
+                                                                    }).url
+                                                                }
+                                                                isActive={queryString.sort === 'product'}
+                                                                currentDirection={queryString.direction}
+                                                                only={reloadProps}
+                                                            />
+                                                        </th>
 
-                                                <th>Category</th>
+                                                        <th className="ui-table-header-cell">Category</th>
 
-                                                <th className="text-right">
-                                                    <TableSortButton
-                                                        label="On Hand"
-                                                        href={
-                                                            index({
-                                                                query: query({
-                                                                    sort: 'quantity',
-                                                                    direction:
-                                                                        queryString.sort === 'quantity' && queryString.direction === 'asc'
-                                                                            ? 'desc'
-                                                                            : 'asc',
-                                                                }),
-                                                            }).url
-                                                        }
-                                                        isActive={queryString.sort === 'quantity'}
-                                                        currentDirection={queryString.direction}
-                                                        align="right"
-                                                        only={reloadProps}
-                                                    />
-                                                </th>
+                                                        <th className="ui-table-header-cell text-right">
+                                                            <TableSortButton
+                                                                label="On Hand"
+                                                                href={
+                                                                    index({
+                                                                        query: query({
+                                                                            sort: 'quantity',
+                                                                            direction:
+                                                                                queryString.sort === 'quantity' &&
+                                                                                queryString.direction === 'asc'
+                                                                                    ? 'desc'
+                                                                                    : 'asc',
+                                                                        }),
+                                                                    }).url
+                                                                }
+                                                                isActive={queryString.sort === 'quantity'}
+                                                                currentDirection={queryString.direction}
+                                                                align="right"
+                                                                only={reloadProps}
+                                                            />
+                                                        </th>
 
-                                                <th className="text-right">
-                                                    <TableSortButton
-                                                        label="Avg. Cost"
-                                                        href={
-                                                            index({
-                                                                query: query({
-                                                                    sort: 'average_cost',
-                                                                    direction:
-                                                                        queryString.sort === 'average_cost' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'desc'
-                                                                            : 'asc',
-                                                                }),
-                                                            }).url
-                                                        }
-                                                        isActive={queryString.sort === 'average_cost'}
-                                                        currentDirection={queryString.direction}
-                                                        align="right"
-                                                        only={reloadProps}
-                                                    />
-                                                </th>
+                                                        <th className="ui-table-header-cell text-right">
+                                                            <TableSortButton
+                                                                label="Avg. Cost"
+                                                                href={
+                                                                    index({
+                                                                        query: query({
+                                                                            sort: 'average_cost',
+                                                                            direction:
+                                                                                queryString.sort === 'average_cost' &&
+                                                                                queryString.direction === 'asc'
+                                                                                    ? 'desc'
+                                                                                    : 'asc',
+                                                                        }),
+                                                                    }).url
+                                                                }
+                                                                isActive={queryString.sort === 'average_cost'}
+                                                                currentDirection={queryString.direction}
+                                                                align="right"
+                                                                only={reloadProps}
+                                                            />
+                                                        </th>
 
-                                                <th className="text-right">
-                                                    <TableSortButton
-                                                        label="Stock Value"
-                                                        href={
-                                                            index({
-                                                                query: query({
-                                                                    sort: 'stock_value',
-                                                                    direction:
-                                                                        queryString.sort === 'stock_value' &&
-                                                                        queryString.direction === 'asc'
-                                                                            ? 'desc'
-                                                                            : 'asc',
-                                                                }),
-                                                            }).url
-                                                        }
-                                                        isActive={queryString.sort === 'stock_value'}
-                                                        currentDirection={queryString.direction}
-                                                        align="right"
-                                                        only={reloadProps}
-                                                    />
-                                                </th>
+                                                        <th className="ui-table-header-cell text-right">
+                                                            <TableSortButton
+                                                                label="Stock Value"
+                                                                href={
+                                                                    index({
+                                                                        query: query({
+                                                                            sort: 'stock_value',
+                                                                            direction:
+                                                                                queryString.sort === 'stock_value' &&
+                                                                                queryString.direction === 'asc'
+                                                                                    ? 'desc'
+                                                                                    : 'asc',
+                                                                        }),
+                                                                    }).url
+                                                                }
+                                                                isActive={queryString.sort === 'stock_value'}
+                                                                currentDirection={queryString.direction}
+                                                                align="right"
+                                                                only={reloadProps}
+                                                            />
+                                                        </th>
 
-                                                <th>
-                                                    <TableSortButton
-                                                        label="Last Movement"
-                                                        href={
-                                                            index({
-                                                                query: query({
-                                                                    sort: 'last_movement_at',
-                                                                    direction:
-                                                                        queryString.sort === 'last_movement_at' &&
-                                                                        queryString.direction === 'desc'
-                                                                            ? 'asc'
-                                                                            : 'desc',
-                                                                }),
-                                                            }).url
-                                                        }
-                                                        isActive={queryString.sort === 'last_movement_at'}
-                                                        currentDirection={queryString.direction}
-                                                        only={reloadProps}
-                                                    />
-                                                </th>
+                                                        <th className="ui-table-header-cell">
+                                                            <TableSortButton
+                                                                label="Last Movement"
+                                                                href={
+                                                                    index({
+                                                                        query: query({
+                                                                            sort: 'last_movement_at',
+                                                                            direction:
+                                                                                queryString.sort === 'last_movement_at' &&
+                                                                                queryString.direction === 'desc'
+                                                                                    ? 'asc'
+                                                                                    : 'desc',
+                                                                        }),
+                                                                    }).url
+                                                                }
+                                                                isActive={queryString.sort === 'last_movement_at'}
+                                                                currentDirection={queryString.direction}
+                                                                only={reloadProps}
+                                                            />
+                                                        </th>
 
-                                                <th className="text-right">
-                                                    <span className="sr-only">Actions</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
+                                                        <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                            <span className="sr-only">Actions</span>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
 
-                                        <tbody>
-                                            {stocks.data.length > 0 ? (
-                                                stocks.data.map((stock) => {
-                                                    const quantity = Number(stock.quantity);
+                                                <tbody>
+                                                    {stocks.data.map((stock) => {
+                                                        const quantity = Number(stock.quantity);
 
-                                                    const isActive = stock.status === 'active' && stock.product_status === 'active';
+                                                        const isActive = stock.status === 'active' && stock.product_status === 'active';
 
-                                                    return (
-                                                        <tr key={stock.id}>
-                                                            <td className="max-w-80 min-w-56">
-                                                                <div className="flex items-start gap-2">
-                                                                    <div className="min-w-0">
-                                                                        <div className="font-medium break-words">{stock.label}</div>
+                                                        return (
+                                                            <tr key={stock.id} className="ui-table-row">
+                                                                <td className="ui-table-cell min-w-56 max-w-80">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text min-w-0 whitespace-normal">
+                                                                            <div className="flex items-start gap-2">
+                                                                                <div className="min-w-0">
+                                                                                    <div className="font-medium wrap-anywhere">
+                                                                                        {stock.label}
+                                                                                    </div>
 
-                                                                        {(stock.brand_name || stock.sku) && (
-                                                                            <div className="mt-0.5 text-xs text-muted-foreground">
-                                                                                {[stock.brand_name, stock.sku].filter(Boolean).join(' • ')}
+                                                                                    {(stock.brand_name || stock.sku) && (
+                                                                                        <div className="mt-0.5 text-xs text-muted-foreground">
+                                                                                            {[stock.brand_name, stock.sku]
+                                                                                                .filter(Boolean)
+                                                                                                .join(' • ')}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+
+                                                                                {!isActive && (
+                                                                                    <Badge variant="outline" className="shrink-0">
+                                                                                        Inactive
+                                                                                    </Badge>
+                                                                                )}
                                                                             </div>
-                                                                        )}
+                                                                        </div>
                                                                     </div>
+                                                                </td>
 
-                                                                    {!isActive && (
-                                                                        <Badge variant="outline" className="shrink-0">
-                                                                            Inactive
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                            </td>
+                                                                <td className="ui-table-cell">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">{stock.category.name}</div>
+                                                                    </div>
+                                                                </td>
 
-                                                            <td>{stock.category.name}</td>
+                                                                <td className="ui-table-cell text-right">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            <div className="flex items-center justify-end gap-2">
+                                                                                <span className="font-medium tabular-nums">
+                                                                                    {formatQuantity(stock.quantity)} {stock.base_unit.code}
+                                                                                </span>
 
-                                                            <td className="text-right">
-                                                                <div className="flex items-center justify-end gap-2">
-                                                                    <span className="font-medium tabular-nums">
-                                                                        {formatQuantity(stock.quantity)} {stock.base_unit.code}
-                                                                    </span>
+                                                                                <Badge
+                                                                                    variant="outline"
+                                                                                    className={
+                                                                                        quantity > 0
+                                                                                            ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+                                                                                            : quantity < 0
+                                                                                              ? 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
+                                                                                              : 'border-transparent bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
+                                                                                    }
+                                                                                >
+                                                                                    {quantity > 0
+                                                                                        ? 'In stock'
+                                                                                        : quantity < 0
+                                                                                          ? 'Negative'
+                                                                                          : 'Out'}
+                                                                                </Badge>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
 
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className={
-                                                                            quantity > 0
-                                                                                ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
-                                                                                : quantity < 0
-                                                                                  ? 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
-                                                                                  : 'border-transparent bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
-                                                                        }
-                                                                    >
-                                                                        {quantity > 0 ? 'In stock' : quantity < 0 ? 'Negative' : 'Out'}
-                                                                    </Badge>
-                                                                </div>
-                                                            </td>
+                                                                <td className="ui-table-cell text-right tabular-nums">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {formatCurrency(stock.average_cost)}
 
-                                                            <td className="text-right tabular-nums">
-                                                                {formatCurrency(stock.average_cost)}
+                                                                            <span className="ml-1 text-xs text-muted-foreground">
+                                                                                / {stock.base_unit.code}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
 
-                                                                <span className="ml-1 text-xs text-muted-foreground">
-                                                                    / {stock.base_unit.code}
-                                                                </span>
-                                                            </td>
+                                                                <td className="ui-table-cell text-right font-medium tabular-nums">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {formatCurrency(stock.stock_value)}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
 
-                                                            <td className="text-right font-medium tabular-nums">
-                                                                {formatCurrency(stock.stock_value)}
-                                                            </td>
+                                                                <td className="ui-table-cell text-nowrap text-muted-foreground">
+                                                                    <div className="ui-table-column">
+                                                                        <div className="ui-table-text">
+                                                                            {stock.last_movement_at
+                                                                                ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy')
+                                                                                : '-'}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
 
-                                                            <td className="text-nowrap text-muted-foreground">
-                                                                {stock.last_movement_at
-                                                                    ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy')
-                                                                    : '-'}
-                                                            </td>
-
-                                                            <td className="text-right">
-                                                                <ViewAction
-                                                                    url={show(stock.id, {
-                                                                        query: {
-                                                                            outlet_id: selectedOutlet.id,
-                                                                        },
-                                                                    })}
-                                                                    aria-label={`View stock history for ${stock.label}`}
-                                                                />
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan={7} className="h-28 text-center text-muted-foreground">
-                                                        {queryString.search || queryString.category_id || queryString.stock_status !== 'all'
-                                                            ? 'No inventory items match the current filters.'
-                                                            : 'No inventory records are available for this outlet.'}
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {hasPages && (
-                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                        <div className="text-sm text-muted-foreground sm:shrink-0 sm:whitespace-nowrap">
-                                            {`Showing ${stocks.from}-${stocks.to} of ${stocks.total} variants`}
+                                                                <td className="ui-table-cell text-right">
+                                                                    <div className="ui-table-actions">
+                                                                        <ViewAction
+                                                                            url={show(stock.id, {
+                                                                                query: {
+                                                                                    outlet_id: selectedOutlet.id,
+                                                                                },
+                                                                            })}
+                                                                            aria-label={`View stock history for ${stock.label}`}
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
                                         </div>
-
-                                        <PaginatorLinks
-                                            links={stocks.links}
-                                            only={reloadProps}
-                                            className="mx-0 w-auto justify-start sm:justify-end"
-                                        />
+                                        {stocks.data.length === 0 && (
+                                            <div className="ui-table-empty-state">
+                                                <div className="ui-table-empty-state-content">
+                                                    {queryString.search || queryString.category_id || queryString.stock_status !== 'all'
+                                                        ? 'No inventory items match the current filters.'
+                                                        : 'No inventory records are available for this outlet.'}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <TablePagination paginator={stocks} only={reloadProps} />
                                     </div>
-                                )}
+                                </div>
                             </section>
                         </>
                     )}
