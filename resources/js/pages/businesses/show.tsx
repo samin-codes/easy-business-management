@@ -54,17 +54,13 @@ export default function BusinessesShow({ business }: { business: Business }) {
                                 <SectionTitle>Business information</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <TextEntry label="Business name" value={business.name} inlineLabel weight="medium" />
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Trade name" value={business.trade_name} inlineLabel weight="medium" />
-                                    <TextEntry label="Business type" value={business.business_type_label} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Business name" value={business.name} />
+                                <TextEntry label="Trade name" value={business.trade_name} />
+                                <TextEntry label="Business type" value={business.business_type_label} />
                                 <TextEntry
                                     label="Status"
                                     value={business.status_label}
-                                    inlineLabel
-                                    weight="medium"
                                     badge
                                     color={business.status === 'active' ? 'success' : 'gray'}
                                 />
@@ -76,11 +72,9 @@ export default function BusinessesShow({ business }: { business: Business }) {
                                 <SectionTitle>Contact</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Mobile" value={business.mobile} inlineLabel weight="medium" />
-                                    <TextEntry label="Email" value={business.email} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Mobile" value={business.mobile} />
+                                <TextEntry label="Email" value={business.email} />
                             </SectionContent>
                         </Section>
 
@@ -89,12 +83,10 @@ export default function BusinessesShow({ business }: { business: Business }) {
                                 <SectionTitle>Registration</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <TextEntry label="Trade license no." value={business.trade_license_no} inlineLabel weight="medium" />
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="TIN no." value={business.tin_no} inlineLabel weight="medium" />
-                                    <TextEntry label="BIN no." value={business.bin_no} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-3">
+                                <TextEntry label="Trade license no." value={business.trade_license_no} />
+                                <TextEntry label="TIN no." value={business.tin_no} />
+                                <TextEntry label="BIN no." value={business.bin_no} />
                             </SectionContent>
                         </Section>
 
@@ -103,16 +95,12 @@ export default function BusinessesShow({ business }: { business: Business }) {
                                 <SectionTitle>Address</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <TextEntry label="Address line" value={business.address_line} inlineLabel weight="medium" />
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="District" value={business.district} inlineLabel weight="medium" />
-                                    <TextEntry label="Postal code" value={business.postal_code} inlineLabel weight="medium" />
-                                </div>
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Area type" value={business.area_type_label} inlineLabel weight="medium" />
-                                    <TextEntry label="Area name" value={business.area_name} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Address line" value={business.address_line} className="md:col-span-2" />
+                                <TextEntry label="District" value={business.district} />
+                                <TextEntry label="Postal code" value={business.postal_code} />
+                                <TextEntry label="Area type" value={business.area_type_label} />
+                                <TextEntry label="Area name" value={business.area_name} />
                             </SectionContent>
                         </Section>
 
@@ -154,7 +142,7 @@ function OutletCard({ business, outlet }: { business: Business; outlet: Outlet }
         <Card className="gap-4">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
                 <div className="flex flex-col gap-1.5">
-                    <CardTitle>
+                    <CardTitle className="font-medium">
                         {outlet.name}
                         <span className="ml-2 text-sm font-normal text-muted-foreground">({outlet.code || 'No code'})</span>
                     </CardTitle>
@@ -173,9 +161,14 @@ function OutletCard({ business, outlet }: { business: Business; outlet: Outlet }
             </CardHeader>
 
             <CardContent>
-                <div className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">Mobile:</span> {outlet.mobile}
-                </div>
+                <dl>
+                    <TextEntry
+                        label="Mobile"
+                        value={outlet.mobile}
+                        inlineLabel
+                        className="grid-cols-[4rem_minmax(0,1fr)] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-2"
+                    />
+                </dl>
             </CardContent>
 
             <CardFooter className="justify-end gap-2">

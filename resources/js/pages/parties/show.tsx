@@ -6,7 +6,7 @@ import { TextEntry } from '@/components/text-entry';
 import type { TextEntryColor } from '@/components/text-entry';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
@@ -57,19 +57,15 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 <SectionTitle>Party information</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <TextEntry label="Party name" value={party.name} inlineLabel weight="medium" />
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Trade name" value={party.trade_name} inlineLabel weight="medium" />
-                                    <TextEntry label="Party type" value={party.party_type_label} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Party name" value={party.name} />
+                                <TextEntry label="Trade name" value={party.trade_name} />
+                                <TextEntry label="Party type" value={party.party_type_label} />
                                 <TextEntry
                                     label="Status"
                                     value={party.status_label}
                                     badge
                                     color={party.status === 'active' ? 'success' : 'gray'}
-                                    inlineLabel
-                                    weight="medium"
                                 />
                             </SectionContent>
                         </Section>
@@ -79,11 +75,9 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 <SectionTitle>Contact</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Mobile" value={party.mobile} inlineLabel weight="medium" />
-                                    <TextEntry label="Email" value={party.email} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Mobile" value={party.mobile} />
+                                <TextEntry label="Email" value={party.email} />
                             </SectionContent>
                         </Section>
 
@@ -92,20 +86,18 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 <SectionTitle>Financial information</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-3">
                                 <TextEntry
                                     label="Opening balance type"
                                     value={party.opening_balance_type_label}
                                     badge
                                     color={getOpeningBalanceTypeColor(party.opening_balance_type)}
-                                    inlineLabel
-                                    weight="medium"
                                 />
                                 {party.opening_balance_type !== 'none' && (
-                                    <TextEntry label="Opening balance" value={party.opening_balance} inlineLabel weight="medium" />
+                                    <TextEntry label="Opening balance" value={party.opening_balance} />
                                 )}
                                 {(party.party_type === 'customer' || party.party_type === 'both') && (
-                                    <TextEntry label="Credit limit" value={party.credit_limit} inlineLabel weight="medium" />
+                                    <TextEntry label="Credit limit" value={party.credit_limit} />
                                 )}
                             </SectionContent>
                         </Section>
@@ -115,16 +107,12 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 <SectionTitle>Address</SectionTitle>
                                 <Separator />
                             </SectionHeader>
-                            <SectionContent className="gap-3">
-                                <TextEntry label="Address line" value={party.address_line} inlineLabel weight="medium" />
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="District" value={party.district} inlineLabel weight="medium" />
-                                    <TextEntry label="Postal code" value={party.postal_code} inlineLabel weight="medium" />
-                                </div>
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    <TextEntry label="Area type" value={party.area_type_label} inlineLabel weight="medium" />
-                                    <TextEntry label="Area name" value={party.area_name} inlineLabel weight="medium" />
-                                </div>
+                            <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+                                <TextEntry label="Address line" value={party.address_line} className="md:col-span-2" />
+                                <TextEntry label="District" value={party.district} />
+                                <TextEntry label="Postal code" value={party.postal_code} />
+                                <TextEntry label="Area type" value={party.area_type_label} />
+                                <TextEntry label="Area name" value={party.area_name} />
                             </SectionContent>
                         </Section>
 
@@ -177,8 +165,8 @@ function ContactPersonCard({ party, contactPerson }: { party: Party; contactPers
     return (
         <Card className="gap-4">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div className="flex flex-col gap-1.5">
-                    <CardTitle className="flex items-center gap-2">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                    <CardTitle className="flex flex-wrap items-center gap-2 font-medium break-words">
                         {contactPerson.name}
                         {contactPerson.is_primary && (
                             <Badge variant="outline" className="border-transparent bg-amber-100 text-amber-800">
@@ -186,7 +174,7 @@ function ContactPersonCard({ party, contactPerson }: { party: Party; contactPers
                             </Badge>
                         )}
                     </CardTitle>
-                    {contactPerson.designation && <div className="text-sm text-muted-foreground">{contactPerson.designation}</div>}
+                    {contactPerson.designation && <CardDescription>{contactPerson.designation}</CardDescription>}
                 </div>
                 <Badge
                     variant="outline"
@@ -200,13 +188,36 @@ function ContactPersonCard({ party, contactPerson }: { party: Party; contactPers
                 </Badge>
             </CardHeader>
 
-            <CardContent>
-                <div className="space-y-1">
-                    {contactPerson.mobile && <TextEntry label="Mobile" value={contactPerson.mobile} inlineLabel weight="medium" />}
-                    {contactPerson.email && <TextEntry label="Email" value={contactPerson.email} inlineLabel weight="medium" />}
-                    {contactPerson.note && <TextEntry label="Note" value={contactPerson.note} inlineLabel weight="medium" />}
-                </div>
-            </CardContent>
+            {(contactPerson.mobile || contactPerson.email || contactPerson.note) && (
+                <CardContent>
+                    <dl className="grid gap-2">
+                        {contactPerson.mobile && (
+                            <TextEntry
+                                label="Mobile"
+                                value={contactPerson.mobile}
+                                inlineLabel
+                                className="grid-cols-[4rem_minmax(0,1fr)] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-2"
+                            />
+                        )}
+                        {contactPerson.email && (
+                            <TextEntry
+                                label="Email"
+                                value={contactPerson.email}
+                                inlineLabel
+                                className="grid-cols-[4rem_minmax(0,1fr)] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-2"
+                            />
+                        )}
+                        {contactPerson.note && (
+                            <TextEntry
+                                label="Note"
+                                value={contactPerson.note}
+                                inlineLabel
+                                className="grid-cols-[4rem_minmax(0,1fr)] gap-2 sm:grid-cols-[4rem_minmax(0,1fr)] sm:gap-2"
+                            />
+                        )}
+                    </dl>
+                </CardContent>
+            )}
 
             <CardFooter className="justify-end gap-2">
                 <Button size="sm" variant="outline" asChild title="Edit Contact Person" aria-label="Edit Contact Person">
