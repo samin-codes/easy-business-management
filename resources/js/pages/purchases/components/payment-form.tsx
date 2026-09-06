@@ -1,7 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import { format as formatDate } from 'date-fns';
+import { format as formatDate, isValid, parseISO } from 'date-fns';
 import { Save } from 'lucide-react';
-import PurchasePaymentController from '@/actions/App/Http/Controllers/PurchasePaymentController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
+import { store } from '@/routes/purchases/payments';
 import type { Option, PaymentMethod, Purchase } from '@/types';
 
 type PaymentFormData = {
@@ -31,37 +31,48 @@ function createPaymentFormData(): PaymentFormData {
     };
 }
 
-export default function PaymentForm({
-    purchase,
-    paymentMethods,
-}: {
+function parseDateValue(value: string): Date | undefined {
+    if (!value) {
+        return undefined;
+    }
+
+    const parsedDate = parseISO(value);
+
+    return isValid(parsedDate) ? parsedDate : undefined;
+}
+
+type PaymentFormProps = {
     purchase: Pick<Purchase, 'id' | 'total_amount' | 'paid_amount' | 'due_amount' | 'payment_status'>;
     paymentMethods: Option<PaymentMethod>[];
-}) {
+};
+
+export default function PaymentForm({ purchase, paymentMethods }: PaymentFormProps) {
     const form = useForm<PaymentFormData>(() => createPaymentFormData());
+
+    const paymentDate = parseDateValue(form.data.payment_date);
 
     const totalAmount = Number(purchase.total_amount) || 0;
     const paidAmount = Number(purchase.paid_amount) || 0;
     const currentPaymentAmount = Number(form.data.amount) || 0;
-
     const totalAfterPayment = paidAmount + currentPaymentAmount;
-
     const dueAmount = Math.max(totalAmount - totalAfterPayment, 0);
 
     const paymentStatus = currentPaymentAmount <= 0 ? purchase.payment_status : totalAfterPayment >= totalAmount ? 'paid' : 'partial';
 
+    function handlePaymentAmountBlur() {
+        form.setData((data) => ({
+            ...data,
+            amount: formatDecimal(Math.max(0, Math.min(Number(data.amount) || 0, Number(purchase.due_amount) || 0))),
+        }));
+    }
+
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        form.submit(
-            PurchasePaymentController.store({
-                purchase: purchase.id,
-            }),
-            {
-                preserveScroll: true,
-                onSuccess: () => form.reset(),
-            },
-        );
+        form.submit(store({ purchase: purchase.id }), {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
     }
 
     return (
@@ -71,12 +82,12 @@ export default function PaymentForm({
                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                         <Field>
                             <FieldLabel htmlFor="payment_date">
-                                Payment Date <span className="-ml-1 text-red-500">*</span>
+                                Date <span className="-ml-1 text-red-500">*</span>
                             </FieldLabel>
 
                             <DatePicker
                                 id="payment_date"
-                                value={form.data.payment_date ? new Date(form.data.payment_date) : undefined}
+                                value={paymentDate}
                                 onChange={(date) =>
                                     form.setData((data) => ({
                                         ...data,
@@ -132,7 +143,9 @@ export default function PaymentForm({
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="payment_amount">Amount</FieldLabel>
+                            <FieldLabel htmlFor="payment_amount">
+                                Amount <span className="-ml-1 text-red-500">*</span>
+                            </FieldLabel>
 
                             <Input
                                 id="payment_amount"
@@ -141,11 +154,7 @@ export default function PaymentForm({
                                 min="0"
                                 value={form.data.amount}
                                 onChange={(event) => form.setData('amount', event.target.value)}
-                                onBlur={() => {
-                                    const clamped = Math.min(Number(form.data.amount) || 0, Number(purchase.due_amount) || 0);
-
-                                    form.setData('amount', formatDecimal(clamped));
-                                }}
+                                onBlur={handlePaymentAmountBlur}
                                 className="no-number-spinner text-right"
                                 aria-invalid={Boolean(form.errors.amount)}
                             />
@@ -206,6 +215,7 @@ export default function PaymentForm({
                     <CardContent className="space-y-1 p-4">
                         <div className="flex items-center justify-between gap-4 py-2">
                             <span className="text-sm font-medium">Total Amount</span>
+
                             <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">{formatCurrency(totalAmount)}</span>
                         </div>
 
@@ -213,12 +223,14 @@ export default function PaymentForm({
 
                         <div className="flex items-center justify-between gap-4 py-1">
                             <span className="text-sm text-muted-foreground">Paid to Date</span>
+
                             <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">{formatCurrency(paidAmount)}</span>
                         </div>
 
                         {currentPaymentAmount > 0 && (
                             <div className="flex items-center justify-between gap-4 py-1">
-                                <span className="text-sm text-muted-foreground">This Payment</span>
+                                <span className="text-sm text-muted-foreground">Payment Amount</span>
+
                                 <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
                                     {formatCurrency(currentPaymentAmount)}
                                 </span>
@@ -232,10 +244,10 @@ export default function PaymentForm({
                                 className={
                                     'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
                                     (paymentStatus === 'paid'
-                                        ? 'text-emerald-600'
+                                        ? 'text-emerald-600 dark:text-emerald-400'
                                         : paymentStatus === 'partial'
-                                          ? 'text-amber-600'
-                                          : 'text-red-600')
+                                          ? 'text-amber-600 dark:text-amber-400'
+                                          : 'text-red-600 dark:text-red-400')
                                 }
                             >
                                 {formatCurrency(dueAmount)}
@@ -250,10 +262,10 @@ export default function PaymentForm({
                                     variant="outline"
                                     className={
                                         paymentStatus === 'paid'
-                                            ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                            ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
                                             : paymentStatus === 'partial'
-                                              ? 'border-transparent bg-amber-100 text-amber-800'
-                                              : 'border-transparent bg-red-100 text-red-800'
+                                              ? 'border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                                              : 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
                                     }
                                 >
                                     {paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partial' ? 'Partial' : 'Unpaid'}
@@ -267,7 +279,7 @@ export default function PaymentForm({
             <div className="flex justify-end">
                 <Button type="submit" form="paymentForm" disabled={form.processing}>
                     <Save className="size-4" />
-                    {form.processing ? 'Saving...' : 'Record Payment'}
+                    {form.processing ? 'Saving...' : 'Save Payment'}
                 </Button>
             </div>
         </>

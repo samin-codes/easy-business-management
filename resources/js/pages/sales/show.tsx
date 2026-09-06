@@ -333,7 +333,7 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                         {isDue && (
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Record Payment</SectionTitle>
+                                    <SectionTitle>Add Payment</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
 

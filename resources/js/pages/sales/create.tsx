@@ -47,13 +47,15 @@ const createSaleItemFormData = (): SaleItemFormData => ({
     unit_price: '',
 });
 
-const createPaymentFormData = (): PaymentFormData => ({
-    payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
-    amount: '',
-    payment_method: 'cash',
-    reference_no: '',
-    note: '',
-});
+function createPaymentFormData(): PaymentFormData {
+    return {
+        payment_date: formatDate(new Date(), 'yyyy-MM-dd'),
+        amount: '',
+        payment_method: 'cash',
+        reference_no: '',
+        note: '',
+    };
+}
 
 const createSaleFormData = (): SaleFormData => ({
     sale_date: formatDate(new Date(), 'yyyy-MM-dd'),
@@ -65,13 +67,15 @@ const createSaleFormData = (): SaleFormData => ({
     items: [createSaleItemFormData()],
 });
 
-const dateValue = (value: string): Date | undefined => {
-    if (!value) return undefined;
+function parseDateValue(value: string): Date | undefined {
+    if (!value) {
+        return undefined;
+    }
 
-    const date = parseISO(value);
+    const parsedDate = parseISO(value);
 
-    return isValid(date) ? date : undefined;
-};
+    return isValid(parsedDate) ? parsedDate : undefined;
+}
 
 export default function SalesCreate({
     outlets,
@@ -90,15 +94,21 @@ export default function SalesCreate({
 
     const selectedCustomer = customers.find((customer) => customer.id.toString() === form.data.customer_party_id) ?? null;
 
-    const saleDate = dateValue(form.data.sale_date);
+    const saleDate = parseDateValue(form.data.sale_date);
+
+    const paymentDate = parseDateValue(form.data.payment.payment_date);
 
     const subtotal = form.data.items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0), 0);
 
-    const total = Math.max(subtotal - (Number(form.data.discount_amount) || 0), 0);
+    const totalAmount = Math.max(subtotal - (Number(form.data.discount_amount) || 0), 0);
 
-    const paid = Number(form.data.payment.amount) || 0;
+    const currentPaymentAmount = Number(form.data.payment.amount) || 0;
 
-    const paymentStatus = paid <= 0 ? 'unpaid' : paid >= total ? 'paid' : 'partial';
+    const dueAmount = Math.max(totalAmount - currentPaymentAmount, 0);
+
+    const hasPayment = currentPaymentAmount > 0;
+
+    const paymentStatus = currentPaymentAmount <= 0 ? 'unpaid' : currentPaymentAmount >= totalAmount ? 'paid' : 'partial';
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Sales', href: index().url },
@@ -136,15 +146,15 @@ export default function SalesCreate({
         }));
     };
 
-    const clampPayment = () => {
+    function handlePaymentAmountBlur() {
         form.setData((data) => ({
             ...data,
             payment: {
                 ...data.payment,
-                amount: formatDecimal(Math.min(Number(data.payment.amount) || 0, total)),
+                amount: formatDecimal(Math.max(0, Math.min(Number(data.payment.amount) || 0, totalAmount))),
             },
         }));
-    };
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -334,13 +344,18 @@ export default function SalesCreate({
                                 </SectionHeader>
 
                                 <SectionContent className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)]">
+                                    <FieldError className="lg:col-span-2" errors={[{ message: form.errors.payment }]} />
+
                                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                                         <Field>
-                                            <FieldLabel htmlFor="payment_date">Payment Date</FieldLabel>
+                                            <FieldLabel htmlFor="payment_date">
+                                                Date
+                                                {hasPayment && <span className="-ml-1 text-red-500">*</span>}
+                                            </FieldLabel>
 
                                             <DatePicker
                                                 id="payment_date"
-                                                value={dateValue(form.data.payment.payment_date)}
+                                                value={paymentDate}
                                                 onChange={(date) =>
                                                     form.setData((data) => ({
                                                         ...data,
@@ -363,16 +378,19 @@ export default function SalesCreate({
                                         </Field>
 
                                         <Field>
-                                            <FieldLabel htmlFor="payment_method">Method</FieldLabel>
+                                            <FieldLabel htmlFor="payment_method">
+                                                Method
+                                                {hasPayment && <span className="-ml-1 text-red-500">*</span>}
+                                            </FieldLabel>
 
                                             <Select
                                                 value={form.data.payment.payment_method}
-                                                onValueChange={(value) =>
+                                                onValueChange={(paymentMethod) =>
                                                     form.setData((data) => ({
                                                         ...data,
                                                         payment: {
                                                             ...data.payment,
-                                                            payment_method: value,
+                                                            payment_method: paymentMethod,
                                                         },
                                                     }))
                                                 }
@@ -404,13 +422,13 @@ export default function SalesCreate({
                                         </Field>
 
                                         <Field>
-                                            <FieldLabel htmlFor="payment_amount">Initial Payment</FieldLabel>
+                                            <FieldLabel htmlFor="payment_amount">Amount</FieldLabel>
 
                                             <Input
                                                 id="payment_amount"
                                                 type="number"
-                                                min="0"
                                                 step="0.01"
+                                                min="0"
                                                 value={form.data.payment.amount}
                                                 onChange={(event) =>
                                                     form.setData((data) => ({
@@ -421,7 +439,7 @@ export default function SalesCreate({
                                                         },
                                                     }))
                                                 }
-                                                onBlur={clampPayment}
+                                                onBlur={handlePaymentAmountBlur}
                                                 className="no-number-spinner text-right"
                                                 aria-invalid={Boolean(form.errors['payment.amount'])}
                                             />
@@ -462,23 +480,88 @@ export default function SalesCreate({
                                                 ]}
                                             />
                                         </Field>
+
+                                        <Field className="md:col-span-3">
+                                            <FieldLabel htmlFor="payment_note">Payment Note</FieldLabel>
+
+                                            <Textarea
+                                                id="payment_note"
+                                                value={form.data.payment.note}
+                                                onChange={(event) =>
+                                                    form.setData((data) => ({
+                                                        ...data,
+                                                        payment: {
+                                                            ...data.payment,
+                                                            note: event.target.value,
+                                                        },
+                                                    }))
+                                                }
+                                                aria-invalid={Boolean(form.errors['payment.note'])}
+                                                placeholder="Optional payment note"
+                                                className="min-h-20 resize-none"
+                                            />
+
+                                            <FieldError
+                                                errors={[
+                                                    {
+                                                        message: form.errors['payment.note'],
+                                                    },
+                                                ]}
+                                            />
+                                        </Field>
                                     </FieldGroup>
 
                                     <Card className="overflow-hidden p-0">
                                         <CardContent className="space-y-1 p-4">
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <span className="text-sm text-muted-foreground">Subtotal</span>
+
+                                                <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
+                                                    {formatCurrency(subtotal)}
+                                                </span>
+                                            </div>
+
+                                            <div className="border-t border-border" />
+
+                                            <div className="flex items-center justify-between gap-4 py-1">
+                                                <label htmlFor="discount_amount" className="text-sm text-muted-foreground">
+                                                    Discount Amount
+                                                </label>
+
+                                                <Input
+                                                    id="discount_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={form.data.discount_amount}
+                                                    onChange={(event) => form.setData('discount_amount', event.target.value)}
+                                                    onBlur={(event) => form.setData('discount_amount', formatDecimal(event.target.value))}
+                                                    className="no-number-spinner h-9 w-36 text-right"
+                                                    aria-invalid={Boolean(form.errors.discount_amount)}
+                                                />
+                                            </div>
+
+                                            {form.errors.discount_amount && (
+                                                <div className="text-right text-xs text-red-500">{form.errors.discount_amount}</div>
+                                            )}
+
+                                            <div className="my-2 border-t border-border" />
+
                                             <div className="flex items-center justify-between gap-4 py-2">
                                                 <span className="text-sm font-medium">Total Amount</span>
 
                                                 <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">
-                                                    {formatCurrency(total)}
+                                                    {formatCurrency(totalAmount)}
                                                 </span>
                                             </div>
 
+                                            <div className="my-2 border-t border-border" />
+
                                             <div className="flex items-center justify-between gap-4 py-1">
-                                                <span className="text-sm text-muted-foreground">Paid Amount</span>
+                                                <span className="text-sm text-muted-foreground">Payment Amount</span>
 
                                                 <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
-                                                    {formatCurrency(paid)}
+                                                    {formatCurrency(currentPaymentAmount)}
                                                 </span>
                                             </div>
 
@@ -489,13 +572,13 @@ export default function SalesCreate({
                                                     className={
                                                         'w-36 pr-3 text-right text-sm font-semibold tabular-nums ' +
                                                         (paymentStatus === 'paid'
-                                                            ? 'text-emerald-600'
+                                                            ? 'text-emerald-600 dark:text-emerald-400'
                                                             : paymentStatus === 'partial'
-                                                              ? 'text-amber-600'
-                                                              : 'text-red-600')
+                                                              ? 'text-amber-600 dark:text-amber-400'
+                                                              : 'text-red-600 dark:text-red-400')
                                                     }
                                                 >
-                                                    {formatCurrency(Math.max(total - paid, 0))}
+                                                    {formatCurrency(dueAmount)}
                                                 </span>
                                             </div>
 
@@ -507,10 +590,10 @@ export default function SalesCreate({
                                                         variant="outline"
                                                         className={
                                                             paymentStatus === 'paid'
-                                                                ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                                ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
                                                                 : paymentStatus === 'partial'
-                                                                  ? 'border-transparent bg-amber-100 text-amber-800'
-                                                                  : 'border-transparent bg-red-100 text-red-800'
+                                                                  ? 'border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                                                                  : 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
                                                         }
                                                     >
                                                         {paymentStatus === 'paid'

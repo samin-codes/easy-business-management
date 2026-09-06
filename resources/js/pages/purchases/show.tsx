@@ -301,7 +301,7 @@ export default function PurchasesShow({ purchase, paymentMethods }: { purchase: 
                         {isDue && (
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Record Payment</SectionTitle>
+                                    <SectionTitle>Add Payment</SectionTitle>
                                     <Separator />
                                 </SectionHeader>
 
