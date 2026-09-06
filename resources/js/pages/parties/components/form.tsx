@@ -81,7 +81,7 @@ export default function PartyForm({
                                         Party type <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
                                     <input type="hidden" name="party_type" value={partyType} readOnly />
-                                    <Select value={partyType} onValueChange={setPartyType}>
+                                    <Select value={partyType} onValueChange={(value) => setPartyType(value as 'both' | 'customer' | 'supplier')}>
                                         <SelectTrigger id="party_type" className="w-full" aria-invalid={Boolean(errors.party_type)}>
                                             <SelectValue placeholder="Select party type" />
                                         </SelectTrigger>
@@ -101,7 +101,7 @@ export default function PartyForm({
                                         Status <span className="-ml-1 text-red-500">*</span>
                                     </FieldLabel>
                                     <input type="hidden" name="status" value={status} readOnly />
-                                    <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
+                                    <RadioGroup value={status} onValueChange={(value) => setStatus(value as 'active' | 'inactive')} className="flex flex-row gap-6">
                                         {statusOptions.map((option) => (
                                             <div key={option.value} className="flex items-center space-x-2">
                                                 <RadioGroupItem
@@ -169,7 +169,7 @@ export default function PartyForm({
                                 <input type="hidden" name="opening_balance_type" value={openingBalanceType} readOnly />
                                 <RadioGroup
                                     value={openingBalanceType}
-                                    onValueChange={setOpeningBalanceType}
+                                    onValueChange={(value) => setOpeningBalanceType(value as 'none' | 'receivable' | 'payable')}
                                     className="flex flex-col gap-2"
                                 >
                                     {openingBalanceTypeOptions.map((option) => (

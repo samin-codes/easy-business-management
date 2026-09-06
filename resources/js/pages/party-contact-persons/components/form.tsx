@@ -124,7 +124,7 @@ export default function PartyContactPersonForm({
                                 Status <span className="-ml-1 text-red-500">*</span>
                             </FieldLabel>
                             <input type="hidden" name="status" value={status} readOnly />
-                            <RadioGroup value={status} onValueChange={setStatus} className="flex flex-row gap-6">
+                            <RadioGroup value={status} onValueChange={(value) => setStatus(value as 'active' | 'inactive')} className="flex flex-row gap-6">
                                 {statusOptions.map((option) => (
                                     <div key={option.value} className="flex items-center space-x-2">
                                         <RadioGroupItem
