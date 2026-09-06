@@ -250,7 +250,7 @@
     }
 
     .ui-table-empty-state {
-        @apply border-t border-border px-6 py-12;
+        @apply px-6 py-12;
     }
 
     .ui-table-empty-state-content {
