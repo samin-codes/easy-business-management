@@ -14,7 +14,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatInteger } from '@/lib/utils';
 import { index, show } from '@/routes/sales';
 import type { BreadcrumbItem, Option, PaymentMethod, Sale } from '@/types';
-import RecordPaymentSection from './components/record-payment-section';
+import PaymentForm from './components/payment-form';
 
 export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymentMethods: Option<PaymentMethod>[] }) {
     const { flash } = usePage<{
@@ -330,7 +330,18 @@ export default function SalesShow({ sale, paymentMethods }: { sale: Sale; paymen
                             </Section>
                         )}
 
-                        {isDue && <RecordPaymentSection sale={sale} paymentMethods={paymentMethods} />}
+                        {isDue && (
+                            <Section>
+                                <SectionHeader>
+                                    <SectionTitle>Record Payment</SectionTitle>
+                                    <Separator />
+                                </SectionHeader>
+
+                                <SectionContent className="gap-6">
+                                    <PaymentForm sale={sale} paymentMethods={paymentMethods} />
+                                </SectionContent>
+                            </Section>
+                        )}
                     </div>
                 </div>
             </div>

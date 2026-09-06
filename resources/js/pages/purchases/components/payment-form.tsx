@@ -1,19 +1,17 @@
 import { useForm } from '@inertiajs/react';
 import { format as formatDate } from 'date-fns';
 import { Save } from 'lucide-react';
-import SalePaymentController from '@/actions/App/Http/Controllers/SalePaymentController';
+import PurchasePaymentController from '@/actions/App/Http/Controllers/PurchasePaymentController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency, formatDecimal } from '@/lib/utils';
-import type { Option, PaymentMethod, Sale } from '@/types';
+import type { Option, PaymentMethod, Purchase } from '@/types';
 
 type PaymentFormData = {
     payment_date: string;
@@ -33,39 +31,42 @@ function createPaymentFormData(): PaymentFormData {
     };
 }
 
-type RecordPaymentSectionProps = {
-    sale: Pick<Sale, 'id' | 'total_amount' | 'paid_amount' | 'due_amount' | 'payment_status'>;
+export default function PaymentForm({
+    purchase,
+    paymentMethods,
+}: {
+    purchase: Pick<Purchase, 'id' | 'total_amount' | 'paid_amount' | 'due_amount' | 'payment_status'>;
     paymentMethods: Option<PaymentMethod>[];
-};
-
-export default function RecordPaymentSection({ sale, paymentMethods }: RecordPaymentSectionProps) {
+}) {
     const form = useForm<PaymentFormData>(() => createPaymentFormData());
 
-    const totalAmount = Number(sale.total_amount) || 0;
-    const paidAmount = Number(sale.paid_amount) || 0;
+    const totalAmount = Number(purchase.total_amount) || 0;
+    const paidAmount = Number(purchase.paid_amount) || 0;
     const currentPaymentAmount = Number(form.data.amount) || 0;
+
     const totalAfterPayment = paidAmount + currentPaymentAmount;
+
     const dueAmount = Math.max(totalAmount - totalAfterPayment, 0);
 
-    const paymentStatus = currentPaymentAmount <= 0 ? sale.payment_status : totalAfterPayment >= totalAmount ? 'paid' : 'partial';
+    const paymentStatus = currentPaymentAmount <= 0 ? purchase.payment_status : totalAfterPayment >= totalAmount ? 'paid' : 'partial';
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        form.submit(SalePaymentController.store({ sale: sale.id }), {
-            preserveScroll: true,
-            onSuccess: () => form.reset(),
-        });
+        form.submit(
+            PurchasePaymentController.store({
+                purchase: purchase.id,
+            }),
+            {
+                preserveScroll: true,
+                onSuccess: () => form.reset(),
+            },
+        );
     }
 
     return (
-        <Section>
-            <SectionHeader>
-                <SectionTitle>Record Payment</SectionTitle>
-                <Separator />
-            </SectionHeader>
-
-            <SectionContent className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)]">
+        <>
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)]">
                 <form id="paymentForm" onSubmit={handleSubmit}>
                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                         <Field>
@@ -141,7 +142,7 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
                                 value={form.data.amount}
                                 onChange={(event) => form.setData('amount', event.target.value)}
                                 onBlur={() => {
-                                    const clamped = Math.min(Number(form.data.amount) || 0, Number(sale.due_amount) || 0);
+                                    const clamped = Math.min(Number(form.data.amount) || 0, Number(purchase.due_amount) || 0);
 
                                     form.setData('amount', formatDecimal(clamped));
                                 }}
@@ -205,7 +206,6 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
                     <CardContent className="space-y-1 p-4">
                         <div className="flex items-center justify-between gap-4 py-2">
                             <span className="text-sm font-medium">Total Amount</span>
-
                             <span className="w-36 pr-3 text-right text-base font-semibold tabular-nums">{formatCurrency(totalAmount)}</span>
                         </div>
 
@@ -213,14 +213,12 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
 
                         <div className="flex items-center justify-between gap-4 py-1">
                             <span className="text-sm text-muted-foreground">Paid to Date</span>
-
                             <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">{formatCurrency(paidAmount)}</span>
                         </div>
 
                         {currentPaymentAmount > 0 && (
                             <div className="flex items-center justify-between gap-4 py-1">
                                 <span className="text-sm text-muted-foreground">This Payment</span>
-
                                 <span className="w-36 pr-3 text-right text-sm font-medium tabular-nums">
                                     {formatCurrency(currentPaymentAmount)}
                                 </span>
@@ -252,10 +250,10 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
                                     variant="outline"
                                     className={
                                         paymentStatus === 'paid'
-                                            ? 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+                                            ? 'border-transparent bg-emerald-100 text-emerald-800'
                                             : paymentStatus === 'partial'
-                                              ? 'border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'
-                                              : 'border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200'
+                                              ? 'border-transparent bg-amber-100 text-amber-800'
+                                              : 'border-transparent bg-red-100 text-red-800'
                                     }
                                 >
                                     {paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partial' ? 'Partial' : 'Unpaid'}
@@ -264,7 +262,7 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
                         </div>
                     </CardContent>
                 </Card>
-            </SectionContent>
+            </div>
 
             <div className="flex justify-end">
                 <Button type="submit" form="paymentForm" disabled={form.processing}>
@@ -272,6 +270,6 @@ export default function RecordPaymentSection({ sale, paymentMethods }: RecordPay
                     {form.processing ? 'Saving...' : 'Record Payment'}
                 </Button>
             </div>
-        </Section>
+        </>
     );
 }
