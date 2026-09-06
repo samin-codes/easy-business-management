@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
-import ProductUnitConversionController from '@/actions/App/Http/Controllers/ProductUnitConversionController';
 import { DeleteAction, EditAction } from '@/components/table-actions';
 import { Badge } from '@/components/ui/badge';
+import { destroy } from '@/routes/products/unit-conversions';
 import type { Product, ProductUnitConversion } from '@/types';
 
 export default function UnitConversionTable({
@@ -22,7 +22,7 @@ export default function UnitConversionTable({
         }
 
         router.delete(
-            ProductUnitConversionController.destroy({
+            destroy({
                 product,
                 product_unit_conversion: unitConversion.id,
             }),
@@ -58,10 +58,7 @@ export default function UnitConversionTable({
 
                             <tbody>
                                 {unitConversions.map((unitConversion) => (
-                                    <tr
-                                        key={unitConversion.id}
-                                        className={unitConversion.is_base_unit ? 'ui-table-row bg-muted/30 font-semibold' : 'ui-table-row'}
-                                    >
+                                    <tr key={unitConversion.id} className="ui-table-row">
                                         <td className="ui-table-cell">
                                             <div className="ui-table-column">
                                                 <div className="ui-table-text">{getUnitName(unitConversion)}</div>
