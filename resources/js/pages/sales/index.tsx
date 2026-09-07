@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Plus, Search } from 'lucide-react';
+import { CircleCheck, Clock, Plus, Receipt, Search, Wallet } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import { ViewAction } from '@/components/table-actions';
@@ -109,34 +109,60 @@ export default function SalesIndex({
                         </div>
                     </div>
 
-                    <Card className="gap-0 py-0">
-                        <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
-                            <div className="min-w-0 p-4 sm:p-5">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Sales</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {saleStats.sale_count.toLocaleString()}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-l p-4 sm:p-5">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Total Amount</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatCurrency(saleStats.total_amount)}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Paid</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatCurrency(saleStats.paid_amount)}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Due</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatCurrency(saleStats.due_amount)}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Receipt aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Sales</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {saleStats.sale_count.toLocaleString()}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Wallet aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatCurrency(saleStats.total_amount)}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <CircleCheck aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Paid</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatCurrency(saleStats.paid_amount)}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Clock aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Due</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatCurrency(saleStats.due_amount)}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="relative w-full sm:max-w-sm">

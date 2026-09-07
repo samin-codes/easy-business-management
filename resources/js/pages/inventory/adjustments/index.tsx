@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
-import InventoryNavigation from '@/pages/inventory/components/inventory-navigation';
+import Navigation from '@/pages/inventory/components/navigation';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index, show } from '@/routes/stock-adjustments';
 import type { BreadcrumbItem, LengthAwarePagination, Outlet, StockAdjustment } from '@/types';
@@ -61,7 +61,7 @@ export default function AdjustmentsIndex({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-8">
-                    <InventoryNavigation active="adjustments" />
+                    <Navigation active="adjustments" />
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <Heading title="Stock Adjustments" />

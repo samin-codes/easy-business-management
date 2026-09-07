@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
+import { Boxes, Coins, History, Wallet } from 'lucide-react';
 import Heading from '@/components/heading';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -179,34 +180,60 @@ export default function InventoryShow({
                         )}
                     </div>
 
-                    <Card className="gap-0 py-0">
-                        <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
-                            <div className="min-w-0 p-4 sm:p-5">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">On Hand</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatQuantity(stock.quantity)} {variant.base_unit.code}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-l p-4 sm:p-5">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Avg. Cost</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatCurrency(stock.average_cost)} / {variant.base_unit.code}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Stock Value</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {formatCurrency(stock.stock_value)}
-                                </p>
-                            </div>
-                            <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
-                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Last Movement</p>
-                                <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                    {stock.last_movement_at ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement'}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Boxes aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">On Hand</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatQuantity(stock.quantity)} {variant.base_unit.code}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Coins aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Avg. Cost</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatCurrency(stock.average_cost)} / {variant.base_unit.code}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <Wallet aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Stock Value</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {formatCurrency(stock.stock_value)}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="min-w-0 gap-0 py-0">
+                            <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    <History aria-hidden="true" className="size-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium text-muted-foreground">Last Movement</p>
+                                    <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                        {stock.last_movement_at ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement'}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold">Movement History</h2>

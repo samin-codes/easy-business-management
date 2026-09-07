@@ -1,11 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { Boxes, PackageOpen, Plus, Repeat2, Search } from 'lucide-react';
+import { Boxes, PackageCheck, PackageX, Search, Wallet } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import { ViewAction } from '@/components/table-actions';
 import { TablePagination } from '@/components/table-pagination';
-import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,19 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity, getSortQuery } from '@/lib/utils';
-import { index, show } from '@/routes/inventory';
+import { index as invoiceIndex, show as invoiceShow } from '@/routes/inventory';
 import { create as createOpeningStock } from '@/routes/opening-stocks';
 import { create as createAdjustment } from '@/routes/stock-adjustments';
 import { create as createTransfer } from '@/routes/stock-transfers';
 import type { BreadcrumbItem, LengthAwarePagination, Outlet, ProductCategory, RecordStatus, UnitOfMeasurement } from '@/types';
 import { TableHead } from '@/components/table-head';
-import InventoryNavigation from './components/inventory-navigation';
-
-type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
-
-type InventoryCategory = Pick<ProductCategory, 'id' | 'name'>;
-
-type InventoryUnit = Pick<UnitOfMeasurement, 'id' | 'name' | 'code'>;
+import Navigation from './components/navigation';
 
 type InventoryItem = {
     id: number;
@@ -38,8 +31,8 @@ type InventoryItem = {
     is_placeholder_variant: boolean;
     status: RecordStatus;
     product_status: RecordStatus;
-    category: InventoryCategory;
-    base_unit: InventoryUnit;
+    category: Pick<ProductCategory, 'id' | 'name'>;
+    base_unit: Pick<UnitOfMeasurement, 'id' | 'name' | 'code'>;
     quantity: string;
     average_cost: string;
     stock_value: string;
@@ -63,9 +56,9 @@ type Props = {
         out_of_stock_count: number;
         variant_count: number;
     };
-    outlets: InventoryOutlet[];
-    categories: InventoryCategory[];
-    selectedOutlet: InventoryOutlet | null;
+    outlets: Pick<Outlet, 'id' | 'name' | 'code'>[];
+    categories: Pick<ProductCategory, 'id' | 'name'>[];
+    selectedOutlet: Pick<Outlet, 'id' | 'name' | 'code'> | null;
     queryString: QueryString;
 };
 
@@ -75,24 +68,13 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
     const searchTimeout = useRef<number | undefined>(undefined);
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Inventory', href: index().url },
-        { title: 'Current Stock', href: index().url },
+        { title: 'Inventory', href: invoiceIndex().url },
+        { title: 'Current Stock', href: invoiceIndex().url },
     ];
 
-    const query = (overrides: Partial<QueryString> & { page?: number } = {}) => ({
-        outlet_id: overrides.outlet_id ?? queryString.outlet_id ?? undefined,
-        category_id: overrides.category_id === null ? undefined : (overrides.category_id ?? queryString.category_id ?? undefined),
-        search: overrides.search === null ? undefined : (overrides.search ?? queryString.search ?? undefined),
-        stock_status: overrides.stock_status ?? queryString.stock_status,
-        sort: overrides.sort ?? queryString.sort,
-        direction: overrides.direction ?? queryString.direction,
-        page: overrides.page ?? 1,
-    });
-
     const visit = (overrides: Partial<QueryString> & { page?: number } = {}) => {
-        router.get(
-            index({ query: query(overrides) }).url,
-            {},
+        router.visit(
+            invoiceIndex({ query: { ...queryString, page: 1, ...overrides } }),
             {
                 preserveScroll: true,
                 preserveState: true,
@@ -108,12 +90,12 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
-                    <InventoryNavigation active="stock" />
+                    <Navigation active="stock" />
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <Heading title="Inventory" />
 
-                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                        <div className="flex flex-wrap items-center gap-2">
                             {outlets.length > 0 && (
                                 <Select
                                     value={selectedOutlet?.id.toString()}
@@ -140,19 +122,19 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                             {selectedOutlet && (
                                 <>
-                                    <Button variant="outline" asChild>
+                                    <Button variant="outline" size="sm" className="h-9" asChild>
                                         <Link href={createOpeningStock({ query: { outlet_id: selectedOutlet.id } })}>
-                                            <PackageOpen /> Opening Stock
+                                            Opening stock
                                         </Link>
                                     </Button>
-                                    <Button variant="outline" asChild>
+                                    <Button variant="outline" size="sm" className="h-9" asChild>
                                         <Link href={createAdjustment({ query: { outlet_id: selectedOutlet.id } })}>
-                                            <Plus /> Adjustment
+                                            Adjustment
                                         </Link>
                                     </Button>
-                                    <Button variant="outline" asChild>
+                                    <Button variant="outline" size="sm" className="h-9" asChild>
                                         <Link href={createTransfer({ query: { outlet_id: selectedOutlet.id } })}>
-                                            <Repeat2 /> Transfer
+                                            Transfer
                                         </Link>
                                     </Button>
                                 </>
@@ -176,34 +158,60 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                         </Card>
                     ) : (
                         <>
-                            <Card className="gap-0 py-0">
-                                <CardContent className="grid grid-cols-2 p-0 lg:grid-cols-4">
-                                    <div className="min-w-0 p-4 sm:p-5">
-                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Inventory Value</p>
-                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                            {formatCurrency(inventoryStats.stock_value)}
-                                        </p>
-                                    </div>
-                                    <div className="min-w-0 border-l p-4 sm:p-5">
-                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">In Stock</p>
-                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                            {inventoryStats.in_stock_count.toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <div className="min-w-0 border-t p-4 sm:p-5 lg:border-t-0 lg:border-l">
-                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Out of Stock</p>
-                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                            {inventoryStats.out_of_stock_count.toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <div className="min-w-0 border-t border-l p-4 sm:p-5 lg:border-t-0">
-                                        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Variants</p>
-                                        <p className="mt-1 truncate text-xl font-semibold tabular-nums sm:text-2xl">
-                                            {inventoryStats.variant_count.toLocaleString()}
-                                        </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                                <Card className="min-w-0 gap-0 py-0">
+                                    <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                            <Wallet aria-hidden="true" className="size-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-muted-foreground">Inventory Value</p>
+                                            <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                                {formatCurrency(inventoryStats.stock_value)}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="min-w-0 gap-0 py-0">
+                                    <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                            <PackageCheck aria-hidden="true" className="size-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-muted-foreground">In Stock</p>
+                                            <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                                {inventoryStats.in_stock_count.toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="min-w-0 gap-0 py-0">
+                                    <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                            <PackageX aria-hidden="true" className="size-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-muted-foreground">Out of Stock</p>
+                                            <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                                {inventoryStats.out_of_stock_count.toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="min-w-0 gap-0 py-0">
+                                    <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                            <Boxes aria-hidden="true" className="size-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-muted-foreground">Variants</p>
+                                            <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
+                                                {inventoryStats.variant_count.toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
 
                             <section className="space-y-3">
                                 <div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_14rem_12rem_auto]">
@@ -301,7 +309,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                                                     <tr>
                                                         <TableHead
                                                             sortable
-                                                            href={index({
+                                                            href={invoiceIndex({
                                                                 query: getSortQuery(queryString, 'product'),
                                                             }).url}
                                                             direction={queryString.sort === 'product' ? queryString.direction : undefined}
@@ -314,7 +322,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                                                         <TableHead
                                                             sortable
-                                                            href={index({
+                                                            href={invoiceIndex({
                                                                 query: getSortQuery(queryString, 'quantity'),
                                                             }).url}
                                                             direction={queryString.sort === 'quantity' ? queryString.direction : undefined}
@@ -326,7 +334,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                                                         <TableHead
                                                             sortable
-                                                            href={index({
+                                                            href={invoiceIndex({
                                                                 query: getSortQuery(queryString, 'average_cost'),
                                                             }).url}
                                                             direction={queryString.sort === 'average_cost' ? queryString.direction : undefined}
@@ -338,7 +346,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                                                         <TableHead
                                                             sortable
-                                                            href={index({
+                                                            href={invoiceIndex({
                                                                 query: getSortQuery(queryString, 'stock_value'),
                                                             }).url}
                                                             direction={queryString.sort === 'stock_value' ? queryString.direction : undefined}
@@ -350,10 +358,12 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                                                         <TableHead
                                                             sortable
-                                                            href={index({
+                                                            href={invoiceIndex({
                                                                 query: getSortQuery(queryString, 'last_movement_at'),
                                                             }).url}
-                                                            direction={queryString.sort === 'last_movement_at' ? queryString.direction : undefined}
+                                                            direction={
+                                                                queryString.sort === 'last_movement_at' ? queryString.direction : undefined
+                                                            }
                                                             only={reloadProps}
                                                         >
                                                             Last Movement
@@ -469,7 +479,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                                                                 <td className="ui-table-cell text-right">
                                                                     <div className="ui-table-actions">
                                                                         <ViewAction
-                                                                            url={show(stock.id, {
+                                                                            url={invoiceShow(stock.id, {
                                                                                 query: {
                                                                                     outlet_id: selectedOutlet.id,
                                                                                 },
