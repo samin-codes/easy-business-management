@@ -63,21 +63,46 @@ export default function AdjustmentsIndex({
                 <div className="mx-auto max-w-7xl space-y-8">
                     <InventoryNavigation active="adjustments" />
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <Heading title="Stock Adjustments" />
 
-                        <Button asChild>
-                            <Link href={create()}>
-                                <Plus />
-                                New Adjustment
-                            </Link>
-                        </Button>
+                        <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                            <Select
+                                value={queryString.outlet_id?.toString() ?? 'all'}
+                                onValueChange={(value) =>
+                                    reload({
+                                        outlet_id: value === 'all' ? null : Number(value),
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="w-full sm:w-64">
+                                    <SelectValue placeholder="All outlets" />
+                                </SelectTrigger>
+
+                                <SelectContent align="end">
+                                    <SelectItem value="all">All outlets</SelectItem>
+
+                                    {outlets.map((outlet) => (
+                                        <SelectItem key={outlet.id} value={outlet.id.toString()}>
+                                            {outlet.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <Button asChild>
+                                <Link href={create()}>
+                                    <Plus />
+                                    New Adjustment
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
                     <section className="space-y-4">
                         <div className="flex flex-col gap-4">
                             <div className="flex flex-col gap-3 sm:flex-row">
-                                <div className="relative min-w-64 flex-1">
+                                <div className="relative w-full sm:max-w-sm">
                                     <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
                                     <Input
@@ -100,29 +125,6 @@ export default function AdjustmentsIndex({
                                         }}
                                     />
                                 </div>
-
-                                <Select
-                                    value={queryString.outlet_id?.toString() ?? 'all'}
-                                    onValueChange={(value) =>
-                                        reload({
-                                            outlet_id: value === 'all' ? null : Number(value),
-                                        })
-                                    }
-                                >
-                                    <SelectTrigger className="w-full sm:w-56">
-                                        <SelectValue placeholder="All outlets" />
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">All outlets</SelectItem>
-
-                                        {outlets.map((outlet) => (
-                                            <SelectItem key={outlet.id} value={outlet.id.toString()}>
-                                                {outlet.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
 
                             <div className="ui-table">

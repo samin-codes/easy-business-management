@@ -63,7 +63,7 @@ export default function TransfersIndex({
                 <div className="mx-auto max-w-7xl space-y-8">
                     <InventoryNavigation active="transfers" />
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <Heading title="Stock Transfers" />
 
                         <Button asChild>
@@ -76,8 +76,8 @@ export default function TransfersIndex({
 
                     <section className="space-y-4">
                         <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-3 lg:flex-row">
-                                <div className="relative min-w-64 flex-1">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                                <div className="relative w-full sm:max-w-sm">
                                     <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
                                     <Input
@@ -109,7 +109,7 @@ export default function TransfersIndex({
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-full lg:w-52">
+                                    <SelectTrigger aria-label="From outlet" className="w-full lg:w-52">
                                         <SelectValue placeholder="All sources" />
                                     </SelectTrigger>
 
@@ -132,7 +132,7 @@ export default function TransfersIndex({
                                         })
                                     }
                                 >
-                                    <SelectTrigger className="w-full lg:w-52">
+                                    <SelectTrigger aria-label="To outlet" className="w-full lg:w-52">
                                         <SelectValue placeholder="All destinations" />
                                     </SelectTrigger>
 
