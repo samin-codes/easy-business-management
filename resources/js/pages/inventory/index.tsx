@@ -12,12 +12,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { formatCurrency, formatQuantity } from '@/lib/utils';
+import { formatCurrency, formatQuantity, getSortQuery } from '@/lib/utils';
 import { index, show } from '@/routes/inventory';
 import { create as createOpeningStock } from '@/routes/opening-stocks';
 import { create as createAdjustment } from '@/routes/stock-adjustments';
 import { create as createTransfer } from '@/routes/stock-transfers';
 import type { BreadcrumbItem, LengthAwarePagination, Outlet, ProductCategory, RecordStatus, UnitOfMeasurement } from '@/types';
+import { TableHead } from '@/components/table-head';
 import InventoryNavigation from './components/inventory-navigation';
 
 type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
@@ -54,7 +55,7 @@ type QueryString = {
     direction: 'asc' | 'desc';
 };
 
-type InventoryIndexProps = {
+type Props = {
     stocks: LengthAwarePagination<InventoryItem>;
     inventoryStats: {
         stock_value: string;
@@ -70,7 +71,8 @@ type InventoryIndexProps = {
 
 const reloadProps = ['stocks', 'inventoryStats', 'selectedOutlet', 'queryString'];
 
-export default function InventoryIndex({ stocks, inventoryStats, outlets, categories, selectedOutlet, queryString }: InventoryIndexProps) {
+export default function Index({ stocks, inventoryStats, outlets, categories, selectedOutlet, queryString }: Props) {
+
     const searchTimeout = useRef<number | undefined>(undefined);
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inventory', href: index().url },
@@ -297,119 +299,69 @@ export default function InventoryIndex({ stocks, inventoryStats, outlets, catego
                                             <table className="ui-table-element ui-table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th className="ui-table-header-cell">
-                                                            <TableSortButton
-                                                                label="Product"
-                                                                href={
-                                                                    index({
-                                                                        query: query({
-                                                                            sort: 'product',
-                                                                            direction:
-                                                                                queryString.sort === 'product' &&
-                                                                                queryString.direction === 'asc'
-                                                                                    ? 'desc'
-                                                                                    : 'asc',
-                                                                        }),
-                                                                    }).url
-                                                                }
-                                                                isActive={queryString.sort === 'product'}
-                                                                currentDirection={queryString.direction}
-                                                                only={reloadProps}
-                                                            />
-                                                        </th>
+                                                        <TableHead
+                                                            sortable
+                                                            href={index({
+                                                                query: getSortQuery(queryString, 'product'),
+                                                            }).url}
+                                                            direction={queryString.sort === 'product' ? queryString.direction : undefined}
+                                                            only={reloadProps}
+                                                        >
+                                                            Product
+                                                        </TableHead>
 
-                                                        <th className="ui-table-header-cell">Category</th>
+                                                        <TableHead>Category</TableHead>
 
-                                                        <th className="ui-table-header-cell text-right">
-                                                            <TableSortButton
-                                                                label="On Hand"
-                                                                href={
-                                                                    index({
-                                                                        query: query({
-                                                                            sort: 'quantity',
-                                                                            direction:
-                                                                                queryString.sort === 'quantity' &&
-                                                                                queryString.direction === 'asc'
-                                                                                    ? 'desc'
-                                                                                    : 'asc',
-                                                                        }),
-                                                                    }).url
-                                                                }
-                                                                isActive={queryString.sort === 'quantity'}
-                                                                currentDirection={queryString.direction}
-                                                                align="right"
-                                                                only={reloadProps}
-                                                            />
-                                                        </th>
+                                                        <TableHead
+                                                            sortable
+                                                            href={index({
+                                                                query: getSortQuery(queryString, 'quantity'),
+                                                            }).url}
+                                                            direction={queryString.sort === 'quantity' ? queryString.direction : undefined}
+                                                            align="end"
+                                                            only={reloadProps}
+                                                        >
+                                                            On Hand
+                                                        </TableHead>
 
-                                                        <th className="ui-table-header-cell text-right">
-                                                            <TableSortButton
-                                                                label="Avg. Cost"
-                                                                href={
-                                                                    index({
-                                                                        query: query({
-                                                                            sort: 'average_cost',
-                                                                            direction:
-                                                                                queryString.sort === 'average_cost' &&
-                                                                                queryString.direction === 'asc'
-                                                                                    ? 'desc'
-                                                                                    : 'asc',
-                                                                        }),
-                                                                    }).url
-                                                                }
-                                                                isActive={queryString.sort === 'average_cost'}
-                                                                currentDirection={queryString.direction}
-                                                                align="right"
-                                                                only={reloadProps}
-                                                            />
-                                                        </th>
+                                                        <TableHead
+                                                            sortable
+                                                            href={index({
+                                                                query: getSortQuery(queryString, 'average_cost'),
+                                                            }).url}
+                                                            direction={queryString.sort === 'average_cost' ? queryString.direction : undefined}
+                                                            align="end"
+                                                            only={reloadProps}
+                                                        >
+                                                            Avg. Cost
+                                                        </TableHead>
 
-                                                        <th className="ui-table-header-cell text-right">
-                                                            <TableSortButton
-                                                                label="Stock Value"
-                                                                href={
-                                                                    index({
-                                                                        query: query({
-                                                                            sort: 'stock_value',
-                                                                            direction:
-                                                                                queryString.sort === 'stock_value' &&
-                                                                                queryString.direction === 'asc'
-                                                                                    ? 'desc'
-                                                                                    : 'asc',
-                                                                        }),
-                                                                    }).url
-                                                                }
-                                                                isActive={queryString.sort === 'stock_value'}
-                                                                currentDirection={queryString.direction}
-                                                                align="right"
-                                                                only={reloadProps}
-                                                            />
-                                                        </th>
+                                                        <TableHead
+                                                            sortable
+                                                            href={index({
+                                                                query: getSortQuery(queryString, 'stock_value'),
+                                                            }).url}
+                                                            direction={queryString.sort === 'stock_value' ? queryString.direction : undefined}
+                                                            align="end"
+                                                            only={reloadProps}
+                                                        >
+                                                            Stock Value
+                                                        </TableHead>
 
-                                                        <th className="ui-table-header-cell">
-                                                            <TableSortButton
-                                                                label="Last Movement"
-                                                                href={
-                                                                    index({
-                                                                        query: query({
-                                                                            sort: 'last_movement_at',
-                                                                            direction:
-                                                                                queryString.sort === 'last_movement_at' &&
-                                                                                queryString.direction === 'desc'
-                                                                                    ? 'asc'
-                                                                                    : 'desc',
-                                                                        }),
-                                                                    }).url
-                                                                }
-                                                                isActive={queryString.sort === 'last_movement_at'}
-                                                                currentDirection={queryString.direction}
-                                                                only={reloadProps}
-                                                            />
-                                                        </th>
+                                                        <TableHead
+                                                            sortable
+                                                            href={index({
+                                                                query: getSortQuery(queryString, 'last_movement_at'),
+                                                            }).url}
+                                                            direction={queryString.sort === 'last_movement_at' ? queryString.direction : undefined}
+                                                            only={reloadProps}
+                                                        >
+                                                            Last Movement
+                                                        </TableHead>
 
-                                                        <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
+                                                        <TableHead className="ui-table-empty-header-cell text-right">
                                                             <span className="sr-only">Actions</span>
-                                                        </th>
+                                                        </TableHead>
                                                     </tr>
                                                 </thead>
 

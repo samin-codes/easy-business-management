@@ -43,4 +43,16 @@ export const formatInteger = (value: string | number): string => {
 
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
+};
+
+export function getSortQuery<T extends { sort: string; direction: 'asc' | 'desc' }>(
+    query: T,
+    sort: T['sort'],
+) {
+    return {
+        ...query,
+        sort,
+        direction: query.sort === sort && query.direction === 'asc' ? 'desc' : 'asc',
+        page: 1,
+    };
 }
