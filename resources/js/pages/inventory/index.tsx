@@ -4,6 +4,7 @@ import { Boxes, PackageCheck, PackageX, Search, Wallet } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import { ViewAction } from '@/components/table-actions';
+import { TableHead } from '@/components/table-head';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,6 @@ import { create as createOpeningStock } from '@/routes/opening-stocks';
 import { create as createAdjustment } from '@/routes/stock-adjustments';
 import { create as createTransfer } from '@/routes/stock-transfers';
 import type { BreadcrumbItem, LengthAwarePagination, Outlet, ProductCategory, RecordStatus, UnitOfMeasurement } from '@/types';
-import { TableHead } from '@/components/table-head';
 import Navigation from './components/navigation';
 
 type InventoryItem = {
@@ -214,7 +214,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                             </div>
 
                             <section className="space-y-3">
-                                <div className="grid gap-3 lg:grid-cols-[minmax(16rem,1fr)_14rem_12rem_auto]">
+                                <div className="grid gap-3 lg:grid-cols-[25rem_14rem_12rem]">
                                     <div className="relative">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -284,21 +284,6 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                                         </SelectContent>
                                     </Select>
 
-                                    {(queryString.search || queryString.category_id || queryString.stock_status !== 'all') && (
-                                        <Button
-                                            variant="outline"
-                                            onClick={() =>
-                                                visit({
-                                                    search: null,
-                                                    category_id: null,
-                                                    stock_status: 'all',
-                                                    page: 1,
-                                                })
-                                            }
-                                        >
-                                            Clear
-                                        </Button>
-                                    )}
                                 </div>
 
                                 <div className="ui-table">
