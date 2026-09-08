@@ -4,15 +4,27 @@ import { Plus, Search } from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import { ViewAction } from '@/components/table-actions';
+import { TableHead } from '@/components/table-head';
 import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { index as inventoryIndex } from '@/routes/inventory';
 import { create, index, show } from '@/routes/opening-stocks';
-import type { BreadcrumbItem, LengthAwarePagination, OpeningStock, Outlet } from '@/types';
+import type {
+    BreadcrumbItem,
+    LengthAwarePagination,
+    OpeningStock,
+    Outlet,
+} from '@/types';
 import Navigation from '../components/navigation';
 
 type QueryString = {
@@ -22,31 +34,37 @@ type QueryString = {
     date_to: string | null;
 };
 
-export default function OpeningStocksIndex({
-    openingStocks,
-    outlets,
-    queryString,
-}: {
+type Props = {
     openingStocks: LengthAwarePagination<OpeningStock>;
     outlets: Pick<Outlet, 'id' | 'name'>[];
     queryString: QueryString;
-}) {
+};
+
+const reloadProps = ['openingStocks', 'queryString'];
+
+export default function Index({
+    openingStocks,
+    outlets,
+    queryString,
+}: Props) {
     const searchTimeout = useRef<number | undefined>(undefined);
-    const reloadProps = ['openingStocks', 'queryString'];
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inventory', href: inventoryIndex().url },
         { title: 'Opening Stock', href: index().url },
     ];
 
-    const reload = (overrides: Partial<Pick<QueryString, 'search' | 'outlet_id'>>) => {
-        router.get(
-            index().url,
-            {
-                ...queryString,
-                ...overrides,
-                page: 1,
-            },
+    const visit = (
+        overrides: Partial<QueryString> & { page?: number } = {},
+    ) => {
+        router.visit(
+            index({
+                query: {
+                    ...queryString,
+                    page: 1,
+                    ...overrides,
+                },
+            }),
             {
                 preserveScroll: true,
                 preserveState: true,
@@ -61,161 +79,211 @@ export default function OpeningStocksIndex({
             <Head title="Opening Stock" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-7xl space-y-8">
+                <div className="mx-auto max-w-7xl space-y-6">
                     <Navigation active="opening" />
 
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex items-start justify-between gap-4">
                         <Heading title="Opening Stock" />
 
-                        <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                        <Button asChild>
+                            <Link href={create()}>
+                                <Plus />
+                                New Opening Stock
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="grid gap-3 lg:grid-cols-[25rem_14rem]">
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+
+                                <Input
+                                    type="search"
+                                    placeholder="Search opening stock no..."
+                                    className="pl-9"
+                                    defaultValue={queryString.search ?? ''}
+                                    onChange={(event) => {
+                                        const search = event.currentTarget.value.trim();
+
+                                        window.clearTimeout(searchTimeout.current);
+
+                                        searchTimeout.current = window.setTimeout(() => {
+                                            visit({
+                                                search: search || null,
+                                            });
+                                        }, 300);
+                                    }}
+                                />
+                            </div>
+
                             <Select
                                 value={queryString.outlet_id?.toString() ?? 'all'}
                                 onValueChange={(value) =>
-                                    reload({
+                                    visit({
                                         outlet_id: value === 'all' ? null : Number(value),
                                     })
                                 }
                             >
-                                <SelectTrigger className="w-full sm:w-64">
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="All outlets" />
                                 </SelectTrigger>
 
-                                <SelectContent align="end">
+                                <SelectContent>
                                     <SelectItem value="all">All outlets</SelectItem>
 
                                     {outlets.map((outlet) => (
-                                        <SelectItem key={outlet.id} value={outlet.id.toString()}>
+                                        <SelectItem
+                                            key={outlet.id}
+                                            value={outlet.id.toString()}
+                                        >
                                             {outlet.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-
-                            <Button asChild>
-                                <Link href={create()}>
-                                    <Plus />
-                                    New Opening Stock
-                                </Link>
-                            </Button>
                         </div>
-                    </div>
 
-                    <section className="space-y-4">
-                        <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                <div className="relative w-full sm:max-w-sm">
-                                    <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <div className="ui-table">
+                            <div className="ui-table-main">
+                                <div className="ui-table-content">
+                                    <table className="ui-table-element ui-table-hover">
+                                        <thead>
+                                            <tr>
+                                                <TableHead>
+                                                    Opening Stock No
+                                                </TableHead>
 
-                                    <Input
-                                        type="search"
-                                        className="pl-9"
-                                        placeholder="Search opening stock no..."
-                                        defaultValue={queryString.search ?? ''}
-                                        onChange={(event) => {
-                                            const search = event.currentTarget.value.trim();
+                                                <TableHead>Date</TableHead>
 
-                                            window.clearTimeout(searchTimeout.current);
+                                                <TableHead>Outlet</TableHead>
 
-                                            searchTimeout.current = window.setTimeout(
-                                                () =>
-                                                    reload({
-                                                        search: search || null,
-                                                    }),
-                                                300,
-                                            );
-                                        }}
-                                    />
-                                </div>
-                            </div>
+                                                <TableHead align="end">
+                                                    Items
+                                                </TableHead>
 
-                            <div className="ui-table">
-                                <div className="ui-table-main">
-                                    <div className="ui-table-content">
-                                        <table className="ui-table-element ui-table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th className="ui-table-header-cell">Opening Stock No</th>
-                                                    <th className="ui-table-header-cell">Date</th>
-                                                    <th className="ui-table-header-cell">Outlet</th>
-                                                    <th className="ui-table-header-cell text-right">Items</th>
-                                                    <th className="ui-table-header-cell text-right">Value</th>
-                                                    <th className="ui-table-header-cell">Created By</th>
-                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
-                                                        <span className="sr-only">Actions</span>
-                                                    </th>
-                                                </tr>
-                                            </thead>
+                                                <TableHead align="end">
+                                                    Value
+                                                </TableHead>
 
-                                            <tbody>
-                                                {openingStocks.data.map((openingStock) => (
-                                                    <tr key={openingStock.id} className="ui-table-row">
+                                                <TableHead>
+                                                    Created By
+                                                </TableHead>
+
+                                                <TableHead className="ui-table-empty-header-cell text-right">
+                                                    <span className="sr-only">
+                                                        Actions
+                                                    </span>
+                                                </TableHead>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {openingStocks.data.map(
+                                                (openingStock) => (
+                                                    <tr
+                                                        key={openingStock.id}
+                                                        className="ui-table-row"
+                                                    >
                                                         <td className="ui-table-cell font-medium">
                                                             <div className="ui-table-column">
-                                                                <div className="ui-table-text">{openingStock.opening_stock_no}</div>
+                                                                <div className="ui-table-text">
+                                                                    {
+                                                                        openingStock.opening_stock_no
+                                                                    }
+                                                                </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell text-nowrap">
                                                             <div className="ui-table-column">
                                                                 <div className="ui-table-text">
-                                                                    {format(parseISO(openingStock.opening_date), 'MMM d, yyyy')}
+                                                                    {format(
+                                                                        parseISO(
+                                                                            openingStock.opening_date,
+                                                                        ),
+                                                                        'MMM d, yyyy',
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell">
                                                             <div className="ui-table-column">
-                                                                <div className="ui-table-text">{openingStock.outlet?.name ?? '-'}</div>
+                                                                <div className="ui-table-text">
+                                                                    {openingStock
+                                                                        .outlet
+                                                                        ?.name ??
+                                                                        '-'}
+                                                                </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell text-right tabular-nums">
                                                             <div className="ui-table-column">
-                                                                <div className="ui-table-text">{openingStock.items_count ?? 0}</div>
+                                                                <div className="ui-table-text">
+                                                                    {openingStock.items_count ??
+                                                                        0}
+                                                                </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell text-right font-medium tabular-nums">
                                                             <div className="ui-table-column">
                                                                 <div className="ui-table-text">
-                                                                    {formatCurrency(openingStock.total_value)}
+                                                                    {formatCurrency(
+                                                                        openingStock.total_value,
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell">
                                                             <div className="ui-table-column">
-                                                                <div className="ui-table-text">{openingStock.createdBy?.name ?? '-'}</div>
+                                                                <div className="ui-table-text">
+                                                                    {openingStock
+                                                                        .createdBy
+                                                                        ?.name ??
+                                                                        '-'}
+                                                                </div>
                                                             </div>
                                                         </td>
 
                                                         <td className="ui-table-cell text-right">
                                                             <div className="ui-table-actions">
                                                                 <ViewAction
-                                                                    url={show(openingStock.id)}
+                                                                    url={show(
+                                                                        openingStock.id,
+                                                                    )}
                                                                     aria-label={`View opening stock ${openingStock.opening_stock_no}`}
                                                                 />
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    {openingStocks.data.length === 0 && (
-                                        <div className="ui-table-empty-state">
-                                            <div className="ui-table-empty-state-content">
-                                                {queryString.search || queryString.outlet_id
-                                                    ? 'No opening stock records found.'
-                                                    : 'No opening stock records yet.'}
-                                            </div>
-                                        </div>
-                                    )}
-                                    <TablePagination paginator={openingStocks} only={reloadProps} />
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
+
+                                {openingStocks.data.length === 0 && (
+                                    <div className="ui-table-empty-state">
+                                        <div className="ui-table-empty-state-content">
+                                            {queryString.search ||
+                                            queryString.outlet_id
+                                                ? 'No opening stock records found.'
+                                                : 'No opening stock records yet.'}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <TablePagination
+                                    paginator={openingStocks}
+                                    only={reloadProps}
+                                />
                             </div>
                         </div>
-                    </section>
+                    </div>
                 </div>
             </div>
         </AppLayout>

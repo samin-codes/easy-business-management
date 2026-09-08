@@ -1,36 +1,59 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
-import { CircleCheck, Clock, Plus, Search, ShoppingCart, Wallet } from 'lucide-react';
+import {
+    CircleCheck,
+    Clock,
+    Plus,
+    Search,
+    ShoppingCart,
+    Wallet,
+} from 'lucide-react';
 import { useRef } from 'react';
 import Heading from '@/components/heading';
 import { ViewAction } from '@/components/table-actions';
+import { TableHead } from '@/components/table-head';
 import { TablePagination } from '@/components/table-pagination';
-import { TableSortButton } from '@/components/table-sort-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getSortQuery } from '@/lib/utils';
 import { create, index, show } from '@/routes/purchases';
-import type { BreadcrumbItem, LengthAwarePagination, Outlet, Purchase } from '@/types';
-
-type PurchaseOutlet = Pick<Outlet, 'id' | 'name' | 'code' | 'status'>;
+import type {
+    BreadcrumbItem,
+    LengthAwarePagination,
+    Outlet,
+    Party,
+    Purchase,
+    PurchasePaymentStatus,
+} from '@/types';
 
 type QueryString = {
     outlet_id: number | null;
+    supplier_id: number | null;
+    payment_status: PurchasePaymentStatus | null;
+    date_from: string | null;
+    date_to: string | null;
     search: string | null;
-    sort: 'purchase_no' | 'purchase_date' | 'total_amount' | 'paid_amount' | 'due_amount';
+    sort:
+        | 'purchase_no'
+        | 'purchase_date'
+        | 'total_amount'
+        | 'paid_amount'
+        | 'due_amount';
     direction: 'asc' | 'desc';
 };
 
-export default function PurchasesIndex({
-    purchases,
-    purchaseStats,
-    outlets,
-    queryString,
-}: {
+type Props = {
     purchases: LengthAwarePagination<Purchase>;
     purchaseStats: {
         purchase_count: number;
@@ -38,40 +61,59 @@ export default function PurchasesIndex({
         paid_amount: string;
         due_amount: string;
     };
-    outlets: PurchaseOutlet[];
+    outlets: Pick<Outlet, 'id' | 'name' | 'code' | 'status'>[];
+    suppliers: Pick<Party, 'id' | 'name'>[];
+    paymentStatuses: {
+        label: string;
+        value: PurchasePaymentStatus;
+    }[];
     queryString: QueryString;
-}) {
+};
+
+const reloadProps = ['purchases', 'purchaseStats', 'queryString'];
+
+export default function Index({
+    purchases,
+    purchaseStats,
+    outlets,
+    suppliers,
+    paymentStatuses,
+    queryString,
+}: Props) {
     const searchTimeout = useRef<number | undefined>(undefined);
-    const reloadProps = ['purchases', 'purchaseStats', 'queryString'];
+
+    const dateFrom = queryString.date_from
+        ? parseISO(queryString.date_from)
+        : undefined;
+
+    const dateTo = queryString.date_to
+        ? parseISO(queryString.date_to)
+        : undefined;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Purchases', href: index().url },
         { title: 'List', href: index().url },
     ];
 
-    const query = (overrides: Partial<QueryString> & { page?: number } = {}) => ({
-        outlet_id: overrides.outlet_id === null ? undefined : (overrides.outlet_id ?? queryString.outlet_id ?? undefined),
-        search: overrides.search === null ? undefined : (overrides.search ?? queryString.search ?? undefined),
-        sort: overrides.sort ?? queryString.sort,
-        direction: overrides.direction ?? queryString.direction,
-        page: overrides.page ?? 1,
-    });
-
-    const visit = (overrides: Partial<QueryString> & { page?: number } = {}) => {
-        router.get(
-            index({ query: query(overrides) }).url,
-            {},
-            { preserveScroll: true, preserveState: true, replace: true, only: reloadProps },
+    const visit = (
+        overrides: Partial<QueryString> & { page?: number } = {},
+    ) => {
+        router.visit(
+            index({
+                query: {
+                    ...queryString,
+                    page: 1,
+                    ...overrides,
+                },
+            }),
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                only: reloadProps,
+            },
         );
     };
-
-    const sortUrl = (sort: QueryString['sort']) =>
-        index({
-            query: query({
-                sort,
-                direction: queryString.sort === sort && queryString.direction === 'asc' ? 'desc' : 'asc',
-            }),
-        }).url;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -79,294 +121,519 @@ export default function PurchasesIndex({
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex items-start justify-between gap-4">
                         <Heading title="Purchases" />
 
-                        <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
-                            <Select
-                                value={queryString.outlet_id?.toString() ?? 'all'}
-                                onValueChange={(value) => visit({ outlet_id: value === 'all' ? null : Number(value), page: 1 })}
-                            >
-                                <SelectTrigger className="w-full sm:w-64">
-                                    <SelectValue placeholder="All outlets" />
-                                </SelectTrigger>
-
-                                <SelectContent align="end">
-                                    <SelectItem value="all">All outlets</SelectItem>
-
-                                    {outlets.map((outlet) => (
-                                        <SelectItem key={outlet.id} value={outlet.id.toString()}>
-                                            {outlet.name}
-                                            {outlet.code ? ` (${outlet.code})` : ''}
-                                            {outlet.status === 'inactive' ? ' — Inactive' : ''}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            <Button asChild>
-                                <Link href={create()}>
-                                    <Plus />
-                                    New Purchase
-                                </Link>
-                            </Button>
-                        </div>
+                        <Button asChild>
+                            <Link href={create()}>
+                                <Plus />
+                                New Purchase
+                            </Link>
+                        </Button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                         <Card className="min-w-0 gap-0 py-0">
                             <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                    <ShoppingCart aria-hidden="true" className="size-5" />
+                                    <ShoppingCart
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
                                 </div>
+
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-muted-foreground">Purchases</p>
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        Purchases
+                                    </p>
+
                                     <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
                                         {purchaseStats.purchase_count.toLocaleString()}
                                     </p>
                                 </div>
                             </CardContent>
                         </Card>
+
                         <Card className="min-w-0 gap-0 py-0">
                             <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                    <Wallet aria-hidden="true" className="size-5" />
+                                    <Wallet
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
                                 </div>
+
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        Total Amount
+                                    </p>
+
                                     <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
-                                        {formatCurrency(purchaseStats.total_amount)}
+                                        {formatCurrency(
+                                            purchaseStats.total_amount,
+                                        )}
                                     </p>
                                 </div>
                             </CardContent>
                         </Card>
+
                         <Card className="min-w-0 gap-0 py-0">
                             <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                    <CircleCheck aria-hidden="true" className="size-5" />
+                                    <CircleCheck
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
                                 </div>
+
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-muted-foreground">Paid</p>
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        Paid
+                                    </p>
+
                                     <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
-                                        {formatCurrency(purchaseStats.paid_amount)}
+                                        {formatCurrency(
+                                            purchaseStats.paid_amount,
+                                        )}
                                     </p>
                                 </div>
                             </CardContent>
                         </Card>
+
                         <Card className="min-w-0 gap-0 py-0">
                             <CardContent className="flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
                                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                    <Clock aria-hidden="true" className="size-5" />
+                                    <Clock
+                                        aria-hidden="true"
+                                        className="size-5"
+                                    />
                                 </div>
+
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-muted-foreground">Due</p>
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        Due
+                                    </p>
+
                                     <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
-                                        {formatCurrency(purchaseStats.due_amount)}
+                                        {formatCurrency(
+                                            purchaseStats.due_amount,
+                                        )}
                                     </p>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    <section className="space-y-4">
-                        <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="relative w-full sm:max-w-sm">
-                                    <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="space-y-3">
+                        <div className="grid gap-3 lg:grid-cols-[minmax(20rem,25rem)_14rem_14rem_13rem]">
+                            <div className="relative">
+                                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
-                                    <Input
-                                        type="search"
-                                        placeholder="Search purchase no..."
-                                        className="pl-9"
-                                        defaultValue={queryString.search ?? ''}
-                                        onChange={(event) => {
-                                            const search = event.currentTarget.value.trim();
+                                <Input
+                                    type="search"
+                                    placeholder="Search purchase no..."
+                                    className="pl-9"
+                                    defaultValue={queryString.search ?? ''}
+                                    onChange={(event) => {
+                                        const search = event.currentTarget.value.trim();
 
-                                            window.clearTimeout(searchTimeout.current);
+                                        window.clearTimeout(searchTimeout.current);
 
-                                            searchTimeout.current = window.setTimeout(() => {
-                                                visit({ search: search || null, page: 1 });
-                                            }, 300);
-                                        }}
-                                    />
-                                </div>
-
-                                {queryString.search && (
-                                    <Button variant="outline" onClick={() => visit({ search: null, page: 1 })}>
-                                        Clear
-                                    </Button>
-                                )}
+                                        searchTimeout.current = window.setTimeout(() => {
+                                            visit({
+                                                search: search || null,
+                                            });
+                                        }, 300);
+                                    }}
+                                />
                             </div>
 
-                            <div className="ui-table">
-                                <div className="ui-table-main">
-                                    <div className="ui-table-content">
-                                        <table className="ui-table-element ui-table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th className="ui-table-header-cell">
-                                                        <TableSortButton
-                                                            label="Purchase No"
-                                                            href={sortUrl('purchase_no')}
-                                                            isActive={queryString.sort === 'purchase_no'}
-                                                            currentDirection={queryString.direction}
-                                                            only={reloadProps}
-                                                        />
-                                                    </th>
+                            <Select
+                                value={queryString.outlet_id?.toString() ?? 'all'}
+                                onValueChange={(value) =>
+                                    visit({
+                                        outlet_id: value === 'all' ? null : Number(value),
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="All outlets" />
+                                </SelectTrigger>
 
-                                                    <th className="ui-table-header-cell">
-                                                        <TableSortButton
-                                                            label="Date"
-                                                            href={sortUrl('purchase_date')}
-                                                            isActive={queryString.sort === 'purchase_date'}
-                                                            currentDirection={queryString.direction}
-                                                            only={reloadProps}
-                                                        />
-                                                    </th>
+                                <SelectContent>
+                                    <SelectItem value="all">All outlets</SelectItem>
 
-                                                    <th className="ui-table-header-cell">Supplier</th>
-                                                    <th className="ui-table-header-cell">Outlet</th>
+                                    {outlets.map((outlet) => (
+                                        <SelectItem
+                                            key={outlet.id}
+                                            value={outlet.id.toString()}
+                                        >
+                                            {outlet.name}
+                                            {outlet.code ? ` (${outlet.code})` : ''}
+                                            {outlet.status === 'inactive'
+                                                ? ' — Inactive'
+                                                : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
 
-                                                    <th className="ui-table-header-cell text-right">
-                                                        <TableSortButton
-                                                            label="Total"
-                                                            href={sortUrl('total_amount')}
-                                                            isActive={queryString.sort === 'total_amount'}
-                                                            currentDirection={queryString.direction}
-                                                            align="right"
-                                                            only={reloadProps}
-                                                        />
-                                                    </th>
+                            <Select
+                                value={queryString.supplier_id?.toString() ?? 'all'}
+                                onValueChange={(value) =>
+                                    visit({
+                                        supplier_id: value === 'all' ? null : Number(value),
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="All suppliers" />
+                                </SelectTrigger>
 
-                                                    <th className="ui-table-header-cell text-right">
-                                                        <TableSortButton
-                                                            label="Paid"
-                                                            href={sortUrl('paid_amount')}
-                                                            isActive={queryString.sort === 'paid_amount'}
-                                                            currentDirection={queryString.direction}
-                                                            align="right"
-                                                            only={reloadProps}
-                                                        />
-                                                    </th>
+                                <SelectContent>
+                                    <SelectItem value="all">All suppliers</SelectItem>
 
-                                                    <th className="ui-table-header-cell text-right">
-                                                        <TableSortButton
-                                                            label="Due"
-                                                            href={sortUrl('due_amount')}
-                                                            isActive={queryString.sort === 'due_amount'}
-                                                            currentDirection={queryString.direction}
-                                                            align="right"
-                                                            only={reloadProps}
-                                                        />
-                                                    </th>
+                                    {suppliers.map((supplier) => (
+                                        <SelectItem
+                                            key={supplier.id}
+                                            value={supplier.id.toString()}
+                                        >
+                                            {supplier.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
 
-                                                    <th className="ui-table-header-cell text-center">Payment Status</th>
+                            <Select
+                                value={queryString.payment_status ?? 'all'}
+                                onValueChange={(value) =>
+                                    visit({
+                                        payment_status:
+                                            value === 'all'
+                                                ? null
+                                                : (value as PurchasePaymentStatus),
+                                    })
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Payment status" />
+                                </SelectTrigger>
 
-                                                    <th className="ui-table-header-cell">Created By</th>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All payment statuses
+                                    </SelectItem>
 
-                                                    <th className="ui-table-header-cell ui-table-empty-header-cell text-right">
-                                                        <span className="sr-only">Actions</span>
-                                                    </th>
+                                    {paymentStatuses.map((status) => (
+                                        <SelectItem
+                                            key={status.value}
+                                            value={status.value}
+                                        >
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2 lg:w-100">
+                            <DatePicker
+                                id="purchase-date-from"
+                                aria-label="Purchase date from"
+                                value={dateFrom}
+                                placeholder="From date"
+                                disabledDays={dateTo ? { after: dateTo } : undefined}
+                                onChange={(date) =>
+                                    visit({
+                                        date_from: date
+                                            ? format(date, 'yyyy-MM-dd')
+                                            : null,
+                                    })
+                                }
+                            />
+
+                            <DatePicker
+                                id="purchase-date-to"
+                                aria-label="Purchase date to"
+                                value={dateTo}
+                                placeholder="To date"
+                                disabledDays={dateFrom ? { before: dateFrom } : undefined}
+                                onChange={(date) =>
+                                    visit({
+                                        date_to: date
+                                            ? format(date, 'yyyy-MM-dd')
+                                            : null,
+                                    })
+                                }
+                            />
+                        </div>
+
+                        <div className="ui-table">
+                            <div className="ui-table-main">
+                                <div className="ui-table-content">
+                                    <table className="ui-table-element ui-table-hover">
+                                        <thead>
+                                            <tr>
+                                                <TableHead
+                                                    sortable
+                                                    href={
+                                                        index({
+                                                            query: getSortQuery(
+                                                                queryString,
+                                                                'purchase_no',
+                                                            ),
+                                                        }).url
+                                                    }
+                                                    direction={
+                                                        queryString.sort === 'purchase_no'
+                                                            ? queryString.direction
+                                                            : undefined
+                                                    }
+                                                    only={reloadProps}
+                                                >
+                                                    Purchase No
+                                                </TableHead>
+
+                                                <TableHead
+                                                    sortable
+                                                    href={
+                                                        index({
+                                                            query: getSortQuery(
+                                                                queryString,
+                                                                'purchase_date',
+                                                            ),
+                                                        }).url
+                                                    }
+                                                    direction={
+                                                        queryString.sort === 'purchase_date'
+                                                            ? queryString.direction
+                                                            : undefined
+                                                    }
+                                                    only={reloadProps}
+                                                >
+                                                    Date
+                                                </TableHead>
+
+                                                <TableHead>Supplier</TableHead>
+
+                                                <TableHead>Outlet</TableHead>
+
+                                                <TableHead
+                                                    sortable
+                                                    href={
+                                                        index({
+                                                            query: getSortQuery(
+                                                                queryString,
+                                                                'total_amount',
+                                                            ),
+                                                        }).url
+                                                    }
+                                                    direction={
+                                                        queryString.sort === 'total_amount'
+                                                            ? queryString.direction
+                                                            : undefined
+                                                    }
+                                                    align="end"
+                                                    only={reloadProps}
+                                                >
+                                                    Total
+                                                </TableHead>
+
+                                                <TableHead
+                                                    sortable
+                                                    href={
+                                                        index({
+                                                            query: getSortQuery(
+                                                                queryString,
+                                                                'paid_amount',
+                                                            ),
+                                                        }).url
+                                                    }
+                                                    direction={
+                                                        queryString.sort === 'paid_amount'
+                                                            ? queryString.direction
+                                                            : undefined
+                                                    }
+                                                    align="end"
+                                                    only={reloadProps}
+                                                >
+                                                    Paid
+                                                </TableHead>
+
+                                                <TableHead
+                                                    sortable
+                                                    href={
+                                                        index({
+                                                            query: getSortQuery(
+                                                                queryString,
+                                                                'due_amount',
+                                                            ),
+                                                        }).url
+                                                    }
+                                                    direction={
+                                                        queryString.sort === 'due_amount'
+                                                            ? queryString.direction
+                                                            : undefined
+                                                    }
+                                                    align="end"
+                                                    only={reloadProps}
+                                                >
+                                                    Due
+                                                </TableHead>
+
+                                                <TableHead className="text-center">
+                                                    Payment Status
+                                                </TableHead>
+
+                                                <TableHead>Created By</TableHead>
+
+                                                <TableHead className="ui-table-empty-header-cell text-right">
+                                                    <span className="sr-only">
+                                                        Actions
+                                                    </span>
+                                                </TableHead>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {purchases.data.map((purchase) => (
+                                                <tr
+                                                    key={purchase.id}
+                                                    className="ui-table-row"
+                                                >
+                                                    <td className="ui-table-cell font-medium">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {purchase.purchase_no}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-nowrap">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {format(
+                                                                    parseISO(
+                                                                        purchase.purchase_date,
+                                                                    ),
+                                                                    'MMM d, yyyy',
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {purchase.supplier?.name ?? '-'}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {purchase.outlet?.name ?? '-'}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {formatCurrency(
+                                                                    purchase.total_amount,
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {formatCurrency(
+                                                                    purchase.paid_amount,
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right tabular-nums">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {formatCurrency(
+                                                                    purchase.due_amount,
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-center">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={
+                                                                        purchase.payment_status ===
+                                                                        'paid'
+                                                                            ? 'border-transparent bg-emerald-100 text-emerald-800'
+                                                                            : purchase.payment_status ===
+                                                                                'partial'
+                                                                            ? 'border-transparent bg-amber-100 text-amber-800'
+                                                                            : 'border-transparent bg-red-100 text-red-800'
+                                                                    }
+                                                                >
+                                                                    {purchase.payment_status_label ??
+                                                                        purchase.payment_status}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell">
+                                                        <div className="ui-table-column">
+                                                            <div className="ui-table-text">
+                                                                {purchase.createdBy?.name ?? '-'}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="ui-table-cell text-right">
+                                                        <div className="ui-table-actions">
+                                                            <ViewAction
+                                                                url={show(purchase.id)}
+                                                                aria-label={`View purchase ${purchase.purchase_no}`}
+                                                            />
+                                                        </div>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                {purchases.data.map((purchase) => (
-                                                    <tr key={purchase.id} className="ui-table-row">
-                                                        <td className="ui-table-cell font-medium">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{purchase.purchase_no}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-nowrap">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">
-                                                                    {format(parseISO(purchase.purchase_date), 'MMM d, yyyy')}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{purchase.supplier?.name ?? '-'}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{purchase.outlet?.name ?? '-'}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-right tabular-nums">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{formatCurrency(purchase.total_amount)}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-right tabular-nums">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{formatCurrency(purchase.paid_amount)}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-right tabular-nums">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{formatCurrency(purchase.due_amount)}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-center">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className={
-                                                                            purchase.payment_status === 'paid'
-                                                                                ? 'border-transparent bg-emerald-100 text-emerald-800'
-                                                                                : purchase.payment_status === 'partial'
-                                                                                  ? 'border-transparent bg-amber-100 text-amber-800'
-                                                                                  : 'border-transparent bg-red-100 text-red-800'
-                                                                        }
-                                                                    >
-                                                                        {purchase.payment_status_label ?? purchase.payment_status}
-                                                                    </Badge>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell">
-                                                            <div className="ui-table-column">
-                                                                <div className="ui-table-text">{purchase.createdBy?.name ?? '-'}</div>
-                                                            </div>
-                                                        </td>
-
-                                                        <td className="ui-table-cell text-right">
-                                                            <div className="ui-table-actions">
-                                                                <ViewAction
-                                                                    url={show(purchase.id)}
-                                                                    aria-label={`View purchase ${purchase.purchase_no}`}
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    {purchases.data.length === 0 && (
-                                        <div className="ui-table-empty-state">
-                                            <div className="ui-table-empty-state-content">
-                                                {queryString.search || queryString.outlet_id ? 'No purchases found.' : 'No purchases yet.'}
-                                            </div>
-                                        </div>
-                                    )}
-                                    <TablePagination paginator={purchases} only={reloadProps} />
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
+
+                                {purchases.data.length === 0 && (
+                                    <div className="ui-table-empty-state">
+                                        <div className="ui-table-empty-state-content">
+                                            {queryString.search ||
+                                            queryString.outlet_id ||
+                                            queryString.supplier_id ||
+                                            queryString.payment_status ||
+                                            queryString.date_from ||
+                                            queryString.date_to
+                                                ? 'No purchases found.'
+                                                : 'No purchases yet.'}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <TablePagination
+                                    paginator={purchases}
+                                    only={reloadProps}
+                                />
                             </div>
                         </div>
-                    </section>
+                    </div>
                 </div>
             </div>
         </AppLayout>

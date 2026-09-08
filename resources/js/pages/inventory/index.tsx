@@ -213,7 +213,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                                 </Card>
                             </div>
 
-                            <section className="space-y-3">
+                            <div className="space-y-3">
                                 <div className="grid gap-3 lg:grid-cols-[25rem_14rem_12rem]">
                                     <div className="relative">
                                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -491,7 +491,7 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
                                         <TablePagination paginator={stocks} only={reloadProps} />
                                     </div>
                                 </div>
-                            </section>
+                            </div>
                         </>
                     )}
                 </div>

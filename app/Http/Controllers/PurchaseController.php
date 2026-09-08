@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\PartyType;
 use App\Enums\PaymentMethod;
 use App\Enums\ProductStockLedgerTransactionType;
+use App\Enums\PurchasePaymentStatus;
 use App\Http\Requests\SavePurchaseRequest;
 use App\Models\Business;
 use App\Models\Outlet;
@@ -23,20 +24,58 @@ use Inertia\Response;
 
 class PurchaseController extends Controller
 {
+
     public function index(Request $request): Response
     {
         $business = Business::current();
+
         $outlets = Outlet::query()
             ->whereBelongsTo($business)
             ->orderBy('name')
             ->get(['id', 'name', 'code', 'status']);
 
-        $outletId = $outlets->firstWhere('id', $request->integer('outlet_id'))?->id;
-        $search = $request->string('search')->trim()->limit(255, '')->toString();
+        $suppliers = Party::query()
+            ->whereBelongsTo($business)
+            ->whereIn('party_type', [PartyType::Supplier, PartyType::Both])
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $outletId = $outlets
+            ->firstWhere('id', $request->integer('outlet_id'))
+            ?->id;
+
+        $supplierId = $suppliers
+            ->firstWhere('id', $request->integer('supplier_id'))
+            ?->id;
+
+        $paymentStatus = PurchasePaymentStatus::tryFrom(
+            $request->string('payment_status')->toString(),
+        )?->value;
+
+        $dateFrom = $request
+            ->date('date_from', '!Y-m-d')
+            ?->toDateString();
+
+        $dateTo = $request
+            ->date('date_to', '!Y-m-d')
+            ?->toDateString();
+
+        $search = $request
+            ->string('search')
+            ->trim()
+            ->limit(255, '')
+            ->toString();
+
         $sort = $request->query('sort', 'purchase_date');
         $direction = $request->query('direction', 'desc');
 
-        if (! in_array($sort, ['purchase_no', 'purchase_date', 'total_amount', 'paid_amount', 'due_amount'], true)) {
+        if (! in_array($sort, [
+            'purchase_no',
+            'purchase_date',
+            'total_amount',
+            'paid_amount',
+            'due_amount',
+        ], true)) {
             $sort = 'purchase_date';
         }
 
@@ -46,13 +85,39 @@ class PurchaseController extends Controller
 
         $purchaseQuery = Purchase::query()
             ->whereBelongsTo($business)
-            ->when($outletId, fn ($query, int $outletId) => $query->where('outlet_id', $outletId));
+            ->when(
+                $outletId,
+                fn ($query, int $value) => $query->where('outlet_id', $value),
+            )
+            ->when(
+                $supplierId,
+                fn ($query, int $value) => $query->where('supplier_party_id', $value),
+            )
+            ->when(
+                $paymentStatus,
+                fn ($query, string $value) => $query->where('payment_status', $value),
+            )
+            ->when(
+                $dateFrom,
+                fn ($query, string $value) => $query->whereDate('purchase_date', '>=', $value),
+            )
+            ->when(
+                $dateTo,
+                fn ($query, string $value) => $query->whereDate('purchase_date', '<=', $value),
+            );
 
         $purchases = (clone $purchaseQuery)
-            ->with(['supplier:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
-            ->when($search, function ($query, $search) {
-                $query->where('purchase_no', 'like', "%{$search}%");
-            })
+            ->with([
+                'supplier:id,name',
+                'outlet:id,name',
+                'createdBy:id,name',
+                'business:id,name',
+            ])
+            ->when(
+                $search,
+                fn ($query, string $value) => $query
+                    ->where('purchase_no', 'like', "%{$value}%"),
+            )
             ->orderBy($sort, $direction)
             ->orderBy('id', 'desc')
             ->paginate(10)
@@ -74,8 +139,14 @@ class PurchaseController extends Controller
                 'due_amount' => (string) ($purchaseAggregates->due_amount ?? '0.00'),
             ],
             'outlets' => $outlets,
+            'suppliers' => $suppliers,
+            'paymentStatuses' => PurchasePaymentStatus::toArray(),
             'queryString' => [
                 'outlet_id' => $outletId,
+                'supplier_id' => $supplierId,
+                'payment_status' => $paymentStatus,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
                 'search' => $search !== '' ? $search : null,
                 'sort' => $sort,
                 'direction' => $direction,
