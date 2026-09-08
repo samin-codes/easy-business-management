@@ -225,7 +225,7 @@ export default function Index({
                     </div>
 
                     <div className="space-y-3">
-                        <div className="grid gap-3 lg:grid-cols-[minmax(20rem,25rem)_14rem_14rem_13rem]">
+                        <div className="grid gap-3 lg:grid-cols-[25rem_14rem_14rem_13rem]">
                             <div className="relative">
                                 <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 
