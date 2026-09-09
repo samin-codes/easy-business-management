@@ -88,7 +88,7 @@ export default function PurchaseItemsTable({
 
                                 return (
                                     <tr key={purchaseItem.uid} className="ui-table-row">
-                                        <td className="ui-table-cell min-w-[360px]">
+                                        <td className="ui-table-cell min-w-90">
                                             <div className="ui-table-column">
                                                 <div className="ui-table-text">
                                                     <Combobox

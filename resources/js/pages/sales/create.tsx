@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { format as formatDate, isValid, parseISO } from 'date-fns';
+import { format as formatDate, parseISO } from 'date-fns';
 import { Plus, Save, X } from 'lucide-react';
 import SaleController from '@/actions/App/Http/Controllers/SaleController';
 import Heading from '@/components/heading';
@@ -39,13 +39,15 @@ type SaleFormData = {
     items: SaleItemFormData[];
 };
 
-const createSaleItemFormData = (): SaleItemFormData => ({
-    uid: crypto.randomUUID(),
-    product_variant_id: '',
-    unit_of_measurement_id: '',
-    quantity: '',
-    unit_price: '',
-});
+function createSaleItemFormData(): SaleItemFormData {
+    return {
+        uid: crypto.randomUUID(),
+        product_variant_id: '',
+        unit_of_measurement_id: '',
+        quantity: '',
+        unit_price: '',
+    };
+}
 
 function createPaymentFormData(): PaymentFormData {
     return {
@@ -57,24 +59,16 @@ function createPaymentFormData(): PaymentFormData {
     };
 }
 
-const createSaleFormData = (): SaleFormData => ({
-    sale_date: formatDate(new Date(), 'yyyy-MM-dd'),
-    outlet_id: '',
-    customer_party_id: '',
-    note: '',
-    discount_amount: '0.00',
-    payment: createPaymentFormData(),
-    items: [createSaleItemFormData()],
-});
-
-function parseDateValue(value: string): Date | undefined {
-    if (!value) {
-        return undefined;
-    }
-
-    const parsedDate = parseISO(value);
-
-    return isValid(parsedDate) ? parsedDate : undefined;
+function createSaleFormData(): SaleFormData {
+    return {
+        sale_date: formatDate(new Date(), 'yyyy-MM-dd'),
+        outlet_id: '',
+        customer_party_id: '',
+        note: '',
+        discount_amount: '0.00',
+        payment: createPaymentFormData(),
+        items: [createSaleItemFormData()],
+    };
 }
 
 export default function SalesCreate({
@@ -90,13 +84,18 @@ export default function SalesCreate({
 }) {
     const form = useForm<SaleFormData>(() => createSaleFormData());
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Sales', href: index().url },
+        { title: 'Create', href: create().url },
+    ];
+
     const selectedOutlet = outlets.find((outlet) => outlet.id.toString() === form.data.outlet_id) ?? null;
 
     const selectedCustomer = customers.find((customer) => customer.id.toString() === form.data.customer_party_id) ?? null;
 
-    const saleDate = parseDateValue(form.data.sale_date);
+    const saleDate = form.data.sale_date ? parseISO(form.data.sale_date) : undefined;
 
-    const paymentDate = parseDateValue(form.data.payment.payment_date);
+    const paymentDate = form.data.payment.payment_date ? parseISO(form.data.payment.payment_date) : undefined;
 
     const subtotal = form.data.items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0), 0);
 
@@ -106,16 +105,11 @@ export default function SalesCreate({
 
     const dueAmount = Math.max(totalAmount - currentPaymentAmount, 0);
 
-    const hasPayment = currentPaymentAmount > 0;
-
     const paymentStatus = currentPaymentAmount <= 0 ? 'unpaid' : currentPaymentAmount >= totalAmount ? 'paid' : 'partial';
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Sales', href: index().url },
-        { title: 'Create', href: create().url },
-    ];
+    const hasPayment = currentPaymentAmount > 0;
 
-    function submit(event: React.SubmitEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         form.transform((data) => ({
@@ -132,17 +126,24 @@ export default function SalesCreate({
         });
     }
 
-    const patchItem = (uid: string, patch: SaleItemPatch) => {
+    const handleSaleItemAdd = () => {
         form.setData((data) => ({
             ...data,
-            items: data.items.map((item) => (item.uid === uid ? { ...item, ...patch } : item)),
+            items: [...data.items, createSaleItemFormData()],
         }));
     };
 
-    const removeItem = (uid: string) => {
+    const handleSaleItemRemove = (uid: string) => {
         form.setData((data) => ({
             ...data,
-            items: data.items.filter((item) => item.uid !== uid),
+            items: data.items.filter((saleItem) => saleItem.uid !== uid),
+        }));
+    };
+
+    const handleSaleItemChange = (uid: string, patch: SaleItemPatch) => {
+        form.setData((data) => ({
+            ...data,
+            items: data.items.map((saleItem) => (saleItem.uid === uid ? { ...saleItem, ...patch } : saleItem)),
         }));
     };
 
@@ -164,7 +165,7 @@ export default function SalesCreate({
                 <div className="mx-auto max-w-5xl space-y-6">
                     <Heading title="Create Sale" className="mb-8" />
 
-                    <form onSubmit={submit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-6">
                             <Section>
                                 <SectionContent>
@@ -177,7 +178,12 @@ export default function SalesCreate({
                                             <DatePicker
                                                 id="sale_date"
                                                 value={saleDate}
-                                                onChange={(date) => form.setData('sale_date', date ? formatDate(date, 'yyyy-MM-dd') : '')}
+                                                onChange={(date) =>
+                                                    form.setData((data) => ({
+                                                        ...data,
+                                                        sale_date: date ? formatDate(date, 'yyyy-MM-dd') : '',
+                                                    }))
+                                                }
                                                 aria-invalid={Boolean(form.errors.sale_date)}
                                             />
 
@@ -200,7 +206,12 @@ export default function SalesCreate({
                                             <Combobox
                                                 items={outlets}
                                                 value={selectedOutlet}
-                                                onValueChange={(outlet) => form.setData('outlet_id', outlet?.id.toString() ?? '')}
+                                                onValueChange={(outlet) =>
+                                                    form.setData((data) => ({
+                                                        ...data,
+                                                        outlet_id: outlet?.id.toString() ?? '',
+                                                    }))
+                                                }
                                                 itemToStringLabel={(outlet) => outlet.name}
                                                 itemToStringValue={(outlet) => outlet.id.toString()}
                                             >
@@ -219,6 +230,7 @@ export default function SalesCreate({
                                                         {(outlet) => (
                                                             <ComboboxItem key={outlet.id} value={outlet}>
                                                                 {outlet.name}
+
                                                                 {outlet.code ? ` (${outlet.code})` : ''}
                                                             </ComboboxItem>
                                                         )}
@@ -244,7 +256,10 @@ export default function SalesCreate({
                                                 items={customers}
                                                 value={selectedCustomer}
                                                 onValueChange={(customer) =>
-                                                    form.setData('customer_party_id', customer?.id.toString() ?? '')
+                                                    form.setData((data) => ({
+                                                        ...data,
+                                                        customer_party_id: customer?.id.toString() ?? '',
+                                                    }))
                                                 }
                                                 itemToStringLabel={(customer) => customer.name}
                                                 itemToStringValue={(customer) => customer.id.toString()}
@@ -306,6 +321,7 @@ export default function SalesCreate({
                             <Section>
                                 <SectionHeader>
                                     <SectionTitle>Sale items</SectionTitle>
+
                                     <Separator />
                                 </SectionHeader>
 
@@ -314,23 +330,13 @@ export default function SalesCreate({
                                         items={form.data.items}
                                         products={products}
                                         errors={form.errors}
-                                        onItemChange={patchItem}
-                                        onItemRemove={removeItem}
+                                        onItemRemove={handleSaleItemRemove}
+                                        onItemChange={handleSaleItemChange}
                                     />
                                 </SectionContent>
 
                                 <div className="flex justify-center">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                            form.setData((data) => ({
-                                                ...data,
-                                                items: [...data.items, createSaleItemFormData()],
-                                            }))
-                                        }
-                                    >
+                                    <Button type="button" variant="outline" size="sm" onClick={handleSaleItemAdd}>
                                         <Plus className="size-4" />
                                         Add Item
                                     </Button>
@@ -340,6 +346,7 @@ export default function SalesCreate({
                             <Section>
                                 <SectionHeader>
                                     <SectionTitle>Payment</SectionTitle>
+
                                     <Separator />
                                 </SectionHeader>
 
@@ -619,6 +626,7 @@ export default function SalesCreate({
 
                                 <Button type="submit" disabled={form.processing}>
                                     <Save />
+
                                     {form.processing ? 'Saving...' : 'Create Sale'}
                                 </Button>
                             </div>

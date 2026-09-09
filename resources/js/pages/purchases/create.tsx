@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { format as formatDate, isValid, parseISO } from 'date-fns';
+import { format as formatDate, parseISO } from 'date-fns';
 import { Plus, Save, X } from 'lucide-react';
 import PurchaseController from '@/actions/App/Http/Controllers/PurchaseController';
 import Heading from '@/components/heading';
@@ -79,16 +79,6 @@ function createPurchaseFormData(): PurchaseFormData {
     };
 }
 
-function parseDateValue(value: string): Date | undefined {
-    if (!value) {
-        return undefined;
-    }
-
-    const parsedDate = parseISO(value);
-
-    return isValid(parsedDate) ? parsedDate : undefined;
-}
-
 export default function PurchasesCreate({
     outlets,
     suppliers,
@@ -111,9 +101,9 @@ export default function PurchasesCreate({
 
     const selectedSupplier = suppliers.find((supplier) => supplier.id.toString() === form.data.supplier_party_id) ?? null;
 
-    const purchaseDate = parseDateValue(form.data.purchase_date);
+    const purchaseDate = form.data.purchase_date ? parseISO(form.data.purchase_date) : undefined;
 
-    const paymentDate = parseDateValue(form.data.payment.payment_date);
+    const paymentDate = form.data.payment.payment_date ? parseISO(form.data.payment.payment_date) : undefined;
 
     const subtotal = form.data.items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_cost) || 0), 0);
 

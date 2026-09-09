@@ -15,18 +15,24 @@ export type SaleItemFormData = {
 
 export type SaleItemPatch = Partial<Pick<SaleItemFormData, 'product_variant_id' | 'unit_of_measurement_id' | 'quantity' | 'unit_price'>>;
 
-type Props = {
+export default function SaleItemsTable({
+    items,
+    products,
+    errors,
+    onItemRemove,
+    onItemChange,
+}: {
     items: SaleItemFormData[];
     products: Product[];
     errors: Record<string, string>;
     onItemRemove: (uid: string) => void;
     onItemChange: (uid: string, patch: SaleItemPatch) => void;
-};
+}) {
+    const productVariants = products.flatMap((product) => product.product_variants ?? []);
 
-export default function SaleItemsTable({ items, products, errors, onItemRemove, onItemChange }: Props) {
-    const variants = products.flatMap((product) => product.product_variants ?? []);
-
-    const subtotal = items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0), 0);
+    const subtotal = items.reduce((sum, item) => {
+        return sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
+    }, 0);
 
     return (
         <div className="ui-table">
@@ -38,16 +44,21 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                 <th className="ui-table-header-cell min-w-90">
                                     Product / Variant <span className="text-red-500">*</span>
                                 </th>
+
                                 <th className="ui-table-header-cell w-36">
                                     Unit <span className="text-red-500">*</span>
                                 </th>
+
                                 <th className="ui-table-header-cell w-32 text-right">
                                     Qty <span className="text-red-500">*</span>
                                 </th>
+
                                 <th className="ui-table-header-cell w-32 text-right">
                                     Unit Price <span className="text-red-500">*</span>
                                 </th>
+
                                 <th className="ui-table-header-cell w-32 text-right whitespace-nowrap">Line Total</th>
+
                                 <th className="ui-table-header-cell ui-table-empty-header-cell w-12 text-center">
                                     <span className="sr-only">Actions</span>
                                 </th>
@@ -55,66 +66,70 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                         </thead>
 
                         <tbody>
-                            {items.map((item, index) => {
-                                const variant = variants.find((value) => value.id.toString() === item.product_variant_id) ?? null;
+                            {items.map((saleItem, saleItemIndex) => {
+                                const selectedProductVariant =
+                                    productVariants.find(
+                                        (productVariant) => productVariant.id.toString() === saleItem.product_variant_id,
+                                    ) ?? null;
 
-                                const product = products.find((value) => value.id === variant?.product_id);
+                                const selectedProduct = products.find((product) => product.id === selectedProductVariant?.product_id);
 
-                                const conversions = product?.active_unit_conversions ?? [];
+                                const availableConversions = selectedProduct?.active_unit_conversions ?? [];
 
-                                const conversion =
-                                    conversions.find((value) => value.unit_of_measurement_id.toString() === item.unit_of_measurement_id) ??
-                                    null;
+                                const selectedUnitConversion =
+                                    availableConversions.find(
+                                        (conversion) => conversion.unit_of_measurement_id.toString() === saleItem.unit_of_measurement_id,
+                                    ) ?? null;
 
-                                const lineTotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
+                                const lineTotal = (Number(saleItem.quantity) || 0) * (Number(saleItem.unit_price) || 0);
 
                                 return (
-                                    <tr key={item.uid} className="ui-table-row">
-                                        <td className="ui-table-cell min-w-[360px]">
+                                    <tr key={saleItem.uid} className="ui-table-row">
+                                        <td className="ui-table-cell min-w-90">
                                             <div className="ui-table-column">
                                                 <div className="ui-table-text">
                                                     <Combobox
-                                                        items={variants}
-                                                        value={variant}
-                                                        onValueChange={(value) => {
-                                                            const nextProduct = products.find(
-                                                                (current) => current.id === value?.product_id,
+                                                        items={productVariants}
+                                                        value={selectedProductVariant}
+                                                        onValueChange={(productVariant) => {
+                                                            const product = products.find(
+                                                                (currentProduct) => currentProduct.id === productVariant?.product_id,
                                                             );
 
-                                                            onItemChange(item.uid, {
-                                                                product_variant_id: value?.id.toString() ?? '',
+                                                            onItemChange(saleItem.uid, {
+                                                                product_variant_id: productVariant?.id.toString() ?? '',
                                                                 unit_of_measurement_id:
-                                                                    nextProduct?.default_sale_unit_conversion?.unit_of_measurement_id.toString() ??
+                                                                    product?.default_sale_unit_conversion?.unit_of_measurement_id.toString() ??
                                                                     '',
                                                                 quantity: '',
                                                                 unit_price: '',
                                                             });
                                                         }}
-                                                        itemToStringLabel={(value) => value.purchase_label}
-                                                        itemToStringValue={(value) => value.id.toString()}
+                                                        itemToStringLabel={(productVariant) => productVariant.purchase_label}
+                                                        itemToStringValue={(productVariant) => productVariant.id.toString()}
                                                     >
                                                         <ComboboxInput
-                                                            id={`items-${index}-product-variant-id`}
+                                                            id={`items-${saleItemIndex}-product-variant-id`}
                                                             placeholder="Select product / variant"
                                                             className="w-full"
                                                             showClear
-                                                            aria-invalid={Boolean(errors[`items.${index}.product_variant_id`])}
+                                                            aria-invalid={Boolean(errors[`items.${saleItemIndex}.product_variant_id`])}
                                                         />
 
                                                         <ComboboxContent className="w-max min-w-(--anchor-width)">
                                                             <ComboboxEmpty>No product variant found.</ComboboxEmpty>
 
                                                             <ComboboxList>
-                                                                {(value) => (
-                                                                    <ComboboxItem key={value.id} value={value}>
+                                                                {(productVariant) => (
+                                                                    <ComboboxItem key={productVariant.id} value={productVariant}>
                                                                         <div className="flex min-w-0 flex-col">
                                                                             <span className="text-sm whitespace-nowrap">
-                                                                                {value.purchase_label}
+                                                                                {productVariant.purchase_label}
                                                                             </span>
 
-                                                                            {value.sku && (
+                                                                            {productVariant.sku && (
                                                                                 <span className="text-xs text-muted-foreground">
-                                                                                    SKU: {value.sku}
+                                                                                    SKU: {productVariant.sku}
                                                                                 </span>
                                                                             )}
                                                                         </div>
@@ -131,33 +146,33 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                             <div className="ui-table-column">
                                                 <div className="ui-table-text">
                                                     <Combobox
-                                                        items={conversions}
-                                                        value={conversion}
-                                                        onValueChange={(value) =>
-                                                            onItemChange(item.uid, {
-                                                                unit_of_measurement_id: value?.unit_of_measurement_id.toString() ?? '',
+                                                        items={availableConversions}
+                                                        value={selectedUnitConversion}
+                                                        onValueChange={(conversion) =>
+                                                            onItemChange(saleItem.uid, {
+                                                                unit_of_measurement_id: conversion?.unit_of_measurement_id.toString() ?? '',
                                                             })
                                                         }
-                                                        itemToStringLabel={(value) => value.unit_of_measurement?.name ?? ''}
-                                                        itemToStringValue={(value) => value.unit_of_measurement_id.toString()}
-                                                        disabled={!variant}
+                                                        itemToStringLabel={(conversion) => conversion.unit_of_measurement?.name ?? ''}
+                                                        itemToStringValue={(conversion) => conversion.unit_of_measurement_id.toString()}
+                                                        disabled={!selectedProductVariant}
                                                     >
                                                         <ComboboxInput
-                                                            id={`items-${index}-unit-of-measurement-id`}
+                                                            id={`items-${saleItemIndex}-unit-of-measurement-id`}
                                                             placeholder="Select unit"
                                                             className="w-full"
                                                             showClear
-                                                            disabled={!variant}
-                                                            aria-invalid={Boolean(errors[`items.${index}.unit_of_measurement_id`])}
+                                                            disabled={!selectedProductVariant}
+                                                            aria-invalid={Boolean(errors[`items.${saleItemIndex}.unit_of_measurement_id`])}
                                                         />
 
                                                         <ComboboxContent>
                                                             <ComboboxEmpty>No unit found.</ComboboxEmpty>
 
                                                             <ComboboxList>
-                                                                {(value) => (
-                                                                    <ComboboxItem key={value.id} value={value}>
-                                                                        {value.unit_of_measurement?.name ?? '-'}
+                                                                {(conversion) => (
+                                                                    <ComboboxItem key={conversion.id} value={conversion}>
+                                                                        {conversion.unit_of_measurement?.name ?? '-'}
                                                                     </ComboboxItem>
                                                                 )}
                                                             </ComboboxList>
@@ -172,20 +187,20 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                                 <div className="ui-table-text">
                                                     <Input
                                                         type="number"
-                                                        value={item.quantity}
+                                                        value={saleItem.quantity}
                                                         onChange={(event) =>
-                                                            onItemChange(item.uid, {
+                                                            onItemChange(saleItem.uid, {
                                                                 quantity: event.target.value,
                                                             })
                                                         }
                                                         onBlur={() =>
-                                                            onItemChange(item.uid, {
-                                                                quantity: formatInteger(item.quantity),
+                                                            onItemChange(saleItem.uid, {
+                                                                quantity: formatInteger(saleItem.quantity),
                                                             })
                                                         }
                                                         className="no-number-spinner text-right"
-                                                        disabled={!variant}
-                                                        aria-invalid={Boolean(errors[`items.${index}.quantity`])}
+                                                        disabled={!selectedProductVariant}
+                                                        aria-invalid={Boolean(errors[`items.${saleItemIndex}.quantity`])}
                                                     />
                                                 </div>
                                             </div>
@@ -196,20 +211,20 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                                 <div className="ui-table-text">
                                                     <Input
                                                         type="number"
-                                                        value={item.unit_price}
+                                                        value={saleItem.unit_price}
                                                         onChange={(event) =>
-                                                            onItemChange(item.uid, {
+                                                            onItemChange(saleItem.uid, {
                                                                 unit_price: event.target.value,
                                                             })
                                                         }
                                                         onBlur={() =>
-                                                            onItemChange(item.uid, {
-                                                                unit_price: formatDecimal(item.unit_price),
+                                                            onItemChange(saleItem.uid, {
+                                                                unit_price: formatDecimal(saleItem.unit_price),
                                                             })
                                                         }
                                                         className="no-number-spinner text-right"
-                                                        disabled={!variant}
-                                                        aria-invalid={Boolean(errors[`items.${index}.unit_price`])}
+                                                        disabled={!selectedProductVariant}
+                                                        aria-invalid={Boolean(errors[`items.${saleItemIndex}.unit_price`])}
                                                     />
                                                 </div>
                                             </div>
@@ -234,7 +249,7 @@ export default function SaleItemsTable({ items, products, errors, onItemRemove, 
                                                         icon={Trash2}
                                                         color="danger"
                                                         appearance="icon-button"
-                                                        onClick={() => onItemRemove(item.uid)}
+                                                        onClick={() => onItemRemove(saleItem.uid)}
                                                     />
                                                 )}
                                             </div>
