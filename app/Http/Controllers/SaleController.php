@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\PartyType;
 use App\Enums\PaymentMethod;
 use App\Enums\ProductStockLedgerTransactionType;
+use App\Enums\SalePaymentStatus;
 use App\Http\Requests\SaveSaleRequest;
 use App\Models\Business;
 use App\Models\Outlet;
@@ -26,19 +27,101 @@ class SaleController extends Controller
     public function index(Request $request): Response
     {
         $business = Business::current();
-        $outlets = Outlet::query()->whereBelongsTo($business)->orderBy('name')->get(['id', 'name', 'code', 'status']);
-        $outletId = $outlets->firstWhere('id', $request->integer('outlet_id'))?->id;
-        $search = $request->string('search')->trim()->limit(255, '')->toString();
-        $sort = in_array($request->query('sort'), ['sale_no', 'sale_date', 'total_amount', 'paid_amount', 'due_amount'], true)
-            ? $request->query('sort') : 'sale_date';
-        $direction = $request->query('direction') === 'asc' ? 'asc' : 'desc';
+
+        $outlets = Outlet::query()
+            ->whereBelongsTo($business)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code', 'status']);
+
+        $customers = Party::query()
+            ->whereBelongsTo($business)
+            ->whereIn('party_type', [PartyType::Customer, PartyType::Both])
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $outletId = $outlets
+            ->firstWhere('id', $request->integer('outlet_id'))
+            ?->id;
+
+        $customerId = $customers
+            ->firstWhere('id', $request->integer('customer_id'))
+            ?->id;
+
+        $paymentStatus = SalePaymentStatus::tryFrom(
+            $request->string('payment_status')->toString(),
+        )?->value;
+
+        $dateFrom = $request
+            ->date('date_from', '!Y-m-d')
+            ?->toDateString();
+
+        $dateTo = $request
+            ->date('date_to', '!Y-m-d')
+            ?->toDateString();
+
+        $search = $request
+            ->string('search')
+            ->trim()
+            ->limit(255, '')
+            ->toString();
+
+        $sort = $request->query('sort', 'sale_date');
+        $direction = $request->query('direction', 'desc');
+
+        if (! in_array($sort, [
+            'sale_no',
+            'sale_date',
+            'total_amount',
+            'paid_amount',
+            'due_amount',
+        ], true)) {
+            $sort = 'sale_date';
+        }
+
+        if (! in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+
         $saleQuery = Sale::query()
             ->whereBelongsTo($business)
-            ->when($outletId, fn ($query, int $outletId) => $query->where('outlet_id', $outletId));
+            ->when(
+                $outletId,
+                fn ($query, int $value) => $query->where('outlet_id', $value),
+            )
+            ->when(
+                $customerId,
+                fn ($query, int $value) => $query->where('customer_party_id', $value),
+            )
+            ->when(
+                $paymentStatus,
+                fn ($query, string $value) => $query->where('payment_status', $value),
+            )
+            ->when(
+                $dateFrom,
+                fn ($query, string $value) => $query->whereDate('sale_date', '>=', $value),
+            )
+            ->when(
+                $dateTo,
+                fn ($query, string $value) => $query->whereDate('sale_date', '<=', $value),
+            );
+
         $sales = (clone $saleQuery)
-            ->with(['customer:id,name', 'outlet:id,name', 'createdBy:id,name', 'business:id,name'])
-            ->when($search, fn ($query, string $search) => $query->where('sale_no', 'like', "%{$search}%"))
-            ->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate(10)->withQueryString();
+            ->with([
+                'customer:id,name',
+                'outlet:id,name',
+                'createdBy:id,name',
+                'business:id,name',
+            ])
+            ->when(
+                $search,
+                fn ($query, string $value) => $query
+                    ->where('sale_no', 'like', "%{$value}%"),
+            )
+            ->orderBy($sort, $direction)
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
         $saleAggregates = (clone $saleQuery)
             ->selectRaw('COUNT(*) as sale_count')
             ->selectRaw('COALESCE(SUM(total_amount), 0) as total_amount')
@@ -55,8 +138,14 @@ class SaleController extends Controller
                 'due_amount' => (string) ($saleAggregates->due_amount ?? '0.00'),
             ],
             'outlets' => $outlets,
+            'customers' => $customers,
+            'paymentStatuses' => SalePaymentStatus::toArray(),
             'queryString' => [
                 'outlet_id' => $outletId,
+                'customer_id' => $customerId,
+                'payment_status' => $paymentStatus,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
                 'search' => $search !== '' ? $search : null,
                 'sort' => $sort,
                 'direction' => $direction,
