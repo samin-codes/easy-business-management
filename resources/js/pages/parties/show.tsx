@@ -128,7 +128,7 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 <div className="flex flex-row items-center justify-between">
                                     <SectionTitle>Contact Persons ({contactPersons.length})</SectionTitle>
                                     <Button asChild size="sm">
-                                        <Link href={contactPersonCreate(party.id).url}>
+                                        <Link href={contactPersonCreate(party.id, { query: queryString }).url}>
                                             <Plus className="size-4" />
                                             New Contact Person
                                         </Link>
@@ -143,7 +143,12 @@ export default function PartiesShow({ party }: { party: Party }) {
                                 ) : (
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         {contactPersons.map((contactPerson) => (
-                                            <ContactPersonCard key={contactPerson.id} party={party} contactPerson={contactPerson} />
+                                            <ContactPersonCard
+                                                key={contactPerson.id}
+                                                party={party}
+                                                contactPerson={contactPerson}
+                                                queryString={queryString}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -168,7 +173,11 @@ function getOpeningBalanceTypeColor(openingBalanceType: string): TextEntryColor 
     return 'gray';
 }
 
-function ContactPersonCard({ party, contactPerson }: { party: Party; contactPerson: PartyContactPerson }) {
+function ContactPersonCard({ party, contactPerson, queryString }: {
+    party: Party;
+    contactPerson: PartyContactPerson;
+    queryString: Record<string, string | null>;
+}) {
     return (
         <Card className="gap-4">
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -230,10 +239,10 @@ function ContactPersonCard({ party, contactPerson }: { party: Party; contactPers
                 <Button size="sm" variant="outline" asChild title="Edit Contact Person" aria-label="Edit Contact Person">
                     <Link
                         href={
-                            contactPersonEdit({
-                                party,
-                                party_contact_person: contactPerson.id,
-                            }).url
+                            contactPersonEdit(
+                                { party, party_contact_person: contactPerson.id },
+                                { query: queryString },
+                            ).url
                         }
                     >
                         <SquarePen className="size-4" />

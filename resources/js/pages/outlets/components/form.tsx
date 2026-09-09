@@ -1,7 +1,6 @@
 import { Form, Link } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
-import OutletController from '@/actions/App/Http/Controllers/OutletController';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,8 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { show as businessShow } from '@/routes/business';
+import { store, update } from '@/routes/businesses/outlets';
 import type { Option } from '@/types';
 import type { Business, Outlet } from '../types';
 
@@ -19,14 +20,12 @@ export default function OutletForm({
     outletTypeOptions,
     statusOptions,
     areaTypeOptions,
-    cancelHref,
 }: {
     business: Business;
     outlet?: Outlet;
     outletTypeOptions: Option[];
     statusOptions: Option[];
     areaTypeOptions: Option[];
-    cancelHref: string;
 }) {
     const [outletType, setOutletType] = useState(outlet?.outlet_type ?? '');
     const [status, setStatus] = useState(outlet?.status ?? 'active');
@@ -34,7 +33,7 @@ export default function OutletForm({
 
     return (
         <Form
-            action={outlet ? OutletController.update({ business, outlet }) : OutletController.store({ business })}
+            action={outlet ? update({ business, outlet }) : store({ business })}
             options={{ preserveScroll: true }}
             disableWhileProcessing
             className="space-y-6"
@@ -251,7 +250,7 @@ export default function OutletForm({
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={cancelHref}>
+                            <Link href={businessShow()}>
                                 <X />
                                 Cancel
                             </Link>

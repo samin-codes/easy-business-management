@@ -39,7 +39,6 @@ export default function OutletsCreate({
                         outletTypeOptions={outletTypeOptions}
                         statusOptions={statusOptions}
                         areaTypeOptions={areaTypeOptions}
-                        cancelHref={businessShow().url}
                     />
                 </div>
             </div>

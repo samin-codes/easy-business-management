@@ -1,4 +1,4 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import { useState } from 'react';
 import PartyContactPersonController from '@/actions/App/Http/Controllers/PartyContactPersonController';
@@ -8,19 +8,27 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { show as partyShow } from '@/routes/parties';
 import type { Option, Party, PartyContactPerson } from '@/types';
 
 export default function PartyContactPersonForm({
     party,
     partyContactPerson,
     statusOptions,
-    cancelHref,
 }: {
     party: Party;
     partyContactPerson?: PartyContactPerson;
     statusOptions: Option[];
-    cancelHref: string;
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const [status, setStatus] = useState(partyContactPerson?.status ?? 'active');
     const [isPrimary, setIsPrimary] = useState(partyContactPerson?.is_primary ?? false);
 
@@ -144,7 +152,7 @@ export default function PartyContactPersonForm({
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={cancelHref}>
+                            <Link href={partyShow(party.id, { query: queryString })}>
                                 <X />
                                 Cancel
                             </Link>
