@@ -315,7 +315,7 @@ export default function PurchasesCreate({
                                                 value={form.data.note}
                                                 onChange={(event) => form.setData('note', event.target.value)}
                                                 aria-invalid={Boolean(form.errors.note)}
-                                                placeholder="Purchase notes..."
+                                                placeholder="Optional note"
                                                 className="min-h-20 resize-none"
                                             />
 
@@ -333,7 +333,7 @@ export default function PurchasesCreate({
 
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Purchase items</SectionTitle>
+                                    <SectionTitle>Products</SectionTitle>
 
                                     <Separator />
                                 </SectionHeader>
@@ -351,7 +351,7 @@ export default function PurchasesCreate({
                                 <div className="flex justify-center">
                                     <Button type="button" variant="outline" size="sm" onClick={handlePurchaseItemAdd}>
                                         <Plus className="size-4" />
-                                        Add Item
+                                        Add Product
                                     </Button>
                                 </div>
                             </Section>
@@ -517,7 +517,7 @@ export default function PurchasesCreate({
                                                     }))
                                                 }
                                                 aria-invalid={Boolean(form.errors['payment.note'])}
-                                                placeholder="Optional payment note"
+                                                placeholder="Optional note"
                                                 className="min-h-20 resize-none"
                                             />
 

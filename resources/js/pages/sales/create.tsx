@@ -302,7 +302,7 @@ export default function SalesCreate({
                                                 value={form.data.note}
                                                 onChange={(event) => form.setData('note', event.target.value)}
                                                 aria-invalid={Boolean(form.errors.note)}
-                                                placeholder="Sale notes..."
+                                                placeholder="Optional note"
                                                 className="min-h-20 resize-none"
                                             />
 
@@ -320,7 +320,7 @@ export default function SalesCreate({
 
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Sale items</SectionTitle>
+                                    <SectionTitle>Products</SectionTitle>
 
                                     <Separator />
                                 </SectionHeader>
@@ -338,7 +338,7 @@ export default function SalesCreate({
                                 <div className="flex justify-center">
                                     <Button type="button" variant="outline" size="sm" onClick={handleSaleItemAdd}>
                                         <Plus className="size-4" />
-                                        Add Item
+                                        Add Product
                                     </Button>
                                 </div>
                             </Section>
@@ -504,7 +504,7 @@ export default function SalesCreate({
                                                     }))
                                                 }
                                                 aria-invalid={Boolean(form.errors['payment.note'])}
-                                                placeholder="Optional payment note"
+                                                placeholder="Optional note"
                                                 className="min-h-20 resize-none"
                                             />
 

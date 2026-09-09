@@ -1,6 +1,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { format, isValid, parseISO } from 'date-fns';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { format as formatDate, parseISO } from 'date-fns';
+import { Plus, Save, Trash2, X } from 'lucide-react';
 import StockAdjustmentController from '@/actions/App/Http/Controllers/StockAdjustmentController';
 import Heading from '@/components/heading';
 import { Action } from '@/components/table-actions';
@@ -29,8 +29,8 @@ type AdjustmentItemFormData = {
 };
 
 type AdjustmentFormData = {
-    outlet_id: string;
     adjustment_date: string;
+    outlet_id: string;
     type: StockAdjustmentType;
     reason: StockAdjustmentReason | '';
     note: string;
@@ -41,7 +41,7 @@ type AdjustmentReasonOption = Option<StockAdjustmentReason> & {
     types: StockAdjustmentType[];
 };
 
-function createAdjustmentItem(): AdjustmentItemFormData {
+function createItemFormData(): AdjustmentItemFormData {
     return {
         uid: crypto.randomUUID(),
         product_variant_id: '',
@@ -65,22 +65,14 @@ export default function AdjustmentsCreate({
     adjustmentReasons: AdjustmentReasonOption[];
     selectedOutletId?: number | null;
 }) {
-    const form = useForm<AdjustmentFormData>({
+    const form = useForm<AdjustmentFormData>(() => ({
+        adjustment_date: formatDate(new Date(), 'yyyy-MM-dd'),
         outlet_id: selectedOutletId?.toString() ?? '',
-        adjustment_date: format(new Date(), 'yyyy-MM-dd'),
         type: 'in',
         reason: '',
         note: '',
-        items: [createAdjustmentItem()],
-    });
-
-    const selectedDate = parseISO(form.data.adjustment_date);
-
-    const variants = products.flatMap((product) => product.product_variants ?? []);
-
-    const isInbound = form.data.type === 'in';
-
-    const visibleReasons = adjustmentReasons.filter((reason) => reason.types.includes(form.data.type));
+        items: [createItemFormData()],
+    }));
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Inventory', href: inventoryIndex().url },
@@ -88,68 +80,34 @@ export default function AdjustmentsCreate({
         { title: 'Create', href: create().url },
     ];
 
-    const total = form.data.items.reduce((sum, item) => {
-        const variant = variants.find((candidate) => candidate.id.toString() === item.product_variant_id);
+    const selectedOutlet = outlets.find((outlet) => outlet.id.toString() === form.data.outlet_id) ?? null;
 
-        const product = products.find((candidate) => candidate.id === variant?.product_id);
+    const productVariants = products.flatMap((product) => product.product_variants ?? []);
 
-        const conversion = product?.active_unit_conversions?.find(
-            (candidate) => candidate.unit_of_measurement_id.toString() === item.unit_of_measurement_id,
+    const adjustmentDate = form.data.adjustment_date ? parseISO(form.data.adjustment_date) : undefined;
+
+    const isInbound = form.data.type === 'in';
+
+    const availableReasons = adjustmentReasons.filter((reason) => reason.types.includes(form.data.type));
+
+    const totalAmount = form.data.items.reduce((sum, item) => {
+        const selectedProductVariant = productVariants.find((productVariant) => productVariant.id.toString() === item.product_variant_id);
+
+        const selectedProduct = products.find((product) => product.id === selectedProductVariant?.product_id);
+
+        const selectedUnitConversion = selectedProduct?.active_unit_conversions?.find(
+            (conversion) => conversion.unit_of_measurement_id.toString() === item.unit_of_measurement_id,
         );
 
         const quantity = Number(item.quantity) || 0;
-        const baseQuantity = quantity * (Number(conversion?.conversion_factor_to_base) || 0);
+        const baseQuantity = quantity * (Number(selectedUnitConversion?.conversion_factor_to_base) || 0);
 
-        const cost = isInbound ? Number(item.unit_cost) : Number(variant?.average_cost);
+        const unitCost = isInbound ? Number(item.unit_cost) : Number(selectedProductVariant?.average_cost);
 
-        return sum + (isInbound ? quantity : baseQuantity) * (cost || 0);
+        return sum + (isInbound ? quantity : baseQuantity) * (unitCost || 0);
     }, 0);
 
-    const updateItem = (uid: string, patch: Partial<AdjustmentItemFormData>) => {
-        form.setData(
-            'items',
-            form.data.items.map((item) => (item.uid === uid ? { ...item, ...patch } : item)),
-        );
-    };
-
-    const handleOutletChange = (value: string) => {
-        form.setData((data) => ({
-            ...data,
-            outlet_id: value,
-            items: data.items.map((item) => ({
-                ...item,
-                product_variant_id: '',
-                unit_of_measurement_id: '',
-                quantity: '',
-                unit_cost: '',
-            })),
-        }));
-
-        router.get(
-            window.location.pathname,
-            { outlet_id: Number(value) },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-                only: ['products', 'selectedOutletId'],
-            },
-        );
-    };
-
-    const handleTypeChange = (value: StockAdjustmentType) => {
-        form.setData((data) => ({
-            ...data,
-            type: value,
-            reason: '',
-            items: data.items.map((item) => ({
-                ...item,
-                unit_cost: '',
-            })),
-        }));
-    };
-
-    const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         form.transform((data) => ({
@@ -164,61 +122,158 @@ export default function AdjustmentsCreate({
         form.submit(StockAdjustmentController.store(), {
             preserveScroll: true,
         });
+    }
+
+    const addItem = () => {
+        form.setData((data) => ({
+            ...data,
+            items: [...data.items, createItemFormData()],
+        }));
+    };
+
+    const removeItem = (uid: string) => {
+        form.setData((data) => ({
+            ...data,
+            items: data.items.filter((item) => item.uid !== uid),
+        }));
+    };
+
+    const updateItem = (uid: string, patch: Partial<AdjustmentItemFormData>) => {
+        form.setData((data) => ({
+            ...data,
+            items: data.items.map((item) => (item.uid === uid ? { ...item, ...patch } : item)),
+        }));
+    };
+
+    const handleOutletChange = (outletId: string) => {
+        form.setData((data) => ({
+            ...data,
+            outlet_id: outletId,
+            items: data.items.map((item) => ({
+                ...item,
+                product_variant_id: '',
+                unit_of_measurement_id: '',
+                quantity: '',
+                unit_cost: '',
+            })),
+        }));
+
+        router.get(
+            create().url,
+            { outlet_id: Number(outletId) },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['products', 'selectedOutletId'],
+            },
+        );
+    };
+
+    const handleTypeChange = (adjustmentType: StockAdjustmentType) => {
+        form.setData((data) => ({
+            ...data,
+            type: adjustmentType,
+            reason: '',
+            items: data.items.map((item) => ({
+                ...item,
+                unit_cost: '',
+            })),
+        }));
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="New Stock Adjustment" />
+            <Head title="Create Stock Adjustment" />
 
             <div className="px-4 py-6">
-                <div className="mx-auto max-w-7xl space-y-8">
-                    <Heading title="New Stock Adjustment" />
+                <div className="mx-auto max-w-7xl space-y-6">
+                    <Heading title="Create Stock Adjustment" className="mb-8" />
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <Section>
                             <SectionContent>
-                                <FieldGroup className="grid gap-5 md:grid-cols-2">
+                                <FieldGroup className="grid gap-4 md:grid-cols-2">
                                     <Field>
-                                        <FieldLabel>Outlet *</FieldLabel>
-
-                                        <Select value={form.data.outlet_id} onValueChange={handleOutletChange}>
-                                            <SelectTrigger aria-invalid={Boolean(form.errors.outlet_id)}>
-                                                <SelectValue placeholder="Select outlet" />
-                                            </SelectTrigger>
-
-                                            <SelectContent>
-                                                {outlets.map((outlet) => (
-                                                    <SelectItem key={outlet.id} value={outlet.id.toString()}>
-                                                        {outlet.name} ({outlet.code})
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-
-                                        <FieldError>{form.errors.outlet_id}</FieldError>
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Adjustment Date *</FieldLabel>
+                                        <FieldLabel htmlFor="adjustment_date">
+                                            Adjustment Date <span className="-ml-1 text-red-500">*</span>
+                                        </FieldLabel>
 
                                         <DatePicker
-                                            id="adjustment-date"
-                                            value={isValid(selectedDate) ? selectedDate : undefined}
-                                            onChange={(date) => form.setData('adjustment_date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                            id="adjustment_date"
+                                            value={adjustmentDate}
+                                            onChange={(date) =>
+                                                form.setData((data) => ({
+                                                    ...data,
+                                                    adjustment_date: date ? formatDate(date, 'yyyy-MM-dd') : '',
+                                                }))
+                                            }
                                             aria-invalid={Boolean(form.errors.adjustment_date)}
                                         />
 
-                                        <FieldError>{form.errors.adjustment_date}</FieldError>
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: form.errors.adjustment_date,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
 
                                     <Field>
-                                        <FieldLabel>Type *</FieldLabel>
+                                        <FieldLabel htmlFor="outlet_id">
+                                            Outlet <span className="-ml-1 text-red-500">*</span>
+                                        </FieldLabel>
+
+                                        <Combobox
+                                            items={outlets}
+                                            value={selectedOutlet}
+                                            onValueChange={(outlet) => handleOutletChange(outlet?.id.toString() ?? '')}
+                                            itemToStringLabel={(outlet) => outlet.name}
+                                            itemToStringValue={(outlet) => outlet.id.toString()}
+                                        >
+                                            <ComboboxInput
+                                                id="outlet_id"
+                                                placeholder="Select outlet"
+                                                className="w-full"
+                                                showClear
+                                                aria-invalid={Boolean(form.errors.outlet_id)}
+                                            />
+
+                                            <ComboboxContent>
+                                                <ComboboxEmpty>No outlet found.</ComboboxEmpty>
+
+                                                <ComboboxList>
+                                                    {(outlet) => (
+                                                        <ComboboxItem key={outlet.id} value={outlet}>
+                                                            {outlet.name}
+
+                                                            {outlet.code ? ` (${outlet.code})` : ''}
+                                                        </ComboboxItem>
+                                                    )}
+                                                </ComboboxList>
+                                            </ComboboxContent>
+                                        </Combobox>
+
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: form.errors.outlet_id,
+                                                },
+                                            ]}
+                                        />
+                                    </Field>
+
+                                    <Field>
+                                        <FieldLabel htmlFor="type">
+                                            Type <span className="-ml-1 text-red-500">*</span>
+                                        </FieldLabel>
 
                                         <Select
                                             value={form.data.type}
-                                            onValueChange={(value) => handleTypeChange(value as StockAdjustmentType)}
+                                            onValueChange={(adjustmentType) => handleTypeChange(adjustmentType as StockAdjustmentType)}
                                         >
-                                            <SelectTrigger aria-invalid={Boolean(form.errors.type)}>
+                                            <SelectTrigger id="type" className="w-full" aria-invalid={Boolean(form.errors.type)}>
                                                 <SelectValue placeholder="Select type" />
                                             </SelectTrigger>
 
@@ -231,22 +286,24 @@ export default function AdjustmentsCreate({
                                             </SelectContent>
                                         </Select>
 
-                                        <FieldError>{form.errors.type}</FieldError>
+                                        <FieldError errors={[{ message: form.errors.type }]} />
                                     </Field>
 
                                     <Field>
-                                        <FieldLabel>Reason *</FieldLabel>
+                                        <FieldLabel htmlFor="reason">
+                                            Reason <span className="-ml-1 text-red-500">*</span>
+                                        </FieldLabel>
 
                                         <Select
                                             value={form.data.reason}
-                                            onValueChange={(value) => form.setData('reason', value as StockAdjustmentReason)}
+                                            onValueChange={(reason) => form.setData('reason', reason as StockAdjustmentReason)}
                                         >
-                                            <SelectTrigger aria-invalid={Boolean(form.errors.reason)}>
+                                            <SelectTrigger id="reason" className="w-full" aria-invalid={Boolean(form.errors.reason)}>
                                                 <SelectValue placeholder="Select reason" />
                                             </SelectTrigger>
 
                                             <SelectContent>
-                                                {visibleReasons.map((reason) => (
+                                                {availableReasons.map((reason) => (
                                                     <SelectItem key={reason.value} value={reason.value}>
                                                         {reason.label}
                                                     </SelectItem>
@@ -254,19 +311,28 @@ export default function AdjustmentsCreate({
                                             </SelectContent>
                                         </Select>
 
-                                        <FieldError>{form.errors.reason}</FieldError>
+                                        <FieldError errors={[{ message: form.errors.reason }]} />
                                     </Field>
 
                                     <Field className="md:col-span-2">
-                                        <FieldLabel>Note</FieldLabel>
+                                        <FieldLabel htmlFor="note">Note</FieldLabel>
 
                                         <Textarea
+                                            id="note"
                                             value={form.data.note}
                                             onChange={(event) => form.setData('note', event.target.value)}
-                                            placeholder="Optional explanation"
+                                            aria-invalid={Boolean(form.errors.note)}
+                                            placeholder="Optional note"
+                                            className="min-h-20 resize-none"
                                         />
 
-                                        <FieldError>{form.errors.note}</FieldError>
+                                        <FieldError
+                                            errors={[
+                                                {
+                                                    message: form.errors.note,
+                                                },
+                                            ]}
+                                        />
                                     </Field>
                                 </FieldGroup>
                             </SectionContent>
@@ -274,7 +340,7 @@ export default function AdjustmentsCreate({
 
                         <Section>
                             <SectionHeader>
-                                <SectionTitle>Items</SectionTitle>
+                                <SectionTitle>Products</SectionTitle>
 
                                 <Separator />
                             </SectionHeader>
@@ -286,49 +352,70 @@ export default function AdjustmentsCreate({
                                             <table className="ui-table-element min-w-280">
                                                 <thead>
                                                     <tr className="ui-table-row">
-                                                        <th className="ui-table-header-cell min-w-80">Product / Variant *</th>
-                                                        <th className="ui-table-header-cell w-36">Unit *</th>
-                                                        <th className="ui-table-header-cell w-28 text-right">Qty *</th>
+                                                        <th className="ui-table-header-cell min-w-80">
+                                                            Product / Variant <span className="text-red-500">*</span>
+                                                        </th>
+
+                                                        <th className="ui-table-header-cell w-36">
+                                                            Unit <span className="text-red-500">*</span>
+                                                        </th>
+
+                                                        <th className="ui-table-header-cell w-28 text-right">
+                                                            Qty <span className="text-red-500">*</span>
+                                                        </th>
+
                                                         <th className="ui-table-header-cell w-36 text-right">
-                                                            {isInbound ? 'Unit Cost *' : 'Avg. Cost'}
+                                                            {isInbound ? (
+                                                                <>
+                                                                    Unit Cost <span className="text-red-500">*</span>
+                                                                </>
+                                                            ) : (
+                                                                'Avg. Cost'
+                                                            )}
                                                         </th>
                                                         <th className="ui-table-header-cell w-36 text-right">Base Qty</th>
                                                         <th className="ui-table-header-cell w-36 text-right">Value</th>
                                                         <th className="ui-table-header-cell min-w-56">Item Note</th>
-                                                        <th className="ui-table-header-cell w-12">
+                                                        <th className="ui-table-header-cell ui-table-empty-header-cell w-12 text-center">
                                                             <span className="sr-only">Actions</span>
                                                         </th>
                                                     </tr>
                                                 </thead>
 
                                                 <tbody>
-                                                    {form.data.items.map((item, index) => {
-                                                        const variant =
-                                                            variants.find(
-                                                                (candidate) => candidate.id.toString() === item.product_variant_id,
+                                                    {form.data.items.map((item, itemIndex) => {
+                                                        const selectedProductVariant =
+                                                            productVariants.find(
+                                                                (productVariant) =>
+                                                                    productVariant.id.toString() === item.product_variant_id,
                                                             ) ?? null;
 
-                                                        const product = products.find((candidate) => candidate.id === variant?.product_id);
+                                                        const selectedProduct = products.find(
+                                                            (product) => product.id === selectedProductVariant?.product_id,
+                                                        );
 
-                                                        const conversions = product?.active_unit_conversions ?? [];
+                                                        const availableConversions = selectedProduct?.active_unit_conversions ?? [];
 
-                                                        const conversion =
-                                                            conversions.find(
-                                                                (candidate) =>
-                                                                    candidate.unit_of_measurement_id.toString() ===
+                                                        const selectedUnitConversion =
+                                                            availableConversions.find(
+                                                                (conversion) =>
+                                                                    conversion.unit_of_measurement_id.toString() ===
                                                                     item.unit_of_measurement_id,
                                                             ) ?? null;
 
                                                         const baseQuantity =
                                                             (Number(item.quantity) || 0) *
-                                                            (Number(conversion?.conversion_factor_to_base) || 0);
+                                                            (Number(selectedUnitConversion?.conversion_factor_to_base) || 0);
 
-                                                        const cost = isInbound ? Number(item.unit_cost) : Number(variant?.average_cost);
+                                                        const unitCost = isInbound
+                                                            ? Number(item.unit_cost)
+                                                            : Number(selectedProductVariant?.average_cost);
 
-                                                        const lineValue =
-                                                            (isInbound ? Number(item.quantity) || 0 : baseQuantity) * (cost || 0);
+                                                        const lineTotal =
+                                                            (isInbound ? Number(item.quantity) || 0 : baseQuantity) * (unitCost || 0);
 
-                                                        const isIneligible = !isInbound && Number(variant?.available_quantity) <= 0;
+                                                        const hasNoAvailableStock =
+                                                            !isInbound && Number(selectedProductVariant?.available_quantity) <= 0;
 
                                                         return (
                                                             <tr key={item.uid} className="ui-table-row">
@@ -336,31 +423,40 @@ export default function AdjustmentsCreate({
                                                                     <div className="ui-table-column">
                                                                         <div className="ui-table-text">
                                                                             <Combobox
-                                                                                items={variants}
-                                                                                value={variant}
-                                                                                onValueChange={(value) => {
-                                                                                    const selectedProduct = products.find(
-                                                                                        (candidate) => candidate.id === value?.product_id,
+                                                                                items={productVariants}
+                                                                                value={selectedProductVariant}
+                                                                                onValueChange={(productVariant) => {
+                                                                                    const product = products.find(
+                                                                                        (currentProduct) =>
+                                                                                            currentProduct.id ===
+                                                                                            productVariant?.product_id,
                                                                                     );
 
                                                                                     updateItem(item.uid, {
-                                                                                        product_variant_id: value?.id.toString() ?? '',
+                                                                                        product_variant_id:
+                                                                                            productVariant?.id.toString() ?? '',
                                                                                         unit_of_measurement_id:
-                                                                                            selectedProduct?.default_purchase_unit_conversion?.unit_of_measurement_id.toString() ??
-                                                                                            selectedProduct?.base_unit_conversion?.unit_of_measurement_id.toString() ??
+                                                                                            product?.default_purchase_unit_conversion?.unit_of_measurement_id.toString() ??
+                                                                                            product?.base_unit_conversion?.unit_of_measurement_id.toString() ??
                                                                                             '',
                                                                                         quantity: '',
                                                                                         unit_cost: '',
                                                                                     });
                                                                                 }}
-                                                                                itemToStringLabel={(value) => value.purchase_label}
-                                                                                itemToStringValue={(value) => value.id.toString()}
+                                                                                itemToStringLabel={(productVariant) =>
+                                                                                    productVariant.purchase_label
+                                                                                }
+                                                                                itemToStringValue={(productVariant) =>
+                                                                                    productVariant.id.toString()
+                                                                                }
                                                                             >
                                                                                 <ComboboxInput
                                                                                     placeholder="Select product / variant"
                                                                                     showClear
                                                                                     aria-invalid={Boolean(
-                                                                                        form.errors[`items.${index}.product_variant_id`],
+                                                                                        form.errors[
+                                                                                            `items.${itemIndex}.product_variant_id`
+                                                                                        ],
                                                                                     )}
                                                                                 />
 
@@ -368,22 +464,26 @@ export default function AdjustmentsCreate({
                                                                                     <ComboboxEmpty>No product variant found.</ComboboxEmpty>
 
                                                                                     <ComboboxList>
-                                                                                        {(value) => (
+                                                                                        {(productVariant) => (
                                                                                             <ComboboxItem
-                                                                                                key={value.id}
-                                                                                                value={value}
+                                                                                                key={productVariant.id}
+                                                                                                value={productVariant}
                                                                                                 disabled={
                                                                                                     !isInbound &&
-                                                                                                    Number(value.available_quantity) <= 0
+                                                                                                    Number(
+                                                                                                        productVariant.available_quantity,
+                                                                                                    ) <= 0
                                                                                                 }
                                                                                             >
                                                                                                 <div className="flex flex-col">
-                                                                                                    <span>{value.purchase_label}</span>
+                                                                                                    <span>
+                                                                                                        {productVariant.purchase_label}
+                                                                                                    </span>
 
                                                                                                     <span className="text-xs text-muted-foreground">
                                                                                                         {isInbound
                                                                                                             ? 'Available for adjustment in'
-                                                                                                            : `Available: ${formatQuantity(value.available_quantity ?? 0)} · Avg: ${formatCurrency(value.average_cost ?? 0)}`}
+                                                                                                            : `Available: ${formatQuantity(productVariant.available_quantity ?? 0)} · Avg: ${formatCurrency(productVariant.average_cost ?? 0)}`}
                                                                                                     </span>
                                                                                                 </div>
                                                                                             </ComboboxItem>
@@ -393,10 +493,10 @@ export default function AdjustmentsCreate({
                                                                             </Combobox>
 
                                                                             <FieldError>
-                                                                                {form.errors[`items.${index}.product_variant_id`]}
+                                                                                {form.errors[`items.${itemIndex}.product_variant_id`]}
                                                                             </FieldError>
 
-                                                                            {isIneligible && (
+                                                                            {hasNoAvailableStock && (
                                                                                 <p className="mt-1 text-xs text-destructive">
                                                                                     This variant has no available stock.
                                                                                 </p>
@@ -409,29 +509,30 @@ export default function AdjustmentsCreate({
                                                                     <div className="ui-table-column">
                                                                         <div className="ui-table-text">
                                                                             <Combobox
-                                                                                items={conversions}
-                                                                                value={conversion}
-                                                                                onValueChange={(value) =>
+                                                                                items={availableConversions}
+                                                                                value={selectedUnitConversion}
+                                                                                onValueChange={(conversion) =>
                                                                                     updateItem(item.uid, {
                                                                                         unit_of_measurement_id:
-                                                                                            value?.unit_of_measurement_id.toString() ?? '',
+                                                                                            conversion?.unit_of_measurement_id.toString() ??
+                                                                                            '',
                                                                                     })
                                                                                 }
-                                                                                itemToStringLabel={(value) =>
-                                                                                    value.unit_of_measurement?.name ?? ''
+                                                                                itemToStringLabel={(conversion) =>
+                                                                                    conversion.unit_of_measurement?.name ?? ''
                                                                                 }
-                                                                                itemToStringValue={(value) =>
-                                                                                    value.unit_of_measurement_id.toString()
+                                                                                itemToStringValue={(conversion) =>
+                                                                                    conversion.unit_of_measurement_id.toString()
                                                                                 }
-                                                                                disabled={!variant}
+                                                                                disabled={!selectedProductVariant}
                                                                             >
                                                                                 <ComboboxInput
                                                                                     placeholder="Unit"
-                                                                                    disabled={!variant}
+                                                                                    disabled={!selectedProductVariant}
                                                                                     showClear
                                                                                     aria-invalid={Boolean(
                                                                                         form.errors[
-                                                                                            `items.${index}.unit_of_measurement_id`
+                                                                                            `items.${itemIndex}.unit_of_measurement_id`
                                                                                         ],
                                                                                     )}
                                                                                 />
@@ -440,9 +541,12 @@ export default function AdjustmentsCreate({
                                                                                     <ComboboxEmpty>No unit found.</ComboboxEmpty>
 
                                                                                     <ComboboxList>
-                                                                                        {(value) => (
-                                                                                            <ComboboxItem key={value.id} value={value}>
-                                                                                                {value.unit_of_measurement?.name}
+                                                                                        {(conversion) => (
+                                                                                            <ComboboxItem
+                                                                                                key={conversion.id}
+                                                                                                value={conversion}
+                                                                                            >
+                                                                                                {conversion.unit_of_measurement?.name}
                                                                                             </ComboboxItem>
                                                                                         )}
                                                                                     </ComboboxList>
@@ -450,7 +554,7 @@ export default function AdjustmentsCreate({
                                                                             </Combobox>
 
                                                                             <FieldError>
-                                                                                {form.errors[`items.${index}.unit_of_measurement_id`]}
+                                                                                {form.errors[`items.${itemIndex}.unit_of_measurement_id`]}
                                                                             </FieldError>
                                                                         </div>
                                                                     </div>
@@ -471,12 +575,12 @@ export default function AdjustmentsCreate({
                                                                                 }
                                                                                 className="no-number-spinner text-right"
                                                                                 aria-invalid={Boolean(
-                                                                                    form.errors[`items.${index}.quantity`],
+                                                                                    form.errors[`items.${itemIndex}.quantity`],
                                                                                 )}
                                                                             />
 
                                                                             <FieldError>
-                                                                                {form.errors[`items.${index}.quantity`]}
+                                                                                {form.errors[`items.${itemIndex}.quantity`]}
                                                                             </FieldError>
                                                                         </div>
                                                                     </div>
@@ -503,19 +607,21 @@ export default function AdjustmentsCreate({
                                                                                     }
                                                                                     className="no-number-spinner text-right"
                                                                                     aria-invalid={Boolean(
-                                                                                        form.errors[`items.${index}.unit_cost`],
+                                                                                        form.errors[`items.${itemIndex}.unit_cost`],
                                                                                     )}
                                                                                 />
                                                                             ) : (
                                                                                 <div className="text-right tabular-nums">
-                                                                                    {variant
-                                                                                        ? formatCurrency(variant.average_cost ?? 0)
+                                                                                    {selectedProductVariant
+                                                                                        ? formatCurrency(
+                                                                                              selectedProductVariant.average_cost ?? 0,
+                                                                                          )
                                                                                         : '-'}
                                                                                 </div>
                                                                             )}
 
                                                                             <FieldError>
-                                                                                {form.errors[`items.${index}.unit_cost`]}
+                                                                                {form.errors[`items.${itemIndex}.unit_cost`]}
                                                                             </FieldError>
                                                                         </div>
                                                                     </div>
@@ -532,7 +638,9 @@ export default function AdjustmentsCreate({
                                                                 <td className="ui-table-cell text-right font-medium tabular-nums">
                                                                     <div className="ui-table-column">
                                                                         <div className="ui-table-text">
-                                                                            {baseQuantity && cost >= 0 ? formatCurrency(lineValue) : '-'}
+                                                                            {baseQuantity && unitCost >= 0
+                                                                                ? formatCurrency(lineTotal)
+                                                                                : '-'}
                                                                         </div>
                                                                     </div>
                                                                 </td>
@@ -548,10 +656,12 @@ export default function AdjustmentsCreate({
                                                                                     })
                                                                                 }
                                                                                 rows={1}
-                                                                                placeholder="Optional"
+                                                                                placeholder="Optional note"
                                                                             />
 
-                                                                            <FieldError>{form.errors[`items.${index}.note`]}</FieldError>
+                                                                            <FieldError>
+                                                                                {form.errors[`items.${itemIndex}.note`]}
+                                                                            </FieldError>
                                                                         </div>
                                                                     </div>
                                                                 </td>
@@ -565,14 +675,7 @@ export default function AdjustmentsCreate({
                                                                                 icon={Trash2}
                                                                                 color="danger"
                                                                                 appearance="icon-button"
-                                                                                onClick={() =>
-                                                                                    form.setData(
-                                                                                        'items',
-                                                                                        form.data.items.filter(
-                                                                                            (candidate) => candidate.uid !== item.uid,
-                                                                                        ),
-                                                                                    )
-                                                                                }
+                                                                                onClick={() => removeItem(item.uid)}
                                                                             />
                                                                         )}
                                                                     </div>
@@ -583,7 +686,7 @@ export default function AdjustmentsCreate({
                                                 </tbody>
 
                                                 <tfoot>
-                                                    <tr className="ui-table-row bg-muted/50">
+                                                    <tr className="ui-table-row bg-muted/30">
                                                         <td
                                                             colSpan={5}
                                                             className="ui-table-cell text-right font-medium text-muted-foreground"
@@ -595,7 +698,7 @@ export default function AdjustmentsCreate({
 
                                                         <td className="ui-table-cell text-right font-semibold tabular-nums">
                                                             <div className="ui-table-column">
-                                                                <div className="ui-table-text py-2">{formatCurrency(total)}</div>
+                                                                <div className="ui-table-text py-2">{formatCurrency(totalAmount)}</div>
                                                             </div>
                                                         </td>
 
@@ -611,26 +714,25 @@ export default function AdjustmentsCreate({
                             </SectionContent>
 
                             <div className="flex justify-center">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => form.setData('items', [...form.data.items, createAdjustmentItem()])}
-                                >
+                                <Button type="button" variant="outline" size="sm" onClick={addItem}>
                                     <Plus className="size-4" />
-                                    Add Item
+                                    Add Product
                                 </Button>
                             </div>
                         </Section>
 
-                        <div className="flex justify-end gap-3">
-                            <Button variant="outline" asChild>
-                                <Link href={index()}>Cancel</Link>
+                        <div className="mt-8 flex justify-end gap-3">
+                            <Button type="button" variant="outline" asChild>
+                                <Link href={index().url}>
+                                    <X />
+                                    Cancel
+                                </Link>
                             </Button>
 
                             <Button type="submit" disabled={form.processing}>
                                 <Save />
-                                {form.processing ? 'Saving...' : 'Save Adjustment'}
+
+                                {form.processing ? 'Saving...' : 'Save'}
                             </Button>
                         </div>
                     </form>

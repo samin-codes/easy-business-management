@@ -122,17 +122,19 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
                             {selectedOutlet && (
                                 <>
-                                    <Button variant="outline" size="sm" className="h-9" asChild>
+                                    <Button variant="outline" size="sm" className="h-9" title="New Opening Stock" asChild>
                                         <Link href={createOpeningStock({ query: { outlet_id: selectedOutlet.id } })}>
                                             Opening stock
                                         </Link>
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-9" asChild>
+
+                                    <Button variant="outline" size="sm" className="h-9" title="New Adjustment" asChild>
                                         <Link href={createAdjustment({ query: { outlet_id: selectedOutlet.id } })}>
                                             Adjustment
                                         </Link>
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-9" asChild>
+
+                                    <Button variant="outline" size="sm" className="h-9" title="New Transfer" asChild>
                                         <Link href={createTransfer({ query: { outlet_id: selectedOutlet.id } })}>
                                             Transfer
                                         </Link>
