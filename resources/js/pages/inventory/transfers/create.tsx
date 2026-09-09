@@ -311,7 +311,7 @@ export default function TransfersCreate({
 
                         <Section>
                             <SectionHeader>
-                                <SectionTitle>Products</SectionTitle>
+                                <SectionTitle>Items</SectionTitle>
 
                                 <Separator />
                             </SectionHeader>
@@ -644,7 +644,7 @@ export default function TransfersCreate({
                             <div className="flex justify-center">
                                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
                                     <Plus className="size-4" />
-                                    Add Product
+                                    Add Item
                                 </Button>
                             </div>
                         </Section>

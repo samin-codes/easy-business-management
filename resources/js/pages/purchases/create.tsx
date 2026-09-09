@@ -333,7 +333,7 @@ export default function PurchasesCreate({
 
                             <Section>
                                 <SectionHeader>
-                                    <SectionTitle>Products</SectionTitle>
+                                    <SectionTitle>Items</SectionTitle>
 
                                     <Separator />
                                 </SectionHeader>
@@ -351,7 +351,7 @@ export default function PurchasesCreate({
                                 <div className="flex justify-center">
                                     <Button type="button" variant="outline" size="sm" onClick={handlePurchaseItemAdd}>
                                         <Plus className="size-4" />
-                                        Add Product
+                                        Add Item
                                     </Button>
                                 </div>
                             </Section>

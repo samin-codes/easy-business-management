@@ -1,10 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { format, parseISO } from 'date-fns';
+import { format as formatDate, parseISO } from 'date-fns';
 import { Boxes, Coins, History, Wallet } from 'lucide-react';
 import Heading from '@/components/heading';
+import { TableHead } from '@/components/table-head';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,8 +21,6 @@ import type {
     RecordStatus,
     UnitOfMeasurement,
 } from '@/types';
-
-type InventoryOutlet = Pick<Outlet, 'id' | 'name' | 'code'>;
 
 type InventoryVariant = {
     id: number;
@@ -57,7 +55,7 @@ type QueryString = {
     date_to: string | null;
 };
 
-type InventoryShowProps = {
+type Props = {
     variant: InventoryVariant;
     stock: {
         quantity: string;
@@ -66,15 +64,15 @@ type InventoryShowProps = {
         last_movement_at: string | null;
     };
     movements: LengthAwarePagination<InventoryMovement>;
-    outlets: InventoryOutlet[];
-    selectedOutlet: InventoryOutlet | null;
+    outlets: Pick<Outlet, 'id' | 'name' | 'code'>[];
+    selectedOutlet: Pick<Outlet, 'id' | 'name' | 'code'> | null;
     transactionTypes: Option<ProductStockLedgerTransactionType>[];
     queryString: QueryString;
 };
 
 const reloadProps = ['stock', 'movements', 'selectedOutlet', 'queryString'];
 
-export default function InventoryShow({
+export default function Show({
     variant,
     stock,
     movements,
@@ -82,7 +80,7 @@ export default function InventoryShow({
     selectedOutlet,
     transactionTypes,
     queryString,
-}: InventoryShowProps) {
+}: Props) {
     const dateFrom = queryString.date_from ? parseISO(queryString.date_from) : undefined;
     const dateTo = queryString.date_to ? parseISO(queryString.date_to) : undefined;
 
@@ -105,21 +103,9 @@ export default function InventoryShow({
         },
     ];
 
-    const query = (overrides: Partial<QueryString> & { page?: number } = {}) => ({
-        outlet_id: overrides.outlet_id ?? queryString.outlet_id ?? undefined,
-        transaction_type:
-            overrides.transaction_type === null ? undefined : (overrides.transaction_type ?? queryString.transaction_type ?? undefined),
-        date_from: overrides.date_from === null ? undefined : (overrides.date_from ?? queryString.date_from ?? undefined),
-        date_to: overrides.date_to === null ? undefined : (overrides.date_to ?? queryString.date_to ?? undefined),
-        page: overrides.page ?? 1,
-    });
-
     const visit = (overrides: Partial<QueryString> & { page?: number } = {}) => {
-        router.get(
-            show(variant.id, {
-                query: query(overrides),
-            }).url,
-            {},
+        router.visit(
+            show(variant.id, { query: { ...queryString, page: 1, ...overrides } }),
             {
                 preserveScroll: true,
                 preserveState: true,
@@ -228,7 +214,7 @@ export default function InventoryShow({
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-muted-foreground">Last Movement</p>
                                     <p className="mt-1 truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
-                                        {stock.last_movement_at ? format(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement'}
+                                        {stock.last_movement_at ? formatDate(parseISO(stock.last_movement_at), 'MMM d, yyyy') : 'No movement'}
                                     </p>
                                 </div>
                             </CardContent>
@@ -238,7 +224,7 @@ export default function InventoryShow({
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold">Movement History</h2>
 
-                        <div className="grid gap-3 md:grid-cols-[14rem_12rem_12rem_auto]">
+                        <div className="grid gap-3 lg:grid-cols-[14rem_12rem_12rem]">
                             <Select
                                 value={queryString.transaction_type ?? 'all'}
                                 onValueChange={(value) =>
@@ -271,7 +257,7 @@ export default function InventoryShow({
                                 disabledDays={dateTo ? { after: dateTo } : undefined}
                                 onChange={(date) =>
                                     visit({
-                                        date_from: date ? format(date, 'yyyy-MM-dd') : null,
+                                        date_from: date ? formatDate(date, 'yyyy-MM-dd') : null,
                                         page: 1,
                                     })
                                 }
@@ -285,43 +271,34 @@ export default function InventoryShow({
                                 disabledDays={dateFrom ? { before: dateFrom } : undefined}
                                 onChange={(date) =>
                                     visit({
-                                        date_to: date ? format(date, 'yyyy-MM-dd') : null,
+                                        date_to: date ? formatDate(date, 'yyyy-MM-dd') : null,
                                         page: 1,
                                     })
                                 }
                             />
-
-                            {(queryString.transaction_type || queryString.date_from || queryString.date_to) && (
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        visit({
-                                            transaction_type: null,
-                                            date_from: null,
-                                            date_to: null,
-                                            page: 1,
-                                        })
-                                    }
-                                >
-                                    Clear
-                                </Button>
-                            )}
                         </div>
 
                         <div className="ui-table">
                             <div className="ui-table-main">
                                 <div className="ui-table-content">
-                                    <table className="ui-table-element">
+                                    <table className="ui-table-element ui-table-hover">
                                         <thead>
                                             <tr>
-                                                <th className="ui-table-header-cell">Date</th>
-                                                <th className="ui-table-header-cell">Type</th>
-                                                <th className="ui-table-header-cell">Reference</th>
-                                                <th className="ui-table-header-cell text-right">Entered Quantity</th>
-                                                <th className="ui-table-header-cell text-right">Base Movement</th>
-                                                <th className="ui-table-header-cell text-right">Unit Cost</th>
-                                                <th className="ui-table-header-cell text-right">Total Cost</th>
-                                                <th className="ui-table-header-cell">Note</th>
+                                                <TableHead>Date</TableHead>
+
+                                                <TableHead>Type</TableHead>
+
+                                                <TableHead>Reference</TableHead>
+
+                                                <TableHead align="end">Entered Quantity</TableHead>
+
+                                                <TableHead align="end">Base Movement</TableHead>
+
+                                                <TableHead align="end">Unit Cost</TableHead>
+
+                                                <TableHead align="end">Total Cost</TableHead>
+
+                                                <TableHead>Note</TableHead>
                                             </tr>
                                         </thead>
 
@@ -331,7 +308,7 @@ export default function InventoryShow({
                                                     <td className="ui-table-cell text-nowrap">
                                                         <div className="ui-table-column">
                                                             <div className="ui-table-text">
-                                                                {format(parseISO(movement.transaction_date), 'MMM d, yyyy')}
+                                                                {formatDate(parseISO(movement.transaction_date), 'MMM d, yyyy')}
                                                             </div>
                                                         </div>
                                                     </td>

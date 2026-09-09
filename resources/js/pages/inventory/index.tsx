@@ -86,14 +86,14 @@ export default function Index({ stocks, inventoryStats, outlets, categories, sel
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Inventory" />
+            <Head title="Current Stock" />
 
             <div className="px-4 py-6">
                 <div className="mx-auto max-w-7xl space-y-6">
                     <Navigation active="stock" />
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <Heading title="Inventory" />
+                        <Heading title="Current Stock" />
 
                         <div className="flex flex-wrap items-center gap-2">
                             {outlets.length > 0 && (

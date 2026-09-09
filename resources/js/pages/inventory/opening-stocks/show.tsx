@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { format, parseISO } from 'date-fns';
+import { format as formatDate, parseISO } from 'date-fns';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import OpeningStockController from '@/actions/App/Http/Controllers/OpeningStockController';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
+import { TableHead } from '@/components/table-head';
 import { TextEntry } from '@/components/text-entry';
 import { Button } from '@/components/ui/button';
 import { Section, SectionContent, SectionHeader, SectionTitle } from '@/components/ui/section';
@@ -11,10 +11,10 @@ import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
 import { index as inventoryIndex } from '@/routes/inventory';
-import { index, show } from '@/routes/opening-stocks';
+import { destroy, index, show } from '@/routes/opening-stocks';
 import type { BreadcrumbItem, OpeningStock } from '@/types';
 
-export default function OpeningStocksShow({ openingStock }: { openingStock: OpeningStock }) {
+export default function Show({ openingStock }: { openingStock: OpeningStock }) {
     const { flash, errors } = usePage<{
         flash: { status?: string };
         errors: Record<string, string>;
@@ -36,8 +36,9 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
             return;
         }
 
-        router.delete(OpeningStockController.destroy(openingStock.id).url, {
+        router.visit(destroy(openingStock.id), {
             preserveScroll: true,
+            preserveState: true,
         });
     };
 
@@ -84,7 +85,7 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                         <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
                             <TextEntry label="Opening stock no" value={openingStock.opening_stock_no} />
 
-                            <TextEntry label="Opening date" value={format(parseISO(openingStock.opening_date), 'MMMM d, yyyy')} />
+                            <TextEntry label="Opening date" value={formatDate(parseISO(openingStock.opening_date), 'MMMM d, yyyy')} />
 
                             <TextEntry label="Outlet" value={openingStock.outlet?.name} />
 
@@ -107,13 +108,19 @@ export default function OpeningStocksShow({ openingStock }: { openingStock: Open
                                         <table className="ui-table-element">
                                             <thead>
                                                 <tr>
-                                                    <th className="ui-table-header-cell">Product / Variant</th>
-                                                    <th className="ui-table-header-cell">SKU</th>
-                                                    <th className="ui-table-header-cell text-right">Entered Qty</th>
-                                                    <th className="ui-table-header-cell text-right">Base Qty</th>
-                                                    <th className="ui-table-header-cell text-right">Inventory Cost</th>
-                                                    <th className="ui-table-header-cell text-right">Value</th>
-                                                    <th className="ui-table-header-cell">Note</th>
+                                                    <TableHead>Product / Variant</TableHead>
+
+                                                    <TableHead>SKU</TableHead>
+
+                                                    <TableHead align="end">Entered Qty</TableHead>
+
+                                                    <TableHead align="end">Base Qty</TableHead>
+
+                                                    <TableHead align="end">Inventory Cost</TableHead>
+
+                                                    <TableHead align="end">Value</TableHead>
+
+                                                    <TableHead>Note</TableHead>
                                                 </tr>
                                             </thead>
 

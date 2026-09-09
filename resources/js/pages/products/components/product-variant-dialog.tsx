@@ -50,7 +50,7 @@ export default function ProductVariantDialog({
                 }}
             >
                 <DialogHeader>
-                    <DialogTitle>{isEditMode ? 'Edit Product Variant' : 'Add Product Variant'}</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Edit Product Variant' : 'Add Item Variant'}</DialogTitle>
                     <DialogDescription className="sr-only">Product variant form.</DialogDescription>
                 </DialogHeader>
 

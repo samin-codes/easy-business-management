@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { format, parseISO } from 'date-fns';
+import { format as formatDate, parseISO } from 'date-fns';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import StockAdjustmentController from '@/actions/App/Http/Controllers/StockAdjustmentController';
 import AlertError from '@/components/alert-error';
 import Heading from '@/components/heading';
+import { TableHead } from '@/components/table-head';
 import { TextEntry } from '@/components/text-entry';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,10 @@ import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatQuantity } from '@/lib/utils';
 import { index as inventoryIndex } from '@/routes/inventory';
-import { index, show } from '@/routes/stock-adjustments';
+import { destroy, index, show } from '@/routes/stock-adjustments';
 import type { BreadcrumbItem, StockAdjustment } from '@/types';
 
-export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjustment }) {
+export default function Show({ adjustment }: { adjustment: StockAdjustment }) {
     const { flash, errors } = usePage<{
         flash: { status?: string };
         errors: Record<string, string>;
@@ -37,8 +37,9 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
             return;
         }
 
-        router.delete(StockAdjustmentController.destroy(adjustment.id).url, {
+        router.visit(destroy(adjustment.id), {
             preserveScroll: true,
+            preserveState: true,
         });
     };
 
@@ -85,7 +86,7 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                         <SectionContent className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
                             <TextEntry label="Adjustment no" value={adjustment.adjustment_no} />
 
-                            <TextEntry label="Adjustment date" value={format(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')} />
+                            <TextEntry label="Adjustment date" value={formatDate(parseISO(adjustment.adjustment_date), 'MMMM d, yyyy')} />
 
                             <TextEntry label="Outlet" value={adjustment.outlet?.name} />
 
@@ -119,13 +120,19 @@ export default function AdjustmentsShow({ adjustment }: { adjustment: StockAdjus
                                         <table className="ui-table-element">
                                             <thead>
                                                 <tr>
-                                                    <th className="ui-table-header-cell">Product / Variant</th>
-                                                    <th className="ui-table-header-cell">SKU</th>
-                                                    <th className="ui-table-header-cell text-right">Entered Qty</th>
-                                                    <th className="ui-table-header-cell text-right">Base Qty</th>
-                                                    <th className="ui-table-header-cell text-right">Inventory Cost</th>
-                                                    <th className="ui-table-header-cell text-right">Value</th>
-                                                    <th className="ui-table-header-cell">Note</th>
+                                                    <TableHead>Product / Variant</TableHead>
+
+                                                    <TableHead>SKU</TableHead>
+
+                                                    <TableHead align="end">Entered Qty</TableHead>
+
+                                                    <TableHead align="end">Base Qty</TableHead>
+
+                                                    <TableHead align="end">Inventory Cost</TableHead>
+
+                                                    <TableHead align="end">Value</TableHead>
+
+                                                    <TableHead>Note</TableHead>
                                                 </tr>
                                             </thead>
 
