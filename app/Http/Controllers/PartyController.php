@@ -50,6 +50,7 @@ class PartyController extends Controller
         return Inertia::render('parties/index', [
             'parties' => $parties,
             'queryString' => [
+                'page' => $request->query('page') !== null ? $parties->currentPage() : null,
                 'search' => $search !== '' ? $search : null,
                 'sort' => $sort,
                 'direction' => $direction,

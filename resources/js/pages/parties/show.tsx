@@ -15,13 +15,20 @@ import { create as contactPersonCreate, edit as contactPersonEdit } from '@/rout
 import type { BreadcrumbItem, Party, PartyContactPerson } from '@/types';
 
 export default function PartiesShow({ party }: { party: Party }) {
-    const { flash } = usePage<{
+    const { url, props: { flash } } = usePage<{
         flash: { status?: string };
-    }>().props;
+    }>();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Parties', href: partyIndex().url },
-        { title: party.name, href: partyShow(party.id).url },
+        { title: 'Parties', href: partyIndex({ query: queryString }).url },
+        { title: party.name, href: partyShow(party.id, { query: queryString }).url },
     ];
 
     const contactPersons = party.contact_persons ?? [];
@@ -37,7 +44,7 @@ export default function PartiesShow({ party }: { party: Party }) {
 
                         <div className="flex gap-2">
                             <Button asChild variant="outline">
-                                <Link href={partyEdit(party.id).url}>
+                                <Link href={partyEdit(party.id, { query: queryString }).url}>
                                     <SquarePen className="size-4" />
                                     Edit
                                 </Link>

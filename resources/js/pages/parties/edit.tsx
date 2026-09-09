@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/parties';
@@ -18,8 +18,17 @@ export default function PartiesEdit({
     areaTypeOptions: Option[];
     statusOptions: Option[];
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Parties', href: index().url },
+        { title: 'Parties', href: index({ query: queryString }).url },
         { title: 'Edit', href: edit(party.id).url },
     ];
 
@@ -37,7 +46,6 @@ export default function PartiesEdit({
                         openingBalanceTypeOptions={openingBalanceTypeOptions}
                         areaTypeOptions={areaTypeOptions}
                         statusOptions={statusOptions}
-                        cancelHref={index().url}
                     />
                 </div>
             </div>

@@ -14,6 +14,7 @@ import type { BreadcrumbItem, LengthAwarePagination } from '@/types';
 import type { ProductCategory } from './types';
 
 type QueryString = {
+    page: number | null;
     search: string | null;
     sort: 'name' | 'created_at';
     direction: 'asc' | 'desc';
@@ -30,8 +31,8 @@ export default function ProductCategoriesIndex({
     const reloadProps = ['productCategories', 'queryString'];
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Product Categories', href: index().url },
-        { title: 'List', href: index().url },
+        { title: 'Product Categories', href: index({ query: queryString }).url },
+        { title: 'List', href: index({ query: queryString }).url },
     ];
 
     const { flash } = usePage<{
@@ -47,7 +48,7 @@ export default function ProductCategoriesIndex({
                     <div className="mb-8 flex items-center justify-between">
                         <Heading title="Product Categories" />
                         <Button asChild>
-                            <Link href={create()}>
+                            <Link href={create({ query: queryString })}>
                                 <Plus />
                                 New Category
                             </Link>
@@ -173,7 +174,7 @@ export default function ProductCategoriesIndex({
                                                         <td className="ui-table-cell text-right">
                                                             <div className="ui-table-actions">
                                                                 <EditAction
-                                                                    url={edit(productCategory.id)}
+                                                                    url={edit(productCategory.id, { query: queryString })}
                                                                     aria-label={`Edit ${productCategory.name}`}
                                                                 />
                                                             </div>

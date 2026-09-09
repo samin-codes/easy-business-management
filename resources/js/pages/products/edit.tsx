@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import Heading from '@/components/heading';
@@ -47,8 +47,17 @@ export default function ProductsEdit({
     const [isUnitConversionDialogOpen, setIsUnitConversionDialogOpen] = useState(false);
     const [selectedUnitConversion, setSelectedUnitConversion] = useState<ProductUnitConversion | null>(null);
 
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Products', href: index().url },
+        { title: 'Products', href: index({ query: queryString }).url },
         { title: 'Edit', href: edit(product.id).url },
     ];
 
@@ -104,7 +113,6 @@ export default function ProductsEdit({
                         productCategories={productCategories}
                         unitOfMeasurements={unitOfMeasurements}
                         statusOptions={statusOptions}
-                        cancelHref={index().url}
                     />
 
                     <Separator />

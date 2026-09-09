@@ -14,6 +14,7 @@ import { create, edit, index, show } from '@/routes/parties';
 import type { BreadcrumbItem, LengthAwarePagination, Party } from '@/types';
 
 type QueryString = {
+    page: number | null;
     search: string | null;
     sort: 'name' | 'created_at';
     direction: 'asc' | 'desc';
@@ -24,8 +25,8 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
     const reloadProps = ['parties', 'queryString'];
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Parties', href: index().url },
-        { title: 'List', href: index().url },
+        { title: 'Parties', href: index({ query: queryString }).url },
+        { title: 'List', href: index({ query: queryString }).url },
     ];
 
     const { flash, errors } = usePage<{
@@ -42,7 +43,7 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                     <div className="mb-8 flex items-center justify-between">
                         <Heading title="Parties" />
                         <Button asChild>
-                            <Link href={create()}>
+                            <Link href={create({ query: queryString })}>
                                 <Plus />
                                 New Party
                             </Link>
@@ -180,8 +181,14 @@ export default function PartiesIndex({ parties, queryString }: { parties: Length
                                                         </td>
                                                         <td className="ui-table-cell text-right">
                                                             <div className="ui-table-actions">
-                                                                <ViewAction url={show(party.id)} aria-label={`View ${party.name}`} />
-                                                                <EditAction url={edit(party.id)} aria-label={`Edit ${party.name}`} />
+                                                                <ViewAction
+                                                                    url={show(party.id, { query: queryString })}
+                                                                    aria-label={`View ${party.name}`}
+                                                                />
+                                                                <EditAction
+                                                                    url={edit(party.id, { query: queryString })}
+                                                                    aria-label={`Edit ${party.name}`}
+                                                                />
                                                             </div>
                                                         </td>
                                                     </tr>

@@ -10,6 +10,7 @@ import { Section, SectionContent, SectionHeader, SectionTitle } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { show } from '@/routes/business';
 import type { Option } from '@/types';
 import type { Business } from '../types';
 
@@ -18,13 +19,11 @@ export default function BusinessForm({
     businessTypeOptions,
     statusOptions,
     areaTypeOptions,
-    cancelHref,
 }: {
     business: Business;
     businessTypeOptions: Option[];
     statusOptions: Option[];
     areaTypeOptions: Option[];
-    cancelHref: string;
 }) {
     const [businessType, setBusinessType] = useState(business.business_type);
     const [status, setStatus] = useState(business.status);
@@ -287,7 +286,7 @@ export default function BusinessForm({
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={cancelHref}>
+                            <Link href={show()}>
                                 <X />
                                 Cancel
                             </Link>

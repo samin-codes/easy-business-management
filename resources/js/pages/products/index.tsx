@@ -14,6 +14,7 @@ import { create, edit, index } from '@/routes/products';
 import type { BreadcrumbItem, LengthAwarePagination, Product } from '@/types';
 
 type QueryString = {
+    page: number | null;
     search: string | null;
     sort: 'name' | 'created_at';
     direction: 'asc' | 'desc';
@@ -24,8 +25,8 @@ export default function ProductsIndex({ products, queryString }: { products: Len
     const reloadProps = ['products', 'queryString'];
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Products', href: index().url },
-        { title: 'List', href: index().url },
+        { title: 'Products', href: index({ query: queryString }).url },
+        { title: 'List', href: index({ query: queryString }).url },
     ];
 
     const { flash, errors } = usePage<{
@@ -42,7 +43,7 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                     <div className="mb-8 flex items-center justify-between">
                         <Heading title="Products" />
                         <Button asChild>
-                            <Link href={create()}>
+                            <Link href={create({ query: queryString })}>
                                 <Plus />
                                 New Product
                             </Link>
@@ -198,7 +199,7 @@ export default function ProductsIndex({ products, queryString }: { products: Len
                                                             <td className="ui-table-cell w-px whitespace-nowrap">
                                                                 <div className="ui-table-actions">
                                                                     <EditAction
-                                                                        url={edit(product.id)}
+                                                                        url={edit(product.id, { query: queryString })}
                                                                         aria-label={`Edit ${product.name}`}
                                                                     />
                                                                 </div>

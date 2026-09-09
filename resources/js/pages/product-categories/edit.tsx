@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { edit, index } from '@/routes/product-categories';
@@ -13,8 +13,17 @@ export default function ProductCategoriesEdit({
     productCategory: ProductCategory;
     statusOptions: Option[];
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Product Categories', href: index().url },
+        { title: 'Product Categories', href: index({ query: queryString }).url },
         { title: 'Edit', href: edit(productCategory.id).url },
     ];
 
@@ -26,7 +35,7 @@ export default function ProductCategoriesEdit({
                 <div className="mx-auto max-w-4xl space-y-6">
                     <Heading title="Edit Product Category" className="mb-8" />
 
-                    <ProductCategoryForm productCategory={productCategory} statusOptions={statusOptions} cancelHref={index().url} />
+                    <ProductCategoryForm productCategory={productCategory} statusOptions={statusOptions} />
                 </div>
             </div>
         </AppLayout>

@@ -1,4 +1,4 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Section, SectionContent } from '@/components/ui/section';
+import { index } from '@/routes/products';
 import type { Option, Product, ProductCategory, UnitOfMeasurement } from '@/types';
 
 export default function ProductForm({
@@ -14,14 +15,21 @@ export default function ProductForm({
     productCategories,
     unitOfMeasurements,
     statusOptions,
-    cancelHref,
 }: {
     product?: Product;
     productCategories: Pick<ProductCategory, 'id' | 'name'>[];
     unitOfMeasurements: Pick<UnitOfMeasurement, 'id' | 'name'>[];
     statusOptions: Option[];
-    cancelHref: string;
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const categoryOptions: Option[] = productCategories.map((category) => ({
         label: category.name,
         value: category.id.toString(),
@@ -182,7 +190,7 @@ export default function ProductForm({
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={cancelHref}>
+                            <Link href={index({ query: queryString })}>
                                 <X />
                                 Cancel
                             </Link>

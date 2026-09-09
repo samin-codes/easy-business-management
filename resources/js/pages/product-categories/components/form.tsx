@@ -1,4 +1,4 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import { Save, X } from 'lucide-react';
 import ProductCategoryController from '@/actions/App/Http/Controllers/ProductCategoryController';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,26 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Section, SectionContent } from '@/components/ui/section';
 import { Textarea } from '@/components/ui/textarea';
+import { index } from '@/routes/product-categories';
 import type { Option } from '@/types';
 import type { ProductCategory } from '../types';
 
 export default function ProductCategoryForm({
     productCategory,
     statusOptions,
-    cancelHref,
 }: {
     productCategory?: ProductCategory;
     statusOptions: Option[];
-    cancelHref: string;
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     return (
         <Form
             action={productCategory ? ProductCategoryController.update(productCategory.id) : ProductCategoryController.store()}
@@ -84,7 +92,7 @@ export default function ProductCategoryForm({
 
                     <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" asChild>
-                            <Link href={cancelHref}>
+                            <Link href={index({ query: queryString })}>
                                 <X />
                                 Cancel
                             </Link>

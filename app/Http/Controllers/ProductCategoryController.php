@@ -44,6 +44,7 @@ class ProductCategoryController extends Controller
         return Inertia::render('product-categories/index', [
             'productCategories' => $productCategories,
             'queryString' => [
+                'page' => $request->query('page') !== null ? $productCategories->currentPage() : null,
                 'search' => $search !== '' ? $search : null,
                 'sort' => $sort,
                 'direction' => $direction,

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { create, index } from '@/routes/products';
@@ -19,8 +19,17 @@ export default function ProductsCreate({
     unitOfMeasurements: Pick<UnitOfMeasurement, 'id' | 'name'>[];
     statusOptions: Option[];
 }) {
+    const { url } = usePage();
+    const params = new URLSearchParams(url.split('?')[1] ?? '');
+    const queryString = {
+        page: params.get('page'),
+        search: params.get('search'),
+        sort: params.get('sort'),
+        direction: params.get('direction'),
+    };
+
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Products', href: index().url },
+        { title: 'Products', href: index({ query: queryString }).url },
         { title: 'Create', href: create().url },
     ];
 
@@ -34,7 +43,6 @@ export default function ProductsCreate({
                         productCategories={productCategories}
                         unitOfMeasurements={unitOfMeasurements}
                         statusOptions={statusOptions}
-                        cancelHref={index().url}
                     />
                 </div>
             </div>

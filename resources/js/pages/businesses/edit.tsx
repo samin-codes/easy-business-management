@@ -1,7 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
+import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { edit, show } from '@/routes/business';
 import type { BreadcrumbItem, Option } from '@/types';
@@ -32,13 +30,6 @@ export default function BusinessesEdit({
                 <div className="mx-auto max-w-4xl space-y-6">
                     <div className="mb-8 flex items-start justify-between gap-4">
                         <Heading title="Edit Business" />
-
-                        <Button variant="outline" asChild>
-                            <Link href={show().url}>
-                                <Eye />
-                                View
-                            </Link>
-                        </Button>
                     </div>
 
                     <BusinessForm
@@ -46,7 +37,6 @@ export default function BusinessesEdit({
                         businessTypeOptions={businessTypeOptions}
                         statusOptions={statusOptions}
                         areaTypeOptions={areaTypeOptions}
-                        cancelHref={show().url}
                     />
                 </div>
             </div>
