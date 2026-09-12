@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OpeningStockController;
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['index', 'show'])
         ->scoped();
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
+    Route::resource('brands', BrandController::class)->except(['show']);
     Route::resource('products', ProductController::class)->except(['show']);
     Route::post('products/{product}/unit-conversions', [ProductUnitConversionController::class, 'store'])
         ->name('products.unit-conversions.store');
