@@ -17,12 +17,19 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SalePaymentController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+// Route::inertia('/', 'welcome', [
+//     'canRegister' => \Laravel\Fortify\Features::enabled(\Laravel\Fortify\Features::registration()),
+// ])->name('home');
+
+Route::get('/', function (Request $request): RedirectResponse {
+    return redirect()->route(
+        $request->user() ? 'dashboard' : 'login'
+    );
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
