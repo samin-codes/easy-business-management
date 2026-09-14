@@ -349,7 +349,7 @@ class TransactionSeeder extends Seeder
         $conversion = $this->findConversionOrFail($variant, $unit);
         $factor = (float) $conversion->conversion_factor_to_base;
         $baseQuantity = round($quantity * $factor, 4);
-        $stock = $this->prepareStock($outlet, $variant);
+        $stock = $this->resolveStockForUpdate($outlet, $variant);
 
         if ((float) $stock->quantity + 0.00005 < $baseQuantity) {
             throw new RuntimeException("Insufficient stock while seeding {$sku} at {$outlet->code}.");
@@ -382,7 +382,7 @@ class TransactionSeeder extends Seeder
         $to = $this->findOutletOrFail($event['to']);
         $variant = $this->findVariantOrFail($event['sku']);
         $conversion = $this->findBaseConversionOrFail($variant);
-        $stock = $this->prepareStock($from, $variant);
+        $stock = $this->resolveStockForUpdate($from, $variant);
         $quantity = round($event['quantity'], 4);
         $unitCost = round((float) $stock->average_cost, 6);
         $totalCost = round($quantity * $unitCost, 2);
@@ -444,7 +444,7 @@ class TransactionSeeder extends Seeder
             return;
         }
 
-        $stock = $this->prepareStock($outlet, $variant);
+        $stock = $this->resolveStockForUpdate($outlet, $variant);
         $unitCost = round((float) $stock->average_cost, 6);
         $totalCost = round($quantity * $unitCost, 2);
         ProductStockLedger::query()->create([
@@ -548,7 +548,7 @@ class TransactionSeeder extends Seeder
 
     private function updateStock(Outlet $outlet, ProductVariant $variant, float $quantityChange, float $valueChange, string $date): void
     {
-        $stock = $this->prepareStock($outlet, $variant);
+        $stock = $this->resolveStockForUpdate($outlet, $variant);
         $quantity = round((float) $stock->quantity + $quantityChange, 4);
         $value = round((float) $stock->stock_value + $valueChange, 2);
 
@@ -569,22 +569,22 @@ class TransactionSeeder extends Seeder
         ])->save();
     }
 
-    private function prepareStock(Outlet $outlet, ProductVariant $variant): ProductStock
+    private function resolveStockForUpdate(Outlet $outlet, ProductVariant $variant): ProductStock
     {
-        $stock = ProductStock::query()->firstOrCreate(
-            [
-                'outlet_id' => $outlet->id,
-                'product_variant_id' => $variant->id,
-            ],
-            [
-                'business_id' => $this->business->id,
-                'quantity' => 0,
-                'average_cost' => 0,
-                'stock_value' => 0,
-            ],
-        );
-
-        return ProductStock::query()->lockForUpdate()->findOrFail($stock->id);
+        return ProductStock::query()
+            ->lockForUpdate()
+            ->firstOrCreate(
+                [
+                    'outlet_id' => $outlet->id,
+                    'product_variant_id' => $variant->id,
+                ],
+                [
+                    'business_id' => $this->business->id,
+                    'quantity' => 0,
+                    'average_cost' => 0,
+                    'stock_value' => 0,
+                ],
+            );
     }
 
     private function buildLedgerData(Outlet $outlet, ProductVariant $variant, string $date): array
