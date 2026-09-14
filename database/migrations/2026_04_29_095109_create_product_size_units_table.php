@@ -31,10 +31,38 @@ return new class extends Migration
         $now = now();
 
         DB::table('product_size_units')->insertOrIgnore([
-            ['name' => 'Inch', 'code' => 'IN', 'symbol' => 'in', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Feet', 'code' => 'FT', 'symbol' => 'ft', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Millimeter', 'code' => 'MM', 'symbol' => 'mm', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Centimeter', 'code' => 'CM', 'symbol' => 'cm', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'name' => 'Inch',
+                'code' => 'IN',
+                'symbol' => 'in',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Feet',
+                'code' => 'FT',
+                'symbol' => 'ft',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Millimeter',
+                'code' => 'MM',
+                'symbol' => 'mm',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Centimeter',
+                'code' => 'CM',
+                'symbol' => 'cm',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ]);
     }
 

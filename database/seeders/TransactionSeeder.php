@@ -148,10 +148,13 @@ class TransactionSeeder extends Seeder
         ProductStockLedger::query()->create([
             ...$this->ledgerIdentity($outlet, $variant, $event['date']),
             'transaction_type' => ProductStockLedgerTransactionType::OpeningStock,
-            'quantity_in' => $event['quantity'], 'quantity_out' => 0,
+            'quantity_in' => $event['quantity'],
+            'quantity_out' => 0,
             'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
             'product_unit_conversion_id' => $conversion->id,
-            'base_quantity' => $baseQuantity, 'unit_cost' => $event['unit_cost'], 'total_cost' => $totalCost,
+            'base_quantity' => $baseQuantity,
+            'unit_cost' => $event['unit_cost'],
+            'total_cost' => $totalCost,
             'note' => self::DATASET_NOTE_PREFIX.' Opening stock count on 1 May 2026.',
         ]);
         $this->updateStock($outlet, $variant, $baseQuantity, $totalCost, $event['date']);
@@ -160,7 +163,8 @@ class TransactionSeeder extends Seeder
     private function createPurchase(array $event, int $index): void
     {
         $outlet = $this->outlet($event['outlet']);
-        $items = collect($event['items'])->map(fn (array $item): array => $this->preparePurchaseItem($item));
+        $items = collect($event['items'])
+            ->map(fn (array $item): array => $this->preparePurchaseItem($item));
         $subtotal = round($items->sum('line_total'), 2);
         $discount = $index % 3 === 0 ? 500 : ($index % 5 === 0 ? 250 : 0);
         $transport = $outlet->code === 'WH01' ? 900 : 350;
@@ -169,13 +173,22 @@ class TransactionSeeder extends Seeder
         $total = round($subtotal + $transport + $labour + $other - $discount, 2);
 
         $purchase = Purchase::query()->create([
-            'business_id' => $this->business->id, 'outlet_id' => $outlet->id,
-            'supplier_party_id' => $this->party($event['party'])->id, 'created_by_id' => $this->admin->id,
+            'business_id' => $this->business->id,
+            'outlet_id' => $outlet->id,
+            'supplier_party_id' => $this->party($event['party'])->id,
+            'created_by_id' => $this->admin->id,
             'purchase_no' => Purchase::generatePurchaseNumber($outlet->id, CarbonImmutable::parse($event['date'])),
-            'purchase_date' => $event['date'], 'subtotal' => $subtotal, 'discount_amount' => $discount,
-            'transport_cost' => $transport, 'labour_cost' => $labour, 'other_cost' => $other,
-            'total_amount' => $total, 'paid_amount' => 0, 'due_amount' => $total,
-            'payment_status' => PurchasePaymentStatus::Unpaid, 'status' => PurchaseStatus::Confirmed,
+            'purchase_date' => $event['date'],
+            'subtotal' => $subtotal,
+            'discount_amount' => $discount,
+            'transport_cost' => $transport,
+            'labour_cost' => $labour,
+            'other_cost' => $other,
+            'total_amount' => $total,
+            'paid_amount' => 0,
+            'due_amount' => $total,
+            'payment_status' => PurchasePaymentStatus::Unpaid,
+            'status' => PurchaseStatus::Confirmed,
             'note' => self::DATASET_NOTE_PREFIX.' '.$event['note'],
         ]);
 
@@ -186,13 +199,22 @@ class TransactionSeeder extends Seeder
             $purchaseItem->productStockLedgers()->create([
                 ...$this->ledgerIdentity($outlet, $variant, $event['date']),
                 'transaction_type' => ProductStockLedgerTransactionType::Purchase,
-                'quantity_in' => $purchaseItem->quantity, 'quantity_out' => 0,
+                'quantity_in' => $purchaseItem->quantity,
+                'quantity_out' => 0,
                 'unit_of_measurement_id' => $purchaseItem->unit_of_measurement_id,
                 'product_unit_conversion_id' => $purchaseItem->product_unit_conversion_id,
-                'base_quantity' => $purchaseItem->base_quantity, 'unit_cost' => $purchaseItem->unit_cost,
-                'total_cost' => $purchaseItem->line_total, 'note' => $purchaseItem->note,
+                'base_quantity' => $purchaseItem->base_quantity,
+                'unit_cost' => $purchaseItem->unit_cost,
+                'total_cost' => $purchaseItem->line_total,
+                'note' => $purchaseItem->note,
             ]);
-            $this->updateStock($outlet, $variant, (float) $purchaseItem->base_quantity, (float) $purchaseItem->line_total, $event['date']);
+            $this->updateStock(
+                $outlet,
+                $variant,
+                (float) $purchaseItem->base_quantity,
+                (float) $purchaseItem->line_total,
+                $event['date'],
+            );
         }
 
         $this->seedPurchasePayments($purchase, $index);
@@ -206,12 +228,16 @@ class TransactionSeeder extends Seeder
         $factor = (float) $conversion->conversion_factor_to_base;
 
         return [
-            'sku' => $sku, 'product_variant_id' => $variant->id,
+            'sku' => $sku,
+            'product_variant_id' => $variant->id,
             'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
             'product_unit_conversion_id' => $conversion->id,
-            'quantity' => round($quantity, 4), 'base_quantity' => round($quantity * $factor, 4),
-            'unit_cost' => round($unitCost, 2), 'base_unit_cost' => round($unitCost / $factor, 6),
-            'discount_amount' => 0, 'line_total' => round($quantity * $unitCost, 2),
+            'quantity' => round($quantity, 4),
+            'base_quantity' => round($quantity * $factor, 4),
+            'unit_cost' => round($unitCost, 2),
+            'base_unit_cost' => round($unitCost / $factor, 6),
+            'discount_amount' => 0,
+            'line_total' => round($quantity * $unitCost, 2),
             'note' => null,
         ];
     }
@@ -219,17 +245,26 @@ class TransactionSeeder extends Seeder
     private function createSale(array $event, int $index): void
     {
         $outlet = $this->outlet($event['outlet']);
-        $preparedItems = collect($event['items'])->map(fn (array $item): array => $this->prepareSaleItem($outlet, $item));
+        $preparedItems = collect($event['items'])
+            ->map(fn (array $item): array => $this->prepareSaleItem($outlet, $item));
         $subtotal = round($preparedItems->sum('line_total'), 2);
         $discount = $index % 4 === 0 ? min(350, round($subtotal * 0.03, 2)) : 0;
         $total = round($subtotal - $discount, 2);
+
         $sale = Sale::query()->create([
-            'business_id' => $this->business->id, 'outlet_id' => $outlet->id,
-            'customer_party_id' => $this->party($event['party'])->id, 'created_by_id' => $this->admin->id,
+            'business_id' => $this->business->id,
+            'outlet_id' => $outlet->id,
+            'customer_party_id' => $this->party($event['party'])->id,
+            'created_by_id' => $this->admin->id,
             'sale_no' => Sale::generateSaleNumber($outlet->id, CarbonImmutable::parse($event['date'])),
-            'sale_date' => $event['date'], 'subtotal' => $subtotal, 'discount_amount' => $discount,
-            'total_amount' => $total, 'paid_amount' => 0, 'due_amount' => $total,
-            'payment_status' => SalePaymentStatus::Unpaid, 'status' => SaleStatus::Confirmed,
+            'sale_date' => $event['date'],
+            'subtotal' => $subtotal,
+            'discount_amount' => $discount,
+            'total_amount' => $total,
+            'paid_amount' => 0,
+            'due_amount' => $total,
+            'payment_status' => SalePaymentStatus::Unpaid,
+            'status' => SaleStatus::Confirmed,
             'note' => self::DATASET_NOTE_PREFIX.' '.$event['note'],
         ]);
 
@@ -240,13 +275,22 @@ class TransactionSeeder extends Seeder
             $saleItem->productStockLedgers()->create([
                 ...$this->ledgerIdentity($outlet, $variant, $event['date']),
                 'transaction_type' => ProductStockLedgerTransactionType::Sale,
-                'quantity_in' => 0, 'quantity_out' => $saleItem->quantity,
+                'quantity_in' => 0,
+                'quantity_out' => $saleItem->quantity,
                 'unit_of_measurement_id' => $saleItem->unit_of_measurement_id,
                 'product_unit_conversion_id' => $saleItem->product_unit_conversion_id,
-                'base_quantity' => $saleItem->base_quantity, 'unit_cost' => $saleItem->inventory_unit_cost,
-                'total_cost' => $saleItem->inventory_total_cost, 'note' => $saleItem->note,
+                'base_quantity' => $saleItem->base_quantity,
+                'unit_cost' => $saleItem->inventory_unit_cost,
+                'total_cost' => $saleItem->inventory_total_cost,
+                'note' => $saleItem->note,
             ]);
-            $this->updateStock($outlet, $variant, -(float) $saleItem->base_quantity, -(float) $saleItem->inventory_total_cost, $event['date']);
+            $this->updateStock(
+                $outlet,
+                $variant,
+                -(float) $saleItem->base_quantity,
+                -(float) $saleItem->inventory_total_cost,
+                $event['date'],
+            );
         }
         $this->seedSalePayments($sale, $index);
     }
@@ -265,16 +309,22 @@ class TransactionSeeder extends Seeder
         }
 
         $inventoryUnitCost = round((float) $stock->average_cost, 6);
+        $inventoryTotalCost = abs((float) $stock->quantity - $baseQuantity) < 0.00005
+            ? round((float) $stock->stock_value, 2)
+            : round($baseQuantity * $inventoryUnitCost, 2);
 
         return [
-            'sku' => $sku, 'product_variant_id' => $variant->id,
+            'sku' => $sku,
+            'product_variant_id' => $variant->id,
             'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
             'product_unit_conversion_id' => $conversion->id,
-            'quantity' => round($quantity, 4), 'base_quantity' => $baseQuantity,
-            'unit_price' => round($unitPrice, 2), 'base_unit_price' => round($unitPrice / $factor, 6),
+            'quantity' => round($quantity, 4),
+            'base_quantity' => $baseQuantity,
+            'unit_price' => round($unitPrice, 2),
+            'base_unit_price' => round($unitPrice / $factor, 6),
             'line_total' => round($quantity * $unitPrice, 2),
             'inventory_unit_cost' => $inventoryUnitCost,
-            'inventory_total_cost' => round($baseQuantity * $inventoryUnitCost, 2),
+            'inventory_total_cost' => $inventoryTotalCost,
             'note' => null,
         ];
     }
@@ -324,17 +374,24 @@ class TransactionSeeder extends Seeder
     private function createManualLedger(Outlet $outlet, ProductVariant $variant, ProductUnitConversion $conversion, ProductStockLedgerTransactionType $type, float $quantityIn, float $quantityOut, float $baseQuantity, float $unitCost, float $totalCost, string $date, string $note): void
     {
         ProductStockLedger::query()->create([
-            ...$this->ledgerIdentity($outlet, $variant, $date), 'transaction_type' => $type,
-            'quantity_in' => $quantityIn, 'quantity_out' => $quantityOut,
+            ...$this->ledgerIdentity($outlet, $variant, $date),
+            'transaction_type' => $type,
+            'quantity_in' => $quantityIn,
+            'quantity_out' => $quantityOut,
             'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
-            'product_unit_conversion_id' => $conversion->id, 'base_quantity' => $baseQuantity,
-            'unit_cost' => $unitCost, 'total_cost' => $totalCost, 'note' => $note,
+            'product_unit_conversion_id' => $conversion->id,
+            'base_quantity' => $baseQuantity,
+            'unit_cost' => $unitCost,
+            'total_cost' => $totalCost,
+            'note' => $note,
         ]);
     }
 
     private function seedPurchasePayments(Purchase $purchase, int $index): void
     {
-        $status = $index <= 6 ? PurchasePaymentStatus::Paid : ($index <= 12 ? PurchasePaymentStatus::Partial : PurchasePaymentStatus::Unpaid);
+        $status = $index <= 6
+            ? PurchasePaymentStatus::Paid
+            : ($index <= 12 ? PurchasePaymentStatus::Partial : PurchasePaymentStatus::Unpaid);
         $paidAmount = match ($status) {
             PurchasePaymentStatus::Paid => (float) $purchase->total_amount,
             PurchasePaymentStatus::Partial => round((float) $purchase->total_amount * ($index % 2 === 0 ? 0.55 : 0.4), 2),
@@ -345,7 +402,9 @@ class TransactionSeeder extends Seeder
 
     private function seedSalePayments(Sale $sale, int $index): void
     {
-        $status = $index <= 8 ? SalePaymentStatus::Paid : ($index <= 16 ? SalePaymentStatus::Partial : SalePaymentStatus::Unpaid);
+        $status = $index <= 8
+            ? SalePaymentStatus::Paid
+            : ($index <= 16 ? SalePaymentStatus::Partial : SalePaymentStatus::Unpaid);
         $paidAmount = match ($status) {
             SalePaymentStatus::Paid => (float) $sale->total_amount,
             SalePaymentStatus::Partial => round((float) $sale->total_amount * ($index % 2 === 0 ? 0.6 : 0.45), 2),
@@ -361,8 +420,15 @@ class TransactionSeeder extends Seeder
         }
 
         $firstAmount = round($paidAmount * 0.6, 2);
-        $amounts = $installments === 2 ? [$firstAmount, round($paidAmount - $firstAmount, 2)] : [$paidAmount];
-        $methods = [PaymentMethod::Cash, PaymentMethod::BankTransfer, PaymentMethod::MobileBanking, PaymentMethod::Cheque];
+        $amounts = $installments === 2
+            ? [$firstAmount, round($paidAmount - $firstAmount, 2)]
+            : [$paidAmount];
+        $methods = [
+            PaymentMethod::Cash,
+            PaymentMethod::BankTransfer,
+            PaymentMethod::MobileBanking,
+            PaymentMethod::Cheque,
+        ];
         $isPurchase = $document instanceof Purchase;
         $documentDate = CarbonImmutable::parse($isPurchase ? $document->purchase_date : $document->sale_date);
 
@@ -370,29 +436,48 @@ class TransactionSeeder extends Seeder
             $method = $methods[($document->id + $paymentIndex) % count($methods)];
             $document->payments()->create([
                 'business_id' => $this->business->id,
-                $isPurchase ? 'supplier_party_id' : 'customer_party_id' => $isPurchase ? $document->supplier_party_id : $document->customer_party_id,
+                $isPurchase ? 'supplier_party_id' : 'customer_party_id' => $isPurchase
+                    ? $document->supplier_party_id
+                    : $document->customer_party_id,
                 'created_by_id' => $this->admin->id,
-                'payment_date' => $documentDate->addDays($paymentIndex * 7)->toDateString(), 'amount' => $amount,
+                'payment_date' => $documentDate->addDays($paymentIndex * 7)->toDateString(),
+                'amount' => $amount,
                 'payment_method' => $method,
-                'reference_no' => $method === PaymentMethod::Cash ? null : sprintf('%s-%04d-%d', $isPurchase ? 'PP' : 'SP', $document->id, $paymentIndex + 1),
-                'note' => $installments === 2 ? 'Installment '.($paymentIndex + 1).' of 2.' : 'Payment recorded in full.',
+                'reference_no' => $method === PaymentMethod::Cash
+                    ? null
+                    : sprintf('%s-%04d-%d', $isPurchase ? 'PP' : 'SP', $document->id, $paymentIndex + 1),
+                'note' => $installments === 2
+                    ? 'Installment '.($paymentIndex + 1).' of 2.'
+                    : 'Payment recorded in full.',
             ]);
         }
 
         $totalPaid = round((float) $document->payments()->sum('amount'), 2);
         $total = (float) $document->total_amount;
         $document->update([
-            'paid_amount' => $totalPaid, 'due_amount' => round($total - $totalPaid, 2),
+            'paid_amount' => $totalPaid,
+            'due_amount' => round($total - $totalPaid, 2),
             'payment_status' => match (true) {
-                $totalPaid <= 0 => $isPurchase ? PurchasePaymentStatus::Unpaid : SalePaymentStatus::Unpaid,
-                $totalPaid >= $total => $isPurchase ? PurchasePaymentStatus::Paid : SalePaymentStatus::Paid,
-                default => $isPurchase ? PurchasePaymentStatus::Partial : SalePaymentStatus::Partial,
+                $totalPaid <= 0 => $isPurchase
+                    ? PurchasePaymentStatus::Unpaid
+                    : SalePaymentStatus::Unpaid,
+                $totalPaid >= $total => $isPurchase
+                    ? PurchasePaymentStatus::Paid
+                    : SalePaymentStatus::Paid,
+                default => $isPurchase
+                    ? PurchasePaymentStatus::Partial
+                    : SalePaymentStatus::Partial,
             },
         ]);
     }
 
-    private function updateStock(Outlet $outlet, ProductVariant $variant, float $quantityChange, float $valueChange, string $date): void
-    {
+    private function updateStock(
+        Outlet $outlet,
+        ProductVariant $variant,
+        float $quantityChange,
+        float $valueChange,
+        string $date,
+    ): void {
         $stock = $this->stock($outlet, $variant);
         $quantity = round((float) $stock->quantity + $quantityChange, 4);
         $value = round((float) $stock->stock_value + $valueChange, 2);
@@ -408,7 +493,7 @@ class TransactionSeeder extends Seeder
 
         $stock->fill([
             'quantity' => $quantity,
-            'average_cost' => $quantity > 0 ? round($value / $quantity, 6) : 0,
+            'average_cost' => $quantity > 0 ? round(max(0, $value) / $quantity, 6) : 0,
             'stock_value' => max(0, $value),
             'last_movement_at' => CarbonImmutable::parse($date)->setTime(17, 0),
         ])->save();
@@ -417,8 +502,16 @@ class TransactionSeeder extends Seeder
     private function stock(Outlet $outlet, ProductVariant $variant): ProductStock
     {
         $stock = ProductStock::query()->firstOrCreate(
-            ['outlet_id' => $outlet->id, 'product_variant_id' => $variant->id],
-            ['business_id' => $this->business->id, 'quantity' => 0, 'average_cost' => 0, 'stock_value' => 0],
+            [
+                'outlet_id' => $outlet->id,
+                'product_variant_id' => $variant->id,
+            ],
+            [
+                'business_id' => $this->business->id,
+                'quantity' => 0,
+                'average_cost' => 0,
+                'stock_value' => 0,
+            ],
         );
 
         return ProductStock::query()->lockForUpdate()->findOrFail($stock->id);
@@ -426,27 +519,36 @@ class TransactionSeeder extends Seeder
 
     private function ledgerIdentity(Outlet $outlet, ProductVariant $variant, string $date): array
     {
-        return ['business_id' => $this->business->id, 'outlet_id' => $outlet->id, 'product_variant_id' => $variant->id, 'transaction_date' => $date];
+        return [
+            'business_id' => $this->business->id,
+            'outlet_id' => $outlet->id,
+            'product_variant_id' => $variant->id,
+            'transaction_date' => $date,
+        ];
     }
 
     private function outlet(string $code): Outlet
     {
-        return $this->outlets->get($code) ?? throw new RuntimeException("Missing seeded outlet {$code}.");
+        return $this->outlets->get($code)
+            ?? throw new RuntimeException("Missing seeded outlet {$code}.");
     }
 
     private function party(string $name): Party
     {
-        return $this->parties->get($name) ?? throw new RuntimeException("Missing seeded party {$name}.");
+        return $this->parties->get($name)
+            ?? throw new RuntimeException("Missing seeded party {$name}.");
     }
 
     private function variant(string $sku): ProductVariant
     {
-        return $this->variants->get($sku) ?? throw new RuntimeException("Missing seeded SKU {$sku}.");
+        return $this->variants->get($sku)
+            ?? throw new RuntimeException("Missing seeded SKU {$sku}.");
     }
 
     private function conversion(ProductVariant $variant, string $unitCode): ProductUnitConversion
     {
-        return $this->conversions->get($variant->product_id.':'.$unitCode) ?? throw new RuntimeException("Missing {$unitCode} conversion for {$variant->sku}.");
+        return $this->conversions->get($variant->product_id.':'.$unitCode)
+            ?? throw new RuntimeException("Missing {$unitCode} conversion for {$variant->sku}.");
     }
 
     private function baseConversion(ProductVariant $variant): ProductUnitConversion
@@ -468,73 +570,469 @@ class TransactionSeeder extends Seeder
             ['MAIN', 'OFF-80-2336-004', 12, 350], ['MAIN', 'ART-250-2336-010', 8, 690], ['MAIN', 'STK-GLS-2030-025', 6, 850],
             ['MAIN', 'NEW-45-2336-021', 100, 51], ['UTR', 'OFF-80-A4-005', 12, 340], ['UTR', 'OFF-80-A4-006', 8, 365],
             ['UTR', 'STK-MAT-2030-026', 4, 880],
-        ])->map(fn (array $row): array => ['type' => 'opening', 'date' => '2026-05-01', 'outlet' => $row[0], 'sku' => $row[1], 'quantity' => $row[2], 'unit' => $this->baseUnitCode($row[1]), 'unit_cost' => $row[3]])->all();
+        ])->map(fn (array $row): array => [
+            'type' => 'opening',
+            'date' => '2026-05-01',
+            'outlet' => $row[0],
+            'sku' => $row[1],
+            'quantity' => $row[2],
+            'unit' => $this->baseUnitCode($row[1]),
+            'unit_cost' => $row[3],
+        ])->all();
     }
 
     private function purchaseEvents(): array
     {
         return [
-            ['type' => 'purchase', 'date' => '2026-05-05', 'outlet' => 'WH01', 'party' => 'Bengal Paper Mills', 'note' => 'Bulk copy paper and newsprint delivery.', 'items' => [['OFF-80-A4-005', 'carton', 20, 1650], ['OFF-55-2336-001', 'ream', 80, 252], ['NEW-45-2336-021', 'kg', 500, 52]]],
-            ['type' => 'purchase', 'date' => '2026-05-09', 'outlet' => 'WH01', 'party' => 'Metro Paper & Board Traders', 'note' => 'Board and art-card replenishment.', 'items' => [['DUP-250-GB-015', 'kg', 600, 88], ['ART-230-2336-009', 'ream', 20, 620], ['STK-GLS-2030-025', 'ream', 15, 900]]],
-            ['type' => 'purchase', 'date' => '2026-05-14', 'outlet' => 'WH01', 'party' => 'Eastern Paper Imports', 'note' => 'Imported A4 copy paper consignment.', 'items' => [['OFF-80-A4-006', 'ream', 75, 370], ['OFF-80-A4-005', 'carton', 12, 1700]]],
-            ['type' => 'purchase', 'date' => '2026-05-20', 'outlet' => 'MAIN', 'party' => 'Padma Paper Depot', 'note' => 'Direct shop replenishment before print-season demand.', 'items' => [['OFF-80-A4-005', 'carton', 4, 1725], ['ART-250-2336-010', 'ream', 6, 710]]],
-            ['type' => 'purchase', 'date' => '2026-05-27', 'outlet' => 'WH01', 'party' => 'Meghna Board Supply', 'note' => 'Heavy board stock for packaging customers.', 'items' => [['DUP-300-GB-016', 'kg', 700, 96], ['BRD-HARD-SON-120-030', 'bundle', 25, 2100]]],
-            ['type' => 'purchase', 'date' => '2026-06-03', 'outlet' => 'WH01', 'party' => 'Bengal Paper Mills', 'note' => 'Monthly offset-paper allocation.', 'items' => [['OFF-60-2336-002', 'ream', 90, 278], ['OFF-70-2336-003', 'ream', 70, 312]]],
-            ['type' => 'purchase', 'date' => '2026-06-10', 'outlet' => 'MAIN', 'party' => 'Sonar Bangla Paper & Packaging', 'note' => 'Urgent A4 and sticker supply for retail counter.', 'items' => [['OFF-80-A4-005', 'carton', 3, 1750], ['STK-MAT-2030-026', 'ream', 8, 930]]],
-            ['type' => 'purchase', 'date' => '2026-06-18', 'outlet' => 'WH01', 'party' => 'Metro Paper & Board Traders', 'note' => 'Mixed glossy and matte card delivery.', 'items' => [['ART-250-GLS-013', 'ream', 18, 760], ['ART-300-MAT-014', 'ream', 14, 890]]],
-            ['type' => 'purchase', 'date' => '2026-06-25', 'outlet' => 'UTR', 'party' => 'Eastern Paper Imports', 'note' => 'Small branch copy-paper delivery.', 'items' => [['OFF-80-A4-005', 'carton', 3, 1775], ['OFF-80-A4-006', 'ream', 10, 385]]],
-            ['type' => 'purchase', 'date' => '2026-07-02', 'outlet' => 'WH01', 'party' => 'Padma Paper Depot', 'note' => 'Newsprint restock for publication orders.', 'items' => [['NEW-48-2336-022', 'kg', 800, 55], ['NEW-52-2336-023', 'kg', 650, 59]]],
-            ['type' => 'purchase', 'date' => '2026-07-09', 'outlet' => 'WH01', 'party' => 'Bengal Paper Mills', 'note' => 'Offset stock for July wholesale demand.', 'items' => [['OFF-80-2336-004', 'ream', 75, 345], ['OFF-100-2030-007', 'ream', 45, 430]]],
-            ['type' => 'purchase', 'date' => '2026-07-16', 'outlet' => 'WH01', 'party' => 'Meghna Board Supply', 'note' => 'White-back duplex and mill-board delivery.', 'items' => [['DUP-300-WB-019', 'kg', 500, 105], ['BRD-MILL-32OZ-029', 'bundle', 20, 1725]]],
-            ['type' => 'purchase', 'date' => '2026-07-23', 'outlet' => 'MAIN', 'party' => 'Buriganga Print Materials', 'note' => 'Main shop A4 and glossy sticker refill.', 'items' => [['OFF-80-A4-005', 'carton', 3, 1760], ['STK-GLS-2030-025', 'ream', 5, 920]]],
-            ['type' => 'purchase', 'date' => '2026-07-30', 'outlet' => 'WH01', 'party' => 'Eastern Paper Imports', 'note' => 'PVC sticker and newsprint-roll shipment.', 'items' => [['STK-PVC-ROLL-028', 'roll', 16, 5600], ['NEW-45-ROLL-024', 'roll', 12, 7450]]],
-            ['type' => 'purchase', 'date' => '2026-08-05', 'outlet' => 'WH01', 'party' => 'Metro Paper & Board Traders', 'note' => 'August art-card assortment.', 'items' => [['ART-260-2030-011', 'ream', 20, 735], ['ART-300-2030-012', 'ream', 18, 860]]],
-            ['type' => 'purchase', 'date' => '2026-08-12', 'outlet' => 'UTR', 'party' => 'Sonar Bangla Paper & Packaging', 'note' => 'Branch A4 and glossy sticker refill.', 'items' => [['OFF-80-A4-005', 'carton', 2, 1790], ['STK-GLS-2030-025', 'ream', 4, 940]]],
-            ['type' => 'purchase', 'date' => '2026-08-19', 'outlet' => 'WH01', 'party' => 'Bengal Paper Mills', 'note' => 'Late-August offset and cream-wove stock.', 'items' => [['OFF-80-CRM-008', 'ream', 55, 390], ['OFF-55-2336-001', 'ream', 60, 258]]],
-            ['type' => 'purchase', 'date' => '2026-08-25', 'outlet' => 'MAIN', 'party' => 'Padma Paper Depot', 'note' => 'Counter stock top-up before month end.', 'items' => [['OFF-80-A4-006', 'ream', 10, 390], ['OFF-80-A4-005', 'carton', 2, 1800]]],
+            [
+                'type' => 'purchase',
+                'date' => '2026-05-05',
+                'outlet' => 'WH01',
+                'party' => 'Bengal Paper Mills',
+                'note' => 'Bulk copy paper and newsprint delivery.',
+                'items' => [['OFF-80-A4-005', 'carton', 20, 1650], ['OFF-55-2336-001', 'ream', 80, 252], ['NEW-45-2336-021', 'kg', 500, 52]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-05-09',
+                'outlet' => 'WH01',
+                'party' => 'Metro Paper & Board Traders',
+                'note' => 'Board and art-card replenishment.',
+                'items' => [['DUP-250-GB-015', 'kg', 600, 88], ['ART-230-2336-009', 'ream', 20, 620], ['STK-GLS-2030-025', 'ream', 15, 900]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-05-14',
+                'outlet' => 'WH01',
+                'party' => 'Eastern Paper Imports',
+                'note' => 'Imported A4 copy paper consignment.',
+                'items' => [['OFF-80-A4-006', 'ream', 75, 370], ['OFF-80-A4-005', 'carton', 12, 1700]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-05-20',
+                'outlet' => 'MAIN',
+                'party' => 'Padma Paper Depot',
+                'note' => 'Direct shop replenishment before print-season demand.',
+                'items' => [['OFF-80-A4-005', 'carton', 4, 1725], ['ART-250-2336-010', 'ream', 6, 710]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-05-27',
+                'outlet' => 'WH01',
+                'party' => 'Meghna Board Supply',
+                'note' => 'Heavy board stock for packaging customers.',
+                'items' => [['DUP-300-GB-016', 'kg', 700, 96], ['BRD-HARD-SON-120-030', 'bundle', 25, 2100]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-06-03',
+                'outlet' => 'WH01',
+                'party' => 'Bengal Paper Mills',
+                'note' => 'Monthly offset-paper allocation.',
+                'items' => [['OFF-60-2336-002', 'ream', 90, 278], ['OFF-70-2336-003', 'ream', 70, 312]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-06-10',
+                'outlet' => 'MAIN',
+                'party' => 'Sonar Bangla Paper & Packaging',
+                'note' => 'Urgent A4 and sticker supply for retail counter.',
+                'items' => [['OFF-80-A4-005', 'carton', 3, 1750], ['STK-MAT-2030-026', 'ream', 8, 930]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-06-18',
+                'outlet' => 'WH01',
+                'party' => 'Metro Paper & Board Traders',
+                'note' => 'Mixed glossy and matte card delivery.',
+                'items' => [['ART-250-GLS-013', 'ream', 18, 760], ['ART-300-MAT-014', 'ream', 14, 890]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-06-25',
+                'outlet' => 'UTR',
+                'party' => 'Eastern Paper Imports',
+                'note' => 'Small branch copy-paper delivery.',
+                'items' => [['OFF-80-A4-005', 'carton', 3, 1775], ['OFF-80-A4-006', 'ream', 10, 385]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-07-02',
+                'outlet' => 'WH01',
+                'party' => 'Padma Paper Depot',
+                'note' => 'Newsprint restock for publication orders.',
+                'items' => [['NEW-48-2336-022', 'kg', 800, 55], ['NEW-52-2336-023', 'kg', 650, 59]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-07-09',
+                'outlet' => 'WH01',
+                'party' => 'Bengal Paper Mills',
+                'note' => 'Offset stock for July wholesale demand.',
+                'items' => [['OFF-80-2336-004', 'ream', 75, 345], ['OFF-100-2030-007', 'ream', 45, 430]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-07-16',
+                'outlet' => 'WH01',
+                'party' => 'Meghna Board Supply',
+                'note' => 'White-back duplex and mill-board delivery.',
+                'items' => [['DUP-300-WB-019', 'kg', 500, 105], ['BRD-MILL-32OZ-029', 'bundle', 20, 1725]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-07-23',
+                'outlet' => 'MAIN',
+                'party' => 'Buriganga Print Materials',
+                'note' => 'Main shop A4 and glossy sticker refill.',
+                'items' => [['OFF-80-A4-005', 'carton', 3, 1760], ['STK-GLS-2030-025', 'ream', 5, 920]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-07-30',
+                'outlet' => 'WH01',
+                'party' => 'Eastern Paper Imports',
+                'note' => 'PVC sticker and newsprint-roll shipment.',
+                'items' => [['STK-PVC-ROLL-028', 'roll', 16, 5600], ['NEW-45-ROLL-024', 'roll', 12, 7450]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-08-05',
+                'outlet' => 'WH01',
+                'party' => 'Metro Paper & Board Traders',
+                'note' => 'August art-card assortment.',
+                'items' => [['ART-260-2030-011', 'ream', 20, 735], ['ART-300-2030-012', 'ream', 18, 860]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-08-12',
+                'outlet' => 'UTR',
+                'party' => 'Sonar Bangla Paper & Packaging',
+                'note' => 'Branch A4 and glossy sticker refill.',
+                'items' => [['OFF-80-A4-005', 'carton', 2, 1790], ['STK-GLS-2030-025', 'ream', 4, 940]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-08-19',
+                'outlet' => 'WH01',
+                'party' => 'Bengal Paper Mills',
+                'note' => 'Late-August offset and cream-wove stock.',
+                'items' => [['OFF-80-CRM-008', 'ream', 55, 390], ['OFF-55-2336-001', 'ream', 60, 258]],
+            ],
+            [
+                'type' => 'purchase',
+                'date' => '2026-08-25',
+                'outlet' => 'MAIN',
+                'party' => 'Padma Paper Depot',
+                'note' => 'Counter stock top-up before month end.',
+                'items' => [['OFF-80-A4-006', 'ream', 10, 390], ['OFF-80-A4-005', 'carton', 2, 1800]],
+            ],
         ];
     }
 
     private function movementEvents(): array
     {
         return [
-            ['type' => 'transfer', 'date' => '2026-05-18', 'from' => 'WH01', 'to' => 'MAIN', 'sku' => 'OFF-80-A4-005', 'quantity' => 15, 'note' => 'Warehouse to main-shop A4 replenishment.'],
-            ['type' => 'transfer', 'date' => '2026-06-15', 'from' => 'WH01', 'to' => 'UTR', 'sku' => 'OFF-80-A4-005', 'quantity' => 8, 'note' => 'Warehouse to Uttara copy-paper replenishment.'],
-            ['type' => 'adjustment', 'date' => '2026-06-22', 'outlet' => 'MAIN', 'sku' => 'OFF-80-A4-005', 'direction' => 'in', 'quantity' => 1.5, 'unit_cost' => 342, 'note' => 'Stock-count correction for unopened A4 packs.'],
-            ['type' => 'adjustment', 'date' => '2026-07-06', 'outlet' => 'WH01', 'sku' => 'DUP-250-GB-015', 'direction' => 'in', 'quantity' => 10, 'unit_cost' => 86, 'note' => 'Warehouse weighment correction.'],
-            ['type' => 'transfer', 'date' => '2026-07-14', 'from' => 'WH01', 'to' => 'MAIN', 'sku' => 'OFF-80-A4-005', 'quantity' => 12, 'note' => 'Second A4 branch replenishment.'],
-            ['type' => 'adjustment', 'date' => '2026-08-10', 'outlet' => 'MAIN', 'sku' => 'OFF-80-A4-005', 'direction' => 'out', 'quantity' => 0.5, 'note' => 'Damaged ream removed after shelf inspection.'],
-            ['type' => 'adjustment', 'date' => '2026-08-20', 'outlet' => 'UTR', 'sku' => 'OFF-80-A4-006', 'direction' => 'out', 'quantity' => 0.5, 'note' => 'Branch stock-count shortage correction.'],
+            [
+                'type' => 'transfer',
+                'date' => '2026-05-18',
+                'from' => 'WH01',
+                'to' => 'MAIN',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 15,
+                'note' => 'Warehouse to main-shop A4 replenishment.',
+            ],
+            [
+                'type' => 'transfer',
+                'date' => '2026-05-19',
+                'from' => 'WH01',
+                'to' => 'MAIN',
+                'sku' => 'ART-250-2336-010',
+                'quantity' => 3,
+                'note' => 'Art-card replenishment for main-shop print orders.',
+            ],
+            [
+                'type' => 'transfer',
+                'date' => '2026-06-15',
+                'from' => 'WH01',
+                'to' => 'UTR',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 8,
+                'note' => 'Warehouse to Uttara copy-paper replenishment.',
+            ],
+            [
+                'type' => 'adjustment',
+                'date' => '2026-06-22',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-80-A4-005',
+                'direction' => 'in',
+                'quantity' => 1.5,
+                'unit_cost' => 342,
+                'note' => 'Stock-count correction for unopened A4 packs.',
+            ],
+            [
+                'type' => 'adjustment',
+                'date' => '2026-07-06',
+                'outlet' => 'WH01',
+                'sku' => 'DUP-250-GB-015',
+                'direction' => 'in',
+                'quantity' => 10,
+                'unit_cost' => 86,
+                'note' => 'Warehouse weighment correction for duplex board.',
+            ],
+            [
+                'type' => 'transfer',
+                'date' => '2026-07-14',
+                'from' => 'WH01',
+                'to' => 'MAIN',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 12,
+                'note' => 'Second A4 replenishment for the main shop.',
+            ],
+            [
+                'type' => 'transfer',
+                'date' => '2026-07-20',
+                'from' => 'WH01',
+                'to' => 'MAIN',
+                'sku' => 'DUP-300-WB-019',
+                'quantity' => 50,
+                'note' => 'White-back duplex stock moved to the main shop for packaging orders.',
+            ],
+            [
+                'type' => 'adjustment',
+                'date' => '2026-08-10',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-80-A4-005',
+                'direction' => 'out',
+                'quantity' => 0.5,
+                'note' => 'Damaged ream removed after shelf inspection.',
+            ],
+            [
+                'type' => 'adjustment',
+                'date' => '2026-08-11',
+                'outlet' => 'MAIN',
+                'sku' => 'STK-GLS-2030-025',
+                'direction' => 'out',
+                'quantity' => 0.25,
+                'note' => 'Damaged glossy sticker sheets removed from saleable stock.',
+            ],
+            [
+                'type' => 'adjustment',
+                'date' => '2026-08-20',
+                'outlet' => 'UTR',
+                'sku' => 'OFF-80-A4-006',
+                'direction' => 'out',
+                'quantity' => 0.5,
+                'note' => 'Branch stock-count shortage correction.',
+            ],
+            [
+                'type' => 'transfer',
+                'date' => '2026-08-22',
+                'from' => 'MAIN',
+                'to' => 'UTR',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 3,
+                'note' => 'Main shop transferred excess A4 stock to Uttara before month end.',
+            ],
         ];
     }
 
     private function saleEvents(): array
     {
         return [
-            ['type' => 'sale', 'date' => '2026-06-06', 'outlet' => 'MAIN', 'party' => 'City Print & Packaging', 'note' => 'Regular print-run supply.', 'items' => [['OFF-80-A4-005', 'ream', 5, 430], ['OFF-60-2336-002', 'ream', 3, 355]]],
-            ['type' => 'sale', 'date' => '2026-06-09', 'outlet' => 'MAIN', 'party' => 'Green Leaf Press', 'note' => 'Counter sale with A4 assortment.', 'items' => [['OFF-80-A4-006', 'ream', 3, 460], ['OFF-80-A4-005', 'ream', 2, 435]]],
-            ['type' => 'sale', 'date' => '2026-06-12', 'outlet' => 'UTR', 'party' => 'Pixel Print House', 'note' => 'Uttara branch pickup.', 'items' => [['OFF-80-A4-005', 'ream', 2, 445], ['OFF-80-A4-006', 'ream', 1, 470]]],
-            ['type' => 'sale', 'date' => '2026-06-16', 'outlet' => 'MAIN', 'party' => 'Dhaka Stationery Wholesale', 'note' => 'Loose-sheet order for stationery resale.', 'items' => [['OFF-80-A4-005', 'sheet', 500, 1.05], ['STK-GLS-2030-025', 'ream', 1, 1080]]],
-            ['type' => 'sale', 'date' => '2026-06-20', 'outlet' => 'MAIN', 'party' => 'Classic Publications', 'note' => 'Publication sample print stock.', 'items' => [['ART-250-2336-010', 'ream', 1, 860], ['OFF-80-2336-004', 'ream', 2, 445]]],
-            ['type' => 'sale', 'date' => '2026-06-24', 'outlet' => 'UTR', 'party' => 'Nova Packaging', 'note' => 'Clearance of branch matte-sticker stock.', 'items' => [['STK-MAT-2030-026', 'ream', 4, 1100], ['OFF-80-A4-005', 'ream', 1, 450]]],
-            ['type' => 'sale', 'date' => '2026-06-28', 'outlet' => 'MAIN', 'party' => 'Sonar Bangla Paper & Packaging', 'note' => 'Mixed paper order for urgent production.', 'items' => [['OFF-80-A4-005', 'ream', 3, 440], ['NEW-45-2336-021', 'kg', 20, 68]]],
-            ['type' => 'sale', 'date' => '2026-07-03', 'outlet' => 'MAIN', 'party' => 'City Print & Packaging', 'note' => 'Monthly packaging-material supply.', 'items' => [['OFF-80-A4-005', 'ream', 2, 445], ['OFF-80-2336-004', 'ream', 2, 450]]],
-            ['type' => 'sale', 'date' => '2026-07-07', 'outlet' => 'UTR', 'party' => 'Green Leaf Press', 'note' => 'Small branch replenishment.', 'items' => [['OFF-80-A4-005', 'ream', 1.5, 455], ['OFF-80-A4-006', 'ream', 1, 475]]],
-            ['type' => 'sale', 'date' => '2026-07-11', 'outlet' => 'MAIN', 'party' => 'Pixel Print House', 'note' => 'Sticker and A4 combination order.', 'items' => [['STK-GLS-2030-025', 'ream', 2, 1120], ['OFF-80-A4-005', 'ream', 1, 450]]],
-            ['type' => 'sale', 'date' => '2026-07-15', 'outlet' => 'MAIN', 'party' => 'Classic Publications', 'note' => 'Text and cover paper delivery.', 'items' => [['OFF-80-A4-005', 'ream', 4, 450], ['ART-250-2336-010', 'ream', 1, 870]]],
-            ['type' => 'sale', 'date' => '2026-07-19', 'outlet' => 'UTR', 'party' => 'Dhaka Stationery Wholesale', 'note' => 'Branch copy-paper wholesale order.', 'items' => [['OFF-80-A4-006', 'ream', 2, 480], ['OFF-80-A4-005', 'ream', 1, 458]]],
-            ['type' => 'sale', 'date' => '2026-07-23', 'outlet' => 'MAIN', 'party' => 'Nova Packaging', 'note' => 'Offset paper for packaging inserts.', 'items' => [['OFF-60-2336-002', 'ream', 3, 365]]],
-            ['type' => 'sale', 'date' => '2026-07-27', 'outlet' => 'MAIN', 'party' => 'Buriganga Print Materials', 'note' => 'A4 counter pickup.', 'items' => [['OFF-80-A4-005', 'ream', 2, 455]]],
-            ['type' => 'sale', 'date' => '2026-07-31', 'outlet' => 'UTR', 'party' => 'Pixel Print House', 'note' => 'End-of-month A4 purchase.', 'items' => [['OFF-80-A4-005', 'ream', 1, 460]]],
-            ['type' => 'sale', 'date' => '2026-08-03', 'outlet' => 'MAIN', 'party' => 'City Print & Packaging', 'note' => 'Premium art-card sample order.', 'items' => [['ART-250-2336-010', 'ream', 1, 890]]],
-            ['type' => 'sale', 'date' => '2026-08-06', 'outlet' => 'MAIN', 'party' => 'Green Leaf Press', 'note' => 'A4 paper for short print run.', 'items' => [['OFF-80-A4-005', 'ream', 3, 460]]],
-            ['type' => 'sale', 'date' => '2026-08-09', 'outlet' => 'UTR', 'party' => 'Classic Publications', 'note' => 'Branch copy-paper pickup.', 'items' => [['OFF-80-A4-006', 'ream', 1, 485]]],
-            ['type' => 'sale', 'date' => '2026-08-12', 'outlet' => 'MAIN', 'party' => 'Nova Packaging', 'note' => 'Matte sticker paper order.', 'items' => [['STK-MAT-2030-026', 'ream', 1, 1160]]],
-            ['type' => 'sale', 'date' => '2026-08-15', 'outlet' => 'MAIN', 'party' => 'Dhaka Stationery Wholesale', 'note' => 'Mid-month A4 wholesale order.', 'items' => [['OFF-80-A4-005', 'ream', 2, 465]]],
-            ['type' => 'sale', 'date' => '2026-08-18', 'outlet' => 'UTR', 'party' => 'Sonar Bangla Paper & Packaging', 'note' => 'Uttara A4 pickup.', 'items' => [['OFF-80-A4-005', 'ream', 1, 470]]],
-            ['type' => 'sale', 'date' => '2026-08-21', 'outlet' => 'MAIN', 'party' => 'Classic Publications', 'note' => 'Newsprint for publication proofing.', 'items' => [['NEW-45-2336-021', 'kg', 25, 70]]],
-            ['type' => 'sale', 'date' => '2026-08-24', 'outlet' => 'MAIN', 'party' => 'Pixel Print House', 'note' => 'A4 paper counter sale.', 'items' => [['OFF-80-A4-005', 'ream', 1, 470]]],
-            ['type' => 'sale', 'date' => '2026-08-27', 'outlet' => 'MAIN', 'party' => 'City Print & Packaging', 'note' => 'Month-end premium copy-paper order.', 'items' => [['OFF-80-A4-006', 'ream', 2, 495]]],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-06',
+                'outlet' => 'MAIN',
+                'party' => 'City Print & Packaging',
+                'note' => 'Regular print-run supply.',
+                'items' => [['OFF-80-A4-005', 'ream', 5, 430], ['OFF-60-2336-002', 'ream', 3, 355]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-09',
+                'outlet' => 'MAIN',
+                'party' => 'Green Leaf Press',
+                'note' => 'Counter sale with A4 assortment.',
+                'items' => [['OFF-80-A4-006', 'ream', 3, 460], ['OFF-80-A4-005', 'ream', 2, 435]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-12',
+                'outlet' => 'UTR',
+                'party' => 'Pixel Print House',
+                'note' => 'Uttara branch pickup.',
+                'items' => [['OFF-80-A4-005', 'ream', 2, 445], ['OFF-80-A4-006', 'ream', 1, 470]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-16',
+                'outlet' => 'MAIN',
+                'party' => 'Dhaka Stationery Wholesale',
+                'note' => 'Loose-sheet order for stationery resale.',
+                'items' => [['OFF-80-A4-005', 'sheet', 500, 1.05], ['STK-GLS-2030-025', 'ream', 1, 1080]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-20',
+                'outlet' => 'MAIN',
+                'party' => 'Classic Publications',
+                'note' => 'Publication sample print stock.',
+                'items' => [['ART-250-2336-010', 'ream', 1, 860], ['OFF-80-2336-004', 'ream', 2, 445]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-24',
+                'outlet' => 'UTR',
+                'party' => 'Nova Packaging',
+                'note' => 'Clearance of branch matte-sticker stock.',
+                'items' => [['STK-MAT-2030-026', 'ream', 4, 1100], ['OFF-80-A4-005', 'ream', 1, 450]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-06-28',
+                'outlet' => 'MAIN',
+                'party' => 'Sonar Bangla Paper & Packaging',
+                'note' => 'Mixed paper order for urgent production.',
+                'items' => [['OFF-80-A4-005', 'ream', 3, 440], ['NEW-45-2336-021', 'kg', 20, 68]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-03',
+                'outlet' => 'MAIN',
+                'party' => 'City Print & Packaging',
+                'note' => 'Monthly packaging-material supply.',
+                'items' => [['OFF-80-A4-005', 'ream', 2, 445], ['OFF-80-2336-004', 'ream', 2, 450]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-07',
+                'outlet' => 'UTR',
+                'party' => 'Green Leaf Press',
+                'note' => 'Small branch replenishment.',
+                'items' => [['OFF-80-A4-005', 'ream', 1.5, 455], ['OFF-80-A4-006', 'ream', 1, 475]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-11',
+                'outlet' => 'MAIN',
+                'party' => 'Pixel Print House',
+                'note' => 'Sticker and A4 combination order.',
+                'items' => [['STK-GLS-2030-025', 'ream', 2, 1120], ['OFF-80-A4-005', 'ream', 1, 450]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-15',
+                'outlet' => 'MAIN',
+                'party' => 'Classic Publications',
+                'note' => 'Text and cover paper delivery.',
+                'items' => [['OFF-80-A4-005', 'ream', 4, 450], ['ART-250-2336-010', 'ream', 1, 870]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-19',
+                'outlet' => 'UTR',
+                'party' => 'Dhaka Stationery Wholesale',
+                'note' => 'Branch copy-paper wholesale order.',
+                'items' => [['OFF-80-A4-006', 'ream', 2, 480], ['OFF-80-A4-005', 'ream', 1, 458]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-23',
+                'outlet' => 'MAIN',
+                'party' => 'Nova Packaging',
+                'note' => 'Offset paper for packaging inserts.',
+                'items' => [['OFF-60-2336-002', 'ream', 3, 365]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-27',
+                'outlet' => 'MAIN',
+                'party' => 'Buriganga Print Materials',
+                'note' => 'A4 counter pickup.',
+                'items' => [['OFF-80-A4-005', 'ream', 2, 455]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-07-31',
+                'outlet' => 'UTR',
+                'party' => 'Pixel Print House',
+                'note' => 'End-of-month A4 purchase.',
+                'items' => [['OFF-80-A4-005', 'ream', 1, 460]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-03',
+                'outlet' => 'MAIN',
+                'party' => 'City Print & Packaging',
+                'note' => 'Premium art-card sample order.',
+                'items' => [['ART-250-2336-010', 'ream', 1, 890]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-06',
+                'outlet' => 'MAIN',
+                'party' => 'Green Leaf Press',
+                'note' => 'A4 paper for short print run.',
+                'items' => [['OFF-80-A4-005', 'ream', 3, 460]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-09',
+                'outlet' => 'UTR',
+                'party' => 'Classic Publications',
+                'note' => 'Branch copy-paper pickup.',
+                'items' => [['OFF-80-A4-006', 'ream', 1, 485]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-12',
+                'outlet' => 'MAIN',
+                'party' => 'Nova Packaging',
+                'note' => 'Matte sticker paper order.',
+                'items' => [['STK-MAT-2030-026', 'ream', 1, 1160]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-15',
+                'outlet' => 'MAIN',
+                'party' => 'Dhaka Stationery Wholesale',
+                'note' => 'Mid-month A4 wholesale order.',
+                'items' => [['OFF-80-A4-005', 'ream', 2, 465]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-18',
+                'outlet' => 'UTR',
+                'party' => 'Sonar Bangla Paper & Packaging',
+                'note' => 'Uttara A4 pickup.',
+                'items' => [['OFF-80-A4-005', 'ream', 1, 470]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-21',
+                'outlet' => 'MAIN',
+                'party' => 'Classic Publications',
+                'note' => 'Newsprint for publication proofing.',
+                'items' => [['NEW-45-2336-021', 'kg', 25, 70]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-24',
+                'outlet' => 'MAIN',
+                'party' => 'Pixel Print House',
+                'note' => 'A4 paper counter sale.',
+                'items' => [['OFF-80-A4-005', 'ream', 1, 470]],
+            ],
+            [
+                'type' => 'sale',
+                'date' => '2026-08-27',
+                'outlet' => 'MAIN',
+                'party' => 'City Print & Packaging',
+                'note' => 'Month-end premium copy-paper order.',
+                'items' => [['OFF-80-A4-006', 'ream', 2, 495]],
+            ],
         ];
     }
 

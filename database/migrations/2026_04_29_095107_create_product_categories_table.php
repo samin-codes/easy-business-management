@@ -35,12 +35,48 @@ return new class extends Migration
         $now = now();
 
         DB::table('product_categories')->insertOrIgnore([
-            ['business_id' => $businessId, 'name' => 'Offset Paper', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['business_id' => $businessId, 'name' => 'Art Card', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['business_id' => $businessId, 'name' => 'Duplex Board', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['business_id' => $businessId, 'name' => 'Newsprint', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['business_id' => $businessId, 'name' => 'Sticker Paper', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['business_id' => $businessId, 'name' => 'Board', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'business_id' => $businessId,
+                'name' => 'Offset Paper',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'business_id' => $businessId,
+                'name' => 'Art Card',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'business_id' => $businessId,
+                'name' => 'Duplex Board',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'business_id' => $businessId,
+                'name' => 'Newsprint',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'business_id' => $businessId,
+                'name' => 'Sticker Paper',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'business_id' => $businessId,
+                'name' => 'Board',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ]);
     }
 

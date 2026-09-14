@@ -31,10 +31,38 @@ return new class extends Migration
         $now = now();
 
         DB::table('product_grade_units')->insertOrIgnore([
-            ['name' => 'Grams per Square Meter', 'code' => 'GSM', 'symbol' => 'gsm', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Ounce', 'code' => 'OZ', 'symbol' => 'oz', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Millimeter', 'code' => 'MM', 'symbol' => 'mm', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Ply', 'code' => 'PLY', 'symbol' => 'ply', 'status' => 'active', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'name' => 'Grams per Square Meter',
+                'code' => 'GSM',
+                'symbol' => 'gsm',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Ounce',
+                'code' => 'OZ',
+                'symbol' => 'oz',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Millimeter',
+                'code' => 'MM',
+                'symbol' => 'mm',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name' => 'Ply',
+                'code' => 'PLY',
+                'symbol' => 'ply',
+                'status' => 'active',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ]);
     }
 
