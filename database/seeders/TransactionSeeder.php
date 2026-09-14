@@ -48,16 +48,16 @@ class TransactionSeeder extends Seeder
 
     public function run(): void
     {
-        $this->loadReferences();
+        $this->loadPrerequisiteData();
 
         DB::transaction(function (): void {
             $this->resetSeededTransactions();
 
             $events = collect([
-                ...$this->openingEvents(),
-                ...$this->purchaseEvents(),
-                ...$this->movementEvents(),
-                ...$this->saleEvents(),
+                ...$this->getOpeningStockEvents(),
+                ...$this->getPurchaseEvents(),
+                ...$this->getStockMovementEvents(),
+                ...$this->getSaleEvents(),
             ])->sortBy(fn (array $event): string => $event['date'].'-'.match ($event['type']) {
                 'opening' => '1',
                 'purchase' => '2',
@@ -80,12 +80,18 @@ class TransactionSeeder extends Seeder
         });
     }
 
-    private function loadReferences(): void
+    private function loadPrerequisiteData(): void
     {
         $this->business = Business::current();
         $this->admin = User::query()->oldest('id')->firstOrFail();
-        $this->outlets = Outlet::query()->whereBelongsTo($this->business)->whereIn('code', ['MAIN', 'WH01', 'UTR'])->get()->keyBy('code');
+
+        $this->outlets = Outlet::query()
+            ->whereBelongsTo($this->business)
+            ->whereIn('code', ['MAIN', 'WH01', 'UTR'])
+            ->get()
+            ->keyBy('code');
         $this->parties = Party::query()->whereBelongsTo($this->business)->get()->keyBy('name');
+
         $this->variants = ProductVariant::query()
             ->with('product:id,business_id,name,base_unit_of_measurement_id')
             ->whereHas('product', fn ($query) => $query->where('business_id', $this->business->id))
@@ -106,47 +112,88 @@ class TransactionSeeder extends Seeder
     {
         $outletIds = $this->outlets->pluck('id');
 
-        if (Purchase::query()->whereIn('outlet_id', $outletIds)->where(fn ($query) => $query
-            ->whereNull('note')->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))->exists()) {
+        if (
+            Purchase::query()
+                ->whereIn('outlet_id', $outletIds)
+                ->where(fn ($query) => $query
+                    ->whereNull('note')
+                    ->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))
+                ->exists()
+        ) {
             throw new RuntimeException('A seeded outlet contains an unrelated purchase. Seeded transactions were not replaced.');
         }
 
-        if (Sale::query()->whereIn('outlet_id', $outletIds)->where(fn ($query) => $query
-            ->whereNull('note')->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))->exists()) {
+        if (
+            Sale::query()
+                ->whereIn('outlet_id', $outletIds)
+                ->where(fn ($query) => $query
+                    ->whereNull('note')
+                    ->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))
+                ->exists()
+        ) {
             throw new RuntimeException('A seeded outlet contains an unrelated sale. Seeded transactions were not replaced.');
         }
 
-        if (ProductStockLedger::query()->whereIn('outlet_id', $outletIds)->whereNull('source_type')
-            ->where(fn ($query) => $query->whereNull('note')->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))->exists()) {
+        if (
+            ProductStockLedger::query()
+                ->whereIn('outlet_id', $outletIds)
+                ->whereNull('source_type')
+                ->where(fn ($query) => $query
+                    ->whereNull('note')
+                    ->orWhere('note', 'not like', self::DATASET_NOTE_PREFIX.'%'))
+                ->exists()
+        ) {
             throw new RuntimeException('A seeded outlet contains an unrelated manual stock movement. Seeded transactions were not replaced.');
         }
 
         $purchaseItemIds = PurchaseItem::query()
-            ->whereHas('purchase', fn ($query) => $query->whereIn('outlet_id', $outletIds)->where('note', 'like', self::DATASET_NOTE_PREFIX.'%'))
+            ->whereHas('purchase', fn ($query) => $query
+                ->whereIn('outlet_id', $outletIds)
+                ->where('note', 'like', self::DATASET_NOTE_PREFIX.'%'))
             ->pluck('id');
         $saleItemIds = SaleItem::query()
-            ->whereHas('sale', fn ($query) => $query->whereIn('outlet_id', $outletIds)->where('note', 'like', self::DATASET_NOTE_PREFIX.'%'))
+            ->whereHas('sale', fn ($query) => $query
+                ->whereIn('outlet_id', $outletIds)
+                ->where('note', 'like', self::DATASET_NOTE_PREFIX.'%'))
             ->pluck('id');
 
-        ProductStockLedger::query()->where('source_type', PurchaseItem::class)->whereIn('source_id', $purchaseItemIds)->delete();
-        ProductStockLedger::query()->where('source_type', SaleItem::class)->whereIn('source_id', $saleItemIds)->delete();
-        ProductStockLedger::query()->whereIn('outlet_id', $outletIds)->whereNull('source_type')->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')->delete();
-        Purchase::query()->whereIn('outlet_id', $outletIds)->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')->delete();
-        Sale::query()->whereIn('outlet_id', $outletIds)->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')->delete();
+        ProductStockLedger::query()
+            ->where('source_type', PurchaseItem::class)
+            ->whereIn('source_id', $purchaseItemIds)
+            ->delete();
+        ProductStockLedger::query()
+            ->where('source_type', SaleItem::class)
+            ->whereIn('source_id', $saleItemIds)
+            ->delete();
+        ProductStockLedger::query()
+            ->whereIn('outlet_id', $outletIds)
+            ->whereNull('source_type')
+            ->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')
+            ->delete();
+
+        Purchase::query()
+            ->whereIn('outlet_id', $outletIds)
+            ->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')
+            ->delete();
+        Sale::query()
+            ->whereIn('outlet_id', $outletIds)
+            ->where('note', 'like', self::DATASET_NOTE_PREFIX.'%')
+            ->delete();
+
         ProductStock::query()->whereIn('outlet_id', $outletIds)->delete();
     }
 
     private function createOpeningStock(array $event): void
     {
-        $outlet = $this->outlet($event['outlet']);
-        $variant = $this->variant($event['sku']);
-        $conversion = $this->conversion($variant, $event['unit']);
+        $outlet = $this->findOutletOrFail($event['outlet']);
+        $variant = $this->findVariantOrFail($event['sku']);
+        $conversion = $this->findConversionOrFail($variant, $event['unit']);
         $baseQuantity = round($event['quantity'] * (float) $conversion->conversion_factor_to_base, 4);
         $baseUnitCost = round($event['unit_cost'] / (float) $conversion->conversion_factor_to_base, 6);
         $totalCost = round($baseQuantity * $baseUnitCost, 2);
 
         ProductStockLedger::query()->create([
-            ...$this->ledgerIdentity($outlet, $variant, $event['date']),
+            ...$this->buildLedgerData($outlet, $variant, $event['date']),
             'transaction_type' => ProductStockLedgerTransactionType::OpeningStock,
             'quantity_in' => $event['quantity'],
             'quantity_out' => 0,
@@ -162,7 +209,7 @@ class TransactionSeeder extends Seeder
 
     private function createPurchase(array $event, int $index): void
     {
-        $outlet = $this->outlet($event['outlet']);
+        $outlet = $this->findOutletOrFail($event['outlet']);
         $items = collect($event['items'])
             ->map(fn (array $item): array => $this->preparePurchaseItem($item));
         $subtotal = round($items->sum('line_total'), 2);
@@ -175,7 +222,7 @@ class TransactionSeeder extends Seeder
         $purchase = Purchase::query()->create([
             'business_id' => $this->business->id,
             'outlet_id' => $outlet->id,
-            'supplier_party_id' => $this->party($event['party'])->id,
+            'supplier_party_id' => $this->findPartyOrFail($event['party'])->id,
             'created_by_id' => $this->admin->id,
             'purchase_no' => Purchase::generatePurchaseNumber($outlet->id, CarbonImmutable::parse($event['date'])),
             'purchase_date' => $event['date'],
@@ -193,11 +240,11 @@ class TransactionSeeder extends Seeder
         ]);
 
         foreach ($items as $item) {
-            $variant = $this->variant($item['sku']);
+            $variant = $this->findVariantOrFail($item['sku']);
             unset($item['sku']);
             $purchaseItem = $purchase->items()->create($item);
             $purchaseItem->productStockLedgers()->create([
-                ...$this->ledgerIdentity($outlet, $variant, $event['date']),
+                ...$this->buildLedgerData($outlet, $variant, $event['date']),
                 'transaction_type' => ProductStockLedgerTransactionType::Purchase,
                 'quantity_in' => $purchaseItem->quantity,
                 'quantity_out' => 0,
@@ -223,8 +270,8 @@ class TransactionSeeder extends Seeder
     private function preparePurchaseItem(array $item): array
     {
         [$sku, $unit, $quantity, $unitCost] = $item;
-        $variant = $this->variant($sku);
-        $conversion = $this->conversion($variant, $unit);
+        $variant = $this->findVariantOrFail($sku);
+        $conversion = $this->findConversionOrFail($variant, $unit);
         $factor = (float) $conversion->conversion_factor_to_base;
 
         return [
@@ -244,7 +291,7 @@ class TransactionSeeder extends Seeder
 
     private function createSale(array $event, int $index): void
     {
-        $outlet = $this->outlet($event['outlet']);
+        $outlet = $this->findOutletOrFail($event['outlet']);
         $preparedItems = collect($event['items'])
             ->map(fn (array $item): array => $this->prepareSaleItem($outlet, $item));
         $subtotal = round($preparedItems->sum('line_total'), 2);
@@ -254,7 +301,7 @@ class TransactionSeeder extends Seeder
         $sale = Sale::query()->create([
             'business_id' => $this->business->id,
             'outlet_id' => $outlet->id,
-            'customer_party_id' => $this->party($event['party'])->id,
+            'customer_party_id' => $this->findPartyOrFail($event['party'])->id,
             'created_by_id' => $this->admin->id,
             'sale_no' => Sale::generateSaleNumber($outlet->id, CarbonImmutable::parse($event['date'])),
             'sale_date' => $event['date'],
@@ -269,11 +316,11 @@ class TransactionSeeder extends Seeder
         ]);
 
         foreach ($preparedItems as $item) {
-            $variant = $this->variant($item['sku']);
+            $variant = $this->findVariantOrFail($item['sku']);
             unset($item['sku']);
             $saleItem = $sale->items()->create($item);
             $saleItem->productStockLedgers()->create([
-                ...$this->ledgerIdentity($outlet, $variant, $event['date']),
+                ...$this->buildLedgerData($outlet, $variant, $event['date']),
                 'transaction_type' => ProductStockLedgerTransactionType::Sale,
                 'quantity_in' => 0,
                 'quantity_out' => $saleItem->quantity,
@@ -298,11 +345,11 @@ class TransactionSeeder extends Seeder
     private function prepareSaleItem(Outlet $outlet, array $item): array
     {
         [$sku, $unit, $quantity, $unitPrice] = $item;
-        $variant = $this->variant($sku);
-        $conversion = $this->conversion($variant, $unit);
+        $variant = $this->findVariantOrFail($sku);
+        $conversion = $this->findConversionOrFail($variant, $unit);
         $factor = (float) $conversion->conversion_factor_to_base;
         $baseQuantity = round($quantity * $factor, 4);
-        $stock = $this->stock($outlet, $variant);
+        $stock = $this->prepareStock($outlet, $variant);
 
         if ((float) $stock->quantity + 0.00005 < $baseQuantity) {
             throw new RuntimeException("Insufficient stock while seeding {$sku} at {$outlet->code}.");
@@ -331,60 +378,88 @@ class TransactionSeeder extends Seeder
 
     private function createTransfer(array $event): void
     {
-        $from = $this->outlet($event['from']);
-        $to = $this->outlet($event['to']);
-        $variant = $this->variant($event['sku']);
-        $conversion = $this->baseConversion($variant);
-        $stock = $this->stock($from, $variant);
+        $from = $this->findOutletOrFail($event['from']);
+        $to = $this->findOutletOrFail($event['to']);
+        $variant = $this->findVariantOrFail($event['sku']);
+        $conversion = $this->findBaseConversionOrFail($variant);
+        $stock = $this->prepareStock($from, $variant);
         $quantity = round($event['quantity'], 4);
         $unitCost = round((float) $stock->average_cost, 6);
         $totalCost = round($quantity * $unitCost, 2);
         $note = self::DATASET_NOTE_PREFIX.' '.$event['note'];
 
-        $this->createManualLedger($from, $variant, $conversion, ProductStockLedgerTransactionType::TransferOut, 0, $quantity, $quantity, $unitCost, $totalCost, $event['date'], $note);
+        ProductStockLedger::query()->create([
+            ...$this->buildLedgerData($from, $variant, $event['date']),
+            'transaction_type' => ProductStockLedgerTransactionType::TransferOut,
+            'quantity_in' => 0,
+            'quantity_out' => $quantity,
+            'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
+            'product_unit_conversion_id' => $conversion->id,
+            'base_quantity' => $quantity,
+            'unit_cost' => $unitCost,
+            'total_cost' => $totalCost,
+            'note' => $note,
+        ]);
         $this->updateStock($from, $variant, -$quantity, -$totalCost, $event['date']);
-        $this->createManualLedger($to, $variant, $conversion, ProductStockLedgerTransactionType::TransferIn, $quantity, 0, $quantity, $unitCost, $totalCost, $event['date'], $note);
+        ProductStockLedger::query()->create([
+            ...$this->buildLedgerData($to, $variant, $event['date']),
+            'transaction_type' => ProductStockLedgerTransactionType::TransferIn,
+            'quantity_in' => $quantity,
+            'quantity_out' => 0,
+            'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
+            'product_unit_conversion_id' => $conversion->id,
+            'base_quantity' => $quantity,
+            'unit_cost' => $unitCost,
+            'total_cost' => $totalCost,
+            'note' => $note,
+        ]);
         $this->updateStock($to, $variant, $quantity, $totalCost, $event['date']);
     }
 
     private function createAdjustment(array $event): void
     {
-        $outlet = $this->outlet($event['outlet']);
-        $variant = $this->variant($event['sku']);
-        $conversion = $this->baseConversion($variant);
+        $outlet = $this->findOutletOrFail($event['outlet']);
+        $variant = $this->findVariantOrFail($event['sku']);
+        $conversion = $this->findBaseConversionOrFail($variant);
         $quantity = round($event['quantity'], 4);
         $note = self::DATASET_NOTE_PREFIX.' '.$event['note'];
 
         if ($event['direction'] === 'in') {
             $unitCost = round($event['unit_cost'], 6);
             $totalCost = round($quantity * $unitCost, 2);
-            $this->createManualLedger($outlet, $variant, $conversion, ProductStockLedgerTransactionType::AdjustmentIn, $quantity, 0, $quantity, $unitCost, $totalCost, $event['date'], $note);
+            ProductStockLedger::query()->create([
+                ...$this->buildLedgerData($outlet, $variant, $event['date']),
+                'transaction_type' => ProductStockLedgerTransactionType::AdjustmentIn,
+                'quantity_in' => $quantity,
+                'quantity_out' => 0,
+                'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
+                'product_unit_conversion_id' => $conversion->id,
+                'base_quantity' => $quantity,
+                'unit_cost' => $unitCost,
+                'total_cost' => $totalCost,
+                'note' => $note,
+            ]);
             $this->updateStock($outlet, $variant, $quantity, $totalCost, $event['date']);
 
             return;
         }
 
-        $stock = $this->stock($outlet, $variant);
+        $stock = $this->prepareStock($outlet, $variant);
         $unitCost = round((float) $stock->average_cost, 6);
         $totalCost = round($quantity * $unitCost, 2);
-        $this->createManualLedger($outlet, $variant, $conversion, ProductStockLedgerTransactionType::AdjustmentOut, 0, $quantity, $quantity, $unitCost, $totalCost, $event['date'], $note);
-        $this->updateStock($outlet, $variant, -$quantity, -$totalCost, $event['date']);
-    }
-
-    private function createManualLedger(Outlet $outlet, ProductVariant $variant, ProductUnitConversion $conversion, ProductStockLedgerTransactionType $type, float $quantityIn, float $quantityOut, float $baseQuantity, float $unitCost, float $totalCost, string $date, string $note): void
-    {
         ProductStockLedger::query()->create([
-            ...$this->ledgerIdentity($outlet, $variant, $date),
-            'transaction_type' => $type,
-            'quantity_in' => $quantityIn,
-            'quantity_out' => $quantityOut,
+            ...$this->buildLedgerData($outlet, $variant, $event['date']),
+            'transaction_type' => ProductStockLedgerTransactionType::AdjustmentOut,
+            'quantity_in' => 0,
+            'quantity_out' => $quantity,
             'unit_of_measurement_id' => $conversion->unit_of_measurement_id,
             'product_unit_conversion_id' => $conversion->id,
-            'base_quantity' => $baseQuantity,
+            'base_quantity' => $quantity,
             'unit_cost' => $unitCost,
             'total_cost' => $totalCost,
             'note' => $note,
         ]);
+        $this->updateStock($outlet, $variant, -$quantity, -$totalCost, $event['date']);
     }
 
     private function seedPurchasePayments(Purchase $purchase, int $index): void
@@ -471,14 +546,9 @@ class TransactionSeeder extends Seeder
         ]);
     }
 
-    private function updateStock(
-        Outlet $outlet,
-        ProductVariant $variant,
-        float $quantityChange,
-        float $valueChange,
-        string $date,
-    ): void {
-        $stock = $this->stock($outlet, $variant);
+    private function updateStock(Outlet $outlet, ProductVariant $variant, float $quantityChange, float $valueChange, string $date): void
+    {
+        $stock = $this->prepareStock($outlet, $variant);
         $quantity = round((float) $stock->quantity + $quantityChange, 4);
         $value = round((float) $stock->stock_value + $valueChange, 2);
 
@@ -499,7 +569,7 @@ class TransactionSeeder extends Seeder
         ])->save();
     }
 
-    private function stock(Outlet $outlet, ProductVariant $variant): ProductStock
+    private function prepareStock(Outlet $outlet, ProductVariant $variant): ProductStock
     {
         $stock = ProductStock::query()->firstOrCreate(
             [
@@ -517,7 +587,7 @@ class TransactionSeeder extends Seeder
         return ProductStock::query()->lockForUpdate()->findOrFail($stock->id);
     }
 
-    private function ledgerIdentity(Outlet $outlet, ProductVariant $variant, string $date): array
+    private function buildLedgerData(Outlet $outlet, ProductVariant $variant, string $date): array
     {
         return [
             'business_id' => $this->business->id,
@@ -527,31 +597,31 @@ class TransactionSeeder extends Seeder
         ];
     }
 
-    private function outlet(string $code): Outlet
+    private function findOutletOrFail(string $code): Outlet
     {
         return $this->outlets->get($code)
             ?? throw new RuntimeException("Missing seeded outlet {$code}.");
     }
 
-    private function party(string $name): Party
+    private function findPartyOrFail(string $name): Party
     {
         return $this->parties->get($name)
             ?? throw new RuntimeException("Missing seeded party {$name}.");
     }
 
-    private function variant(string $sku): ProductVariant
+    private function findVariantOrFail(string $sku): ProductVariant
     {
         return $this->variants->get($sku)
             ?? throw new RuntimeException("Missing seeded SKU {$sku}.");
     }
 
-    private function conversion(ProductVariant $variant, string $unitCode): ProductUnitConversion
+    private function findConversionOrFail(ProductVariant $variant, string $unitCode): ProductUnitConversion
     {
         return $this->conversions->get($variant->product_id.':'.$unitCode)
             ?? throw new RuntimeException("Missing {$unitCode} conversion for {$variant->sku}.");
     }
 
-    private function baseConversion(ProductVariant $variant): ProductUnitConversion
+    private function findBaseConversionOrFail(ProductVariant $variant): ProductUnitConversion
     {
         return $this->conversions
             ->where('product_id', $variant->product_id)
@@ -559,29 +629,194 @@ class TransactionSeeder extends Seeder
             ->first() ?? throw new RuntimeException("Missing base-unit conversion for {$variant->sku}.");
     }
 
-    private function openingEvents(): array
+    private function getOpeningStockEvents(): array
     {
-        return collect([
-            ['WH01', 'OFF-80-A4-005', 120, 330], ['WH01', 'OFF-55-2336-001', 90, 245], ['WH01', 'OFF-60-2336-002', 75, 270],
-            ['WH01', 'ART-230-2336-009', 24, 590], ['WH01', 'ART-250-2336-010', 20, 660], ['WH01', 'DUP-250-GB-015', 850, 84],
-            ['WH01', 'DUP-300-WB-019', 600, 102], ['WH01', 'NEW-45-2336-021', 1200, 49], ['WH01', 'NEW-45-ROLL-024', 18, 7200],
-            ['WH01', 'STK-GLS-2030-025', 28, 820], ['WH01', 'STK-PVC-ROLL-028', 20, 5400], ['WH01', 'BRD-MILL-32OZ-029', 32, 1650],
-            ['MAIN', 'OFF-80-A4-005', 30, 335], ['MAIN', 'OFF-80-A4-006', 18, 360], ['MAIN', 'OFF-60-2336-002', 15, 280],
-            ['MAIN', 'OFF-80-2336-004', 12, 350], ['MAIN', 'ART-250-2336-010', 8, 690], ['MAIN', 'STK-GLS-2030-025', 6, 850],
-            ['MAIN', 'NEW-45-2336-021', 100, 51], ['UTR', 'OFF-80-A4-005', 12, 340], ['UTR', 'OFF-80-A4-006', 8, 365],
-            ['UTR', 'STK-MAT-2030-026', 4, 880],
-        ])->map(fn (array $row): array => [
-            'type' => 'opening',
-            'date' => '2026-05-01',
-            'outlet' => $row[0],
-            'sku' => $row[1],
-            'quantity' => $row[2],
-            'unit' => $this->baseUnitCode($row[1]),
-            'unit_cost' => $row[3],
-        ])->all();
+        $events = [
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 120,
+                'unit_cost' => 330,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'OFF-55-2336-001',
+                'quantity' => 90,
+                'unit_cost' => 245,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'OFF-60-2336-002',
+                'quantity' => 75,
+                'unit_cost' => 270,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'ART-230-2336-009',
+                'quantity' => 24,
+                'unit_cost' => 590,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'ART-250-2336-010',
+                'quantity' => 20,
+                'unit_cost' => 660,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'DUP-250-GB-015',
+                'quantity' => 850,
+                'unit_cost' => 84,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'DUP-300-WB-019',
+                'quantity' => 600,
+                'unit_cost' => 102,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'NEW-45-2336-021',
+                'quantity' => 1200,
+                'unit_cost' => 49,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'NEW-45-ROLL-024',
+                'quantity' => 18,
+                'unit_cost' => 7200,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'STK-GLS-2030-025',
+                'quantity' => 28,
+                'unit_cost' => 820,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'STK-PVC-ROLL-028',
+                'quantity' => 20,
+                'unit_cost' => 5400,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'WH01',
+                'sku' => 'BRD-MILL-32OZ-029',
+                'quantity' => 32,
+                'unit_cost' => 1650,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 30,
+                'unit_cost' => 335,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-80-A4-006',
+                'quantity' => 18,
+                'unit_cost' => 360,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-60-2336-002',
+                'quantity' => 15,
+                'unit_cost' => 280,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'OFF-80-2336-004',
+                'quantity' => 12,
+                'unit_cost' => 350,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'ART-250-2336-010',
+                'quantity' => 8,
+                'unit_cost' => 690,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'STK-GLS-2030-025',
+                'quantity' => 6,
+                'unit_cost' => 850,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'MAIN',
+                'sku' => 'NEW-45-2336-021',
+                'quantity' => 100,
+                'unit_cost' => 51,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'UTR',
+                'sku' => 'OFF-80-A4-005',
+                'quantity' => 12,
+                'unit_cost' => 340,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'UTR',
+                'sku' => 'OFF-80-A4-006',
+                'quantity' => 8,
+                'unit_cost' => 365,
+            ],
+            [
+                'type' => 'opening',
+                'date' => '2026-05-01',
+                'outlet' => 'UTR',
+                'sku' => 'STK-MAT-2030-026',
+                'quantity' => 4,
+                'unit_cost' => 880,
+            ],
+        ];
+
+        return array_map(fn (array $event): array => [
+            ...$event,
+            'unit' => $this->getBaseUnitCode($event['sku']),
+        ], $events);
     }
 
-    private function purchaseEvents(): array
+    private function getPurchaseEvents(): array
     {
         return [
             [
@@ -731,7 +966,7 @@ class TransactionSeeder extends Seeder
         ];
     }
 
-    private function movementEvents(): array
+    private function getStockMovementEvents(): array
     {
         return [
             [
@@ -838,7 +1073,7 @@ class TransactionSeeder extends Seeder
         ];
     }
 
-    private function saleEvents(): array
+    private function getSaleEvents(): array
     {
         return [
             [
@@ -1036,10 +1271,10 @@ class TransactionSeeder extends Seeder
         ];
     }
 
-    private function baseUnitCode(string $sku): string
+    private function getBaseUnitCode(string $sku): string
     {
-        $variant = $this->variant($sku);
+        $variant = $this->findVariantOrFail($sku);
 
-        return $this->baseConversion($variant)->unitOfMeasurement->code;
+        return $this->findBaseConversionOrFail($variant)->unitOfMeasurement->code;
     }
 }
